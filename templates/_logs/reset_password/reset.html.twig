@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réinitialiser votre mot de passe - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
+            🔒
+        </div>
+        <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Nouveau mot de passe</h1>
+        <p class="page-subtitle">
+            Définissez un nouveau mot de passe pour sécuriser votre compte
+        </p>
+    </div>
+
+    {% for flash_error in app.flashes('reset_password_error') %}
+        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+            {{ flash_error }}
+        </div>
+    {% endfor %}
+
+    <div class="card">
+        {{ form_start(resetForm) }}
+            {{ form_errors(resetForm) }}
+
+            <div class="form-group">
+                <label for="{{ resetForm.plainPassword.first.vars.id }}" class="form-label">
+                    Nouveau mot de passe
+                </label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    {{ form_widget(resetForm.plainPassword.first, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Au moins 8 caractères...',
+                            'style': 'padding-right: 46px;'
+                        }
+                    }) }}
+                    <button type="button"
+                            onclick="togglePasswordVisibility('{{ resetForm.plainPassword.first.vars.id }}', this)"
+                            title="Afficher/Masquer le mot de passe"
+                            style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+                {{ form_errors(resetForm.plainPassword.first, {'attr': {'class': 'form-error'}}) }}
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem;">
+                    Minimum 8 caractères, avec au moins une lettre et un chiffre.
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.25rem;">
+                <label for="{{ resetForm.plainPassword.second.vars.id }}" class="form-label">
+                    Confirmez le nouveau mot de passe
+                </label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    {{ form_widget(resetForm.plainPassword.second, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Répétez votre mot de passe...',
+                            'style': 'padding-right: 46px;'
+                        }
+                    }) }}
+                    <button type="button"
+                            onclick="togglePasswordVisibility('{{ resetForm.plainPassword.second.vars.id }}', this)"
+                            title="Afficher/Masquer le mot de passe"
+                            style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+                {{ form_errors(resetForm.plainPassword.second, {'attr': {'class': 'form-error'}}) }}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 1rem;">
+                Enregistrer le mot de passe
+            </button>
+        {{ form_end(resetForm) }}
+    </div>
+
+    <div style="text-align: center; margin-top: 1.75rem;">
+        <a href="{{ path('web_login') }}" style="color: var(--text-muted); font-size: 0.875rem; text-decoration: none;">
+            ← Retour à la connexion
+        </a>
+    </div>
+</div>
+
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+
+    btn.innerHTML = isPassword
+        ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+            <line x1="2" x2="22" y1="2" y2="22"/>
+           </svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+           </svg>`;
+}
+</script>
+{% endblock %}

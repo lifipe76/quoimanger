@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isNew ? 'Nouvel ingrédient' : 'Modifier l\'ingrédient' }} - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 600px;">
+    <div class="page-header">
+        <h1 class="page-title">{{ isNew ? 'Ajouter un ingrédient' : 'Modifier l\'ingrédient' }}</h1>
+        <a href="{{ path('app_ingredients_list') }}" class="btn btn-secondary">
+            Retour à la liste
+        </a>
+    </div>
+
+    <div class="card">
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.designation) }}
+                {{ form_errors(form.designation, {'attr': {'class': 'form-error'}}) }}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                <a href="{{ path('app_ingredients_list') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ isNew ? 'Créer l\'ingrédient' : 'Enregistrer les modifications' }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+

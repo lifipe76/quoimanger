@@ -1,0 +1,167 @@
+#retour.retourVisible {
+    opacity: 1;
+}
+
+.entete svg {
+    margin: 0 20px;
+}
+
+.action {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    min-width: 100%;
+    max-width: 100%;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.action > a {
+    min-width: 49%;
+    max-width: 49%;
+}
+
+.action > a > div {
+    background-color: #fff;
+    height: 425px;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.action .choix {
+    padding: 20px;
+    background-color: #fff;
+
+    gap: 10px;
+
+    font-size: 20px;
+    font-weight: 800;
+    color: #000;
+    border-radius: var(--border-radius);
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    text-align: center;
+    transition:
+        color 0.3s ease,
+        box-shadow 0.3s ease;
+    box-shadow:
+        0 4px 8px rgba(219, 72, 7, 0.4),
+        0 0 10px rgba(219, 72, 7, 0.3);
+}
+
+.action .choix img {
+    width: 100%;
+}
+
+.action .choix:hover {
+    background-color: #fff;
+    color: #000;
+    box-shadow:
+        0 6px 12px rgba(219, 72, 7, 0.6),
+        0 0 20px rgba(219, 72, 7, 0.5);
+}
+
+.action .descriptif {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.action .descriptif .descriptifTitre,
+.action .descriptif .descriptifBas {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 36px;
+}
+
+.action .descriptif ul {
+    padding: 20px 0 0 20px;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 24px;
+    list-style-type: none;
+    font-family: "Montserrat";
+    color: #767676;
+}
+
+.champPasswordToggle input {
+    width: 100%;
+}
+
+@media (min-width: 1100px) {
+    .menu {
+        font-size: 47px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .action .pricing-title {
+        font-size: 24px;
+    }
+
+    .action {
+        flex-direction: column;
+        padding: 0 20px;
+    }
+
+    .action > a {
+        min-width: 100%;
+        max-width: 100%;
+        height: 200px;
+    }
+
+    .action > a > div {
+        height: auto;
+    }
+
+    .action .descriptif .descriptifTitre,
+    .action .descriptif .descriptifBas {
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 36px;
+    }
+
+    .action .descriptif ul {
+        padding: 0;
+        font-size: 14px;
+        line-height: 14px;
+    }
+
+    .formContainerSaisi {
+        max-width: 100%;
+        min-width: 100%;
+    }
+
+    .formContainer .action form {
+        gap: 15px;
+    }
+}
+
+#pageContainer .formContainer select {
+    padding: 15px 22px;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    border: none;
+    background-color: transparent;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.champType {
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.titre {
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+    margin: 10px 0;
+}

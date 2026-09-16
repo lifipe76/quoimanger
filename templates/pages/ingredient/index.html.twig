@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ingrédients - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Mes Ingrédients</h1>
+            <p class="page-subtitle">{{ ingredients|length }} ingrédient{{ ingredients|length > 1 ? 's' : '' }} répertorié{{ ingredients|length > 1 ? 's' : '' }}</p>
+        </div>
+        <a href="{{ path('app_ingredient_create') }}" class="btn btn-primary">
+            + Ajouter un ingrédient
+        </a>
+    </div>
+
+    {% if ingredients|length > 0 %}
+        <div class="cards-grid">
+            {% for ingredient in ingredients %}
+                {{ composant('cards/ingredient', { 'ingredient': ingredient, 'index': loop.index0 }) }}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <div class="empty-state-icon">🌿</div>
+            <h2>Aucun ingrédient pour le moment</h2>
+            <p>Ajoutez des ingrédients pour pouvoir composer vos futures recettes.</p>
+            <a href="{{ path('app_ingredient_create') }}" class="btn btn-primary" style="margin-top: 1.5rem;">
+                + Créer mon premier ingrédient
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

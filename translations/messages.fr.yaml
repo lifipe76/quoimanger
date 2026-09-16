@@ -1,0 +1,51 @@
+# Translations pour l'authentification et la réinitialisation de mot de passe
+login:
+    title: "Connexion"
+    subtitle: "Connectez-vous pour accéder à vos recettes et à votre timeline de repas"
+    label:
+        email: "Adresse email"
+        mdp: "Mot de passe"
+    placeholder:
+        email: "nom@exemple.com"
+        mdp: "Votre mot de passe"
+    mdpLost: "Mot de passe oublié ?"
+    actions:
+        login: "Se connecter"
+        logout: "Se déconnecter"
+        back_home: "Retour à l'accueil"
+    already_logged: "Vous êtes déjà connecté"
+
+reset_password:
+    mail:
+        sujet: "Réinitialisation de votre mot de passe"
+    request:
+        titre: "Mot de passe oublié"
+        subtitle: "Entrez votre adresse email ci-dessous. Nous vous enverrons un lien sécurisé pour créer un nouveau mot de passe."
+        explique: "Adresse email de votre compte"
+        button: "Envoyer le lien de réinitialisation"
+        back_to_login: "Retour à la page de connexion"
+    check_email:
+        titre: "Vérifiez votre boîte de réception"
+        explique: "Si un compte est associé à votre adresse email, un message vient d'y être envoyé avec les instructions pour réinitialiser votre mot de passe."
+        expire: "Ce lien de réinitialisation expirera dans"
+        renvoi:
+            text: "Vous n'avez rien reçu ? Vérifiez vos courriers indésirables ou"
+            button: "refaites une demande"
+    reset:
+        titre: "Nouveau mot de passe"
+        subtitle: "Choisissez un nouveau mot de passe sécurisé pour votre compte."
+        label:
+            mdp: "Nouveau mot de passe"
+            confirme: "Confirmez le nouveau mot de passe"
+        button: "Enregistrer le mot de passe"
+        erreurs:
+            identique: "Les deux mots de passe doivent être parfaitement identiques."
+
+password:
+    notBlank: "Veuillez renseigner un mot de passe."
+    size:
+        min: "Le mot de passe doit comporter au moins {{ limit }} caractères."
+        max: "Le mot de passe ne peut pas dépasser {{ limit }} caractères."
+    required:
+        digit: "Le mot de passe doit comporter au moins un chiffre."
+        letter: "Le mot de passe doit comporter au moins une lettre."

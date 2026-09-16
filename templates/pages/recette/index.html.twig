@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recettes - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Mes Recettes</h1>
+            <p class="page-subtitle">{{ recettes|length }} recette{{ recettes|length > 1 ? 's' : '' }} au menu</p>
+        </div>
+        <a href="{{ path('app_recette_create') }}" class="btn btn-primary">
+            + Ajouter une recette
+        </a>
+    </div>
+
+    {% if recettes|length > 0 %}
+        <div class="cards-grid">
+            {% for recette in recettes %}
+                {{ composant('cards/recette', { 'recette': recette, 'index': loop.index0 }) }}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <div class="empty-state-icon">🍳</div>
+            <h2>Aucune recette pour le moment</h2>
+            <p>Commencez par ajouter votre première recette avec ses ingrédients favoris.</p>
+            <a href="{{ path('app_recette_create') }}" class="btn btn-primary" style="margin-top: 1.5rem;">
+                + Créer ma première recette
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

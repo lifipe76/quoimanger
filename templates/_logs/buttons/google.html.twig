@@ -1,0 +1,29 @@
+{% block GoogleButton %}
+
+     <div class='connectExterne connectExterneGoogle'>
+
+          <div id="g_id_onload"              
+               data-client_id="703003857935-b0s87h4ighg9evm5fbe701benglvimcp.apps.googleusercontent.com"
+               data-context="signin"
+               data-ux_mode="redirect"
+               data-login_uri="https://hopopope.fr/login/google/check"
+               data-auto_prompt="false"
+               data-state="1"
+          >
+          </div>
+
+          <div class="g_id_signin"
+               data-type="standard" {# standard/icon #}
+               data-theme="outline" {# light/dark/outline #}
+               data-size="large" {# large/medium/small #}
+               data-text={{dataText}} {# signin_with/signup_with/continue_with/signin#}
+               data-shape="circle" {# rectangular/pill/circle/square #}
+               data-width="340"
+               data-logo_alignment="center"
+               {# "picture": "https://lh3.googleusercontent.com/a-/e2718281828459045235360uler", #}
+          >    
+          </div>
+
+     </div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mot de passe oublié - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
+            📬
+        </div>
+        <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Mot de passe oublié</h1>
+        <p class="page-subtitle">
+            Entrez votre adresse email pour recevoir un lien de réinitialisation sécurisé
+        </p>
+    </div>
+
+    {% for flash_error in app.flashes('reset_password_error') %}
+        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+            {{ flash_error }}
+        </div>
+    {% endfor %}
+
+    <div class="card">
+        {{ form_start(requestForm) }}
+            <div class="form-group">
+                <label for="{{ requestForm.email.vars.id }}" class="form-label">Votre adresse email</label>
+                {{ form_widget(requestForm.email, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'nom@exemple.com',
+                        'autofocus': 'autofocus'
+                    }
+                }) }}
+                {{ form_errors(requestForm.email, {'attr': {'class': 'form-error'}}) }}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 0.5rem;">
+                Envoyer le lien de réinitialisation
+            </button>
+        {{ form_end(requestForm) }}
+    </div>
+
+    <div style="text-align: center; margin-top: 1.75rem;">
+        <a href="{{ path('web_login') }}" style="color: var(--text-muted); font-size: 0.875rem; text-decoration: none;">
+            ← Retour à la connexion
+        </a>
+    </div>
+</div>
+{% endblock %}

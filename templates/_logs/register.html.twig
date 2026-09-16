@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ (titre is defined ? titre : 'Créez votre compte.')|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/_logs/register.css') }}
+    {{ addCss('styles/_logs/communs.css') }}
+    {{ addCss('styles/pageContainer.css') }}
+    {{ addCss('styles/formContainer.css') }}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+<div id='pageContainer'>
+
+    <div class='formContainer formContainerSaisi containerBlanc'>
+
+        {{ include('_logs/_composants/zoneEntete.html.twig') }}
+       
+        {{ form_errors(registrationForm) }}
+
+        <div class='corps'>
+
+                    {{ form_start(registrationForm) }}
+
+                    {{ form_row(registrationForm.type)}}
+
+                    {{ form_row(registrationForm.email)}}
+
+                    {{ composant('_logs/_composants/togglePassword')}}
+                    <div class="toggle-password-wrapper champ">
+                        {{ form_label(registrationForm.plainPassword) }}
+                        {{ form_errors(registrationForm.plainPassword) }}
+                        <div class="champPasswordToggle">                            
+                            {{ form_widget(registrationForm.plainPassword, {attr: {'data-controller': 'toggle-password'} }) }}
+                        </div>                        
+                    </div>
+
+                    <div class="connect">
+                        {{ composant('_composants/button',{'submit':true,'titre': (titre is defined ? titre : 'distributeurs.bouton.creer')})}}
+                    </div>
+
+                    {{ form_widget(registrationForm.custom_token_name) }}
+                    {{ form_end(registrationForm, { render_rest: false }) }}
+
+        </div>
+        
+        {# {{ include('_logs/_composants/zoneLogin.html.twig') }} #}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{# supprime le footer avec les mentions #}
+{% block footer %}
+{% endblock %}

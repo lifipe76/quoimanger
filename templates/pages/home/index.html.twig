@@ -1,0 +1,202 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Timeline des repas - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container timeline-page">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Timeline des Repas</h1>
+            <p class="page-subtitle">Historique horaire de vos réalisations culinaires</p>
+        </div>
+    </div>
+
+    <!-- Timeline Wrapper -->
+    <div class="timeline-wrapper">
+        <!-- 1er élément : Rectangle vide / Carte d'action rapide -->
+        <div class="timeline-item timeline-item-cta">
+            <div class="timeline-marker cta-marker">
+                <span class="marker-pulse"></span>
+                <span class="marker-icon">✨</span>
+            </div>
+            <div class="timeline-content">
+                <div class="card-empty-cta" onclick="openRepasModal()">
+                    <div class="empty-cta-icon">🍴</div>
+                    <h3 class="empty-cta-title">Qu'avez-vous mangé aujourd'hui ?</h3>
+                    <p class="empty-cta-desc">
+                        Cliquez pour rentrer votre repas du moment et l'ajouter à votre timeline.
+                    </p>
+                    <button type="button" class="btn btn-primary btn-cta">
+                        Je rentre mon repas
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des réalisations en ordre décroissant horaire -->
+        {% if timeline|length > 0 %}
+            {% for item in timeline %}
+                <div class="timeline-item" style="--card-index: {{ loop.index0 }};">
+                    <div class="timeline-marker">
+                        <span class="marker-dot"></span>
+                    </div>
+
+                    <div class="timeline-badge-time">
+                        <span class="badge-time-icon">🕒</span>
+                        <time datetime="{{ item.realiseAt|date('c') }}">
+                            {{ item.realiseAt|date('d/m/Y') }} à <strong>{{ item.realiseAt|date('H:i') }}</strong>
+                        </time>
+                    </div>
+
+                    <div class="timeline-content">
+                        {{ composant('cards/recette', {
+                            'recette': item.recette,
+                            'realisation': item,
+                            'index': loop.index0
+                        }) }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="card empty-state" style="margin-top: 1rem;">
+                        <div class="empty-state-icon">📖</div>
+                        <h3>Aucun repas enregistré pour l'instant</h3>
+                        <p>Utilisez le bouton ci-dessus pour sélectionner votre premier repas !</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Popup "Je rentre mon repas" -->
+<div id="repas-modal" class="modal-overlay" style="display: none;" onclick="handleModalBackdropClick(event)">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div>
+                <h2 class="modal-title">🍴 Je rentre mon repas</h2>
+                <p class="modal-subtitle">Sélectionnez la recette préparée pour la valider aujourd'hui</p>
+            </div>
+            <button type="button" class="modal-close-btn" onclick="closeRepasModal()" title="Fermer">✕</button>
+        </div>
+
+        <div class="modal-search">
+            <span class="search-icon">🔍</span>
+            <input type="text"
+                   id="recipe-filter-input"
+                   class="form-control"
+                   placeholder="Rechercher une recette..."
+                   oninput="filterRecipesList(this.value)">
+        </div>
+
+        <div class="modal-recipes-list" id="modal-recipes-container">
+            {% if recettes|length > 0 %}
+                {% for r in recettes %}
+                    <form method="post" action="{{ path('app_realisation_add') }}" class="modal-recipe-form" data-name="{{ r.designation|lower }}">
+                        <input type="hidden" name="recette_id" value="{{ r.id }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_realisation') }}">
+                        <button type="submit" class="modal-recipe-item">
+                            <div class="recipe-item-main">
+                                <span class="recipe-item-name">{{ r.designation }}</span>
+                                <span class="recipe-item-ingredients">
+                                    {{ r.recetteIngredients|length }} ingrédient(s)
+                                    {% if r.recetteIngredients|length > 0 %}
+                                        • ({{ r.recetteIngredients|map(ri => ri.ingredient.designation)|slice(0, 3)|join(', ') }}{% if r.recetteIngredients|length > 3 %}...{% endif %})
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="recipe-item-meta">
+                                {% if r.lastRealiseAt %}
+                                    <span class="badge-last-cooked">
+                                        Dernière fois le {{ r.lastRealiseAt|date('d/m/Y') }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge-never-cooked">
+                                        Jamais réalisée
+                                    </span>
+                                {% endif %}
+                                <span class="recipe-item-action">Valider →</span>
+                            </div>
+                        </button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 2rem 1rem;">
+                    <p>Aucune recette disponible.</p>
+                    <a href="{{ path('app_recette_create') }}" class="btn btn-primary" style="margin-top: 0.5rem;">
+                        + Créer une recette d'abord
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="modal-footer">
+            <span>Vous ne trouvez pas votre recette ?</span>
+            <a href="{{ path('app_recette_create') }}" class="link-create-new">+ Créer une nouvelle recette</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function openRepasModal() {
+    const modal = document.getElementById('repas-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const input = document.getElementById('recipe-filter-input');
+        if (input) {
+            input.value = '';
+            filterRecipesList('');
+            setTimeout(() => input.focus(), 100);
+        }
+    }
+}
+
+function closeRepasModal() {
+    const modal = document.getElementById('repas-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function handleModalBackdropClick(event) {
+    if (event.target === event.currentTarget) {
+        closeRepasModal();
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRepasModal();
+    }
+});
+
+function filterRecipesList(term) {
+    const normalized = term.trim().toLowerCase();
+    const forms = document.querySelectorAll('.modal-recipe-form');
+    forms.forEach(form => {
+        const name = form.dataset.name || '';
+        form.style.display = name.includes(normalized) ? 'block' : 'none';
+    });
+}
+</script>
+{% endblock %}
+

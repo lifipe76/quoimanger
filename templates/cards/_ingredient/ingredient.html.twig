@@ -1,0 +1,43 @@
+<div class="card-ingredient" style="--card-index: {{ index|default(0) }};">
+    <div class="card-ingredient-header">
+        <div class="card-ingredient-icon">
+            🌿
+        </div>
+        <span class="card-ingredient-id">#{{ ingredient.id }}</span>
+    </div>
+
+    <div>
+        <h3 class="card-ingredient-title">
+            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}">
+                {{ ingredient.designation }}
+            </a>
+        </h3>
+
+        <div class="card-ingredient-count {{ ingredient.recetteIngredients|length > 0 ? 'has-recipes' : '' }}">
+            <span>📖</span>
+            <span>{{ ingredient.recetteIngredients|length }} recette(s) associée(s)</span>
+        </div>
+    </div>
+
+    <div class="card-ingredient-footer">
+        <span class="card-ingredient-date">
+            Ajouté {{ ingredient.createdAt ? ingredient.createdAt|date('d/m/Y') : '' }}
+        </span>
+
+        <div class="card-ingredient-actions">
+            {{ composant('_composants/button', {
+                'titre': 'Modifier',
+                'class': 'card-btn card-btn-edit',
+                'href': path('app_ingredient_edit', {'id': ingredient.id})
+            }) }}
+            <form method="post" action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}" onsubmit="return confirm('Supprimer définitivement l\'ingrédient « {{ ingredient.designation|e('js') }} » ?');" style="margin: 0; display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_ingredient_' ~ ingredient.id) }}">
+                {{ composant('_composants/button', {
+                    'titre': '🗑️',
+                    'class': 'card-btn card-btn-delete',
+                    'title': 'Supprimer l\'ingrédient'
+                }) }}
+            </form>
+        </div>
+    </div>
+</div>

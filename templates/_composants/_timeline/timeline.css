@@ -1,0 +1,634 @@
+/* =====================================================================
+   TIMELINE.CSS - Composant Timeline Chronologique
+   Utilisé sur la page d'accueil (Home) et la page Machine
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. SECTION & CONTENEUR TIMELINE
+   --------------------------------------------------------------------- */
+.timeline-section,
+.home-timeline-section,
+.machine-timeline-section {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding-bottom: 60px;
+}
+
+.timeline-container {
+	position: relative;
+	margin-top: 10px;
+}
+
+/* ---------------------------------------------------------------------
+   2. MODE A : TIMELINE PAR JOUR (Flux Home avec groupement par date)
+   --------------------------------------------------------------------- */
+.timeline-day-zone {
+	background: #ffffff;
+	border-radius: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+	padding: 20px 24px;
+	margin-bottom: 24px;
+	box-sizing: border-box;
+	transition: opacity 0.2s ease;
+}
+
+.timeline-day-zone.is-hidden {
+	display: none !important;
+}
+
+/* En-tête de la zone du jour (date affichée 1 seule fois) */
+.timeline-day-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding-bottom: 14px;
+	margin-bottom: 18px;
+	border-bottom: 2px solid #f1f5f9;
+}
+
+.timeline-day-title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.timeline-day-icon {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--base-color, rgb(115, 50, 135)) 12%, transparent) 0%,
+		color-mix(in srgb, var(--color-principal-fonce, rgb(54, 29, 62)) 12%, transparent) 100%
+	);
+	color: var(--base-color, rgb(115, 50, 135));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 15px;
+	flex-shrink: 0;
+}
+
+.timeline-day-label {
+	color: #1e293b;
+}
+
+.day-tag-pill {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 2px 8px;
+	border-radius: 12px;
+}
+
+.day-tag-pill.tag-today {
+	background: #ecfdf5;
+	color: #059669;
+	border: 1px solid #a7f3d0;
+}
+
+.day-tag-pill.tag-yesterday {
+	background: #f8fafc;
+	color: #64748b;
+	border: 1px solid #e2e8f0;
+}
+
+.timeline-day-count,
+.event-count-bubble {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #64748b;
+	background: #f8fafc;
+	padding: 4px 12px;
+	border-radius: 20px;
+	border: 1px solid #e2e8f0;
+	line-height: 1.4;
+	white-space: nowrap;
+	box-sizing: border-box;
+}
+
+.timeline-day-count .zone-visible-count,
+.event-count-bubble .zone-visible-count {
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.timeline-day-count .zone-visible-label,
+.event-count-bubble .zone-visible-label {
+	color: #64748b;
+	font-weight: 600;
+}
+
+/* Liste des événements de la journée */
+.timeline-day-list {
+	--time-col-width: 60px;
+	--node-size: 34px;
+	--line-width: 2.5px;
+	position: relative;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+/* Barre verticale reliant les événements du jour */
+.timeline-day-list::before {
+	content: '';
+	position: absolute;
+	top: 20px;
+	bottom: 20px;
+	left: calc(var(--time-col-width) + (var(--node-size) / 2) - (var(--line-width) / 2));
+	width: var(--line-width);
+	background: linear-gradient(to bottom, var(--base-color, rgb(115, 50, 135)) 0%, #cbd5e1 20%, #cbd5e1 80%, #e2e8f0 100%);
+	border-radius: 2px;
+	z-index: 1;
+}
+
+/* Masquer la ligne si un seul événement dans la journée */
+.timeline-day-list:has(.timeline-item:only-child)::before {
+	display: none;
+}
+
+/* Colonne Heure */
+.timeline-time-col {
+	width: var(--time-col-width);
+	min-width: var(--time-col-width);
+	max-width: var(--time-col-width);
+	padding-right: 18px;
+	text-align: right;
+	flex-shrink: 0;
+	font-size: 13px;
+	font-weight: 700;
+	color: #475569;
+}
+
+/* ---------------------------------------------------------------------
+   3. MODE B : TIMELINE VERTICALE SIMPLE (Page Machine avec date à gauche)
+   --------------------------------------------------------------------- */
+.timeline-list {
+	--date-col-width: 175px;
+	--node-size: 38px;
+	--line-width: 3px;
+	position: relative;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+/* Barre continue centrée sur les nœuds */
+.timeline-list::before {
+	content: '';
+	position: absolute;
+	top: 25px;
+	bottom: 25px;
+	left: calc(var(--date-col-width) + (var(--node-size) / 2) - (var(--line-width) / 2));
+	width: var(--line-width);
+	background: linear-gradient(to bottom, var(--base-color, rgb(115, 50, 135)) 0%, #cbd5e1 15%, #cbd5e1 90%, #e2e8f0 100%);
+	border-radius: 2px;
+	z-index: 1;
+}
+
+/* Colonne de gauche : Date */
+.timeline-date-col {
+	width: var(--date-col-width);
+	min-width: var(--date-col-width);
+	max-width: var(--date-col-width);
+	padding-right: 25px;
+	text-align: right;
+	flex-shrink: 0;
+}
+
+.timeline-date-main {
+	font-size: 13.5px;
+	font-weight: 700;
+	color: #1e293b;
+	line-height: 1.3;
+}
+
+.timeline-date-time {
+	font-size: 12px;
+	color: #64748b;
+	font-weight: 500;
+	margin-top: 2px;
+}
+
+/* ---------------------------------------------------------------------
+   4. ÉLÉMENTS COMMUNS : LIGNE D'ÉVÉNEMENT & NŒUD CENTRAL
+   --------------------------------------------------------------------- */
+.timeline-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin-bottom: 18px;
+	transition:
+		opacity 0.2s ease,
+		transform 0.2s ease;
+}
+
+.timeline-item:last-child {
+	margin-bottom: 6px;
+}
+
+.timeline-item.is-hidden {
+	display: none !important;
+}
+
+/* Nœud central */
+.timeline-node {
+	width: var(--node-size, 34px);
+	height: var(--node-size, 34px);
+	min-width: var(--node-size, 34px);
+	max-width: var(--node-size, 34px);
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	font-size: 14px;
+	line-height: 1;
+	flex-shrink: 0;
+	z-index: 2;
+	box-shadow:
+		0 0 0 4px #ffffff,
+		0 2px 8px rgba(0, 0, 0, 0.12);
+	transition: transform 0.2s ease;
+}
+
+.timeline-node i {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	margin: 0;
+	padding: 0;
+	vertical-align: 0;
+	text-align: center;
+	transform: translateY(-0.5px);
+}
+
+.timeline-node i::before {
+	line-height: 1;
+	display: block;
+}
+
+.timeline-item:hover .timeline-node {
+	transform: scale(1.15);
+}
+
+/* Couleurs des nœuds selon le type d'événement */
+.node-prep {
+	background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+	color: #ffffff;
+}
+
+.node-user-pro {
+	background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+	color: #ffffff;
+}
+
+.node-user-distri {
+	background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+	color: #ffffff;
+}
+
+.node-user-client {
+	background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+	color: #ffffff;
+}
+
+.node-user-admin {
+	background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+	color: #ffffff;
+}
+
+.node-machine {
+	background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+	color: #ffffff;
+}
+
+.node-maj {
+	background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+	color: #ffffff;
+}
+
+.node-credit-add {
+	background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+	color: #ffffff;
+}
+
+.node-credit-use {
+	background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+	color: #ffffff;
+}
+
+/* ---------------------------------------------------------------------
+   5. CARTE ET EN-TÊTE D'ÉVÉNEMENT DANS LA TIMELINE
+   --------------------------------------------------------------------- */
+.timeline-card-wrapper {
+	flex: 1;
+	min-width: 0;
+	margin-left: 20px;
+}
+
+.timeline-event-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 6px;
+}
+
+.timeline-event-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 3px 10px;
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.badge-preparation {
+	background: #e6fffa;
+	color: #0f766e;
+	border: 1px solid #99f6e4;
+}
+
+.badge-pro {
+	background: #eff6ff;
+	color: #1d4ed8;
+	border: 1px solid #bfdbfe;
+}
+
+.badge-distributeur {
+	background: #f5f3ff;
+	color: #6d28d9;
+	border: 1px solid #ddd6fe;
+}
+
+.badge-client {
+	background: #fff7ed;
+	color: #c2410c;
+	border: 1px solid #fed7aa;
+}
+
+.badge-admin {
+	background: #fef2f2;
+	color: #b91c1c;
+	border: 1px solid #fecaca;
+}
+
+.badge-machine {
+	background: #ecfeff;
+	color: #0e7490;
+	border: 1px solid #a5f3fc;
+}
+
+.badge-maj {
+	background: #f5f3ff;
+	color: #6d28d9;
+	border: 1px solid #ddd6fe;
+}
+
+.badge-credit-add {
+	background: #ecfdf5;
+	color: #047857;
+	border: 1px solid #a7f3d0;
+}
+
+.badge-credit-use {
+	background: #eef2ff;
+	color: #4338ca;
+	border: 1px solid #c7d2fe;
+}
+
+.timeline-card-wrapper .cardsContainer,
+.timeline-card-wrapper.cardsContainer {
+	margin: 0 !important;
+}
+
+.timeline-card-wrapper .cardsContainer.layout-list,
+.timeline-card-wrapper.cardsContainer.layout-list {
+	margin: 0 !important;
+	gap: 0 !important;
+	padding: 10px 0;
+}
+
+/* --------------------------------------------------------------------------
+   ANIMATION ROTATION 3D D'APPARITION DES CARDS (CARD FLIP CENTER)
+   -------------------------------------------------------------------------- */
+@keyframes cardFlipCenter {
+	0% {
+		opacity: 0;
+		transform: perspective(1000px) rotateX(-75deg);
+	}
+	100% {
+		opacity: 1;
+		transform: perspective(1000px) rotateX(0deg);
+	}
+}
+
+.timeline-card-wrapper .cardsContainer.layout-list .card,
+.timeline-card-wrapper.cardsContainer.layout-list .card {
+	margin: 0 !important;
+	width: 100% !important;
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+	border: 1px solid rgba(0, 0, 0, 0.08);
+
+	/* Animation Rotation 3D */
+	transform-origin: center center;
+	will-change: transform, opacity;
+
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+/* En attente du défilement lorsque l'animation au scroll est active */
+body.timeline-scroll-active .timeline-card-wrapper .cardsContainer.layout-list .card:not(.card-flip-visible):not(.card-flip-done),
+body.timeline-scroll-active .timeline-card-wrapper.cardsContainer.layout-list .card:not(.card-flip-visible):not(.card-flip-done) {
+	opacity: 0;
+	transform: perspective(1000px) rotateX(-75deg);
+}
+
+/* Déclenchement de la rotation 3D à l'arrivée dans le viewport (au scrolling) */
+.timeline-card-wrapper .cardsContainer.layout-list .card.card-flip-visible,
+.timeline-card-wrapper.cardsContainer.layout-list .card.card-flip-visible {
+	animation: cardFlipCenter 0.45s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.timeline-card-wrapper .cardsContainer.layout-list .card.card-flip-done,
+.timeline-card-wrapper.cardsContainer.layout-list .card.card-flip-done {
+	opacity: 1;
+	transform: perspective(1000px) rotateX(0deg);
+}
+
+.timeline-item:hover .timeline-card-wrapper .cardsContainer.layout-list .card,
+.timeline-item:hover .timeline-card-wrapper.cardsContainer.layout-list .card {
+	transform: translateY(-2px) !important;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Card Machine en mode liste */
+.timeline-card-wrapper .cardsContainer.layout-list .cardMachine ul,
+.timeline-card-wrapper.cardsContainer.layout-list .cardMachine ul {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	gap: 20px;
+	list-style: none;
+}
+
+/* Card Preparation capsules dans la timeline */
+.timeline-card-wrapper .cardsContainer.layout-list .card.cardPreparation .card-col-meta ul,
+.timeline-card-wrapper.cardsContainer.layout-list .card.cardPreparation .card-col-meta ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.timeline-card-wrapper .cardsContainer.layout-list .card.cardPreparation .card-col-meta li,
+.timeline-card-wrapper.cardsContainer.layout-list .card.cardPreparation .card-col-meta li {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	color: #475569;
+}
+
+/* Card Credit IA */
+.timeline-card-wrapper .cardsContainer.layout-list .card.cardCreditIa,
+.timeline-card-wrapper.cardsContainer.layout-list .card.cardCreditIa {
+	background: linear-gradient(to right, rgba(79, 70, 229, 0.02), #ffffff 20%);
+}
+
+.credit-balance-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 20px;
+	padding: 6px 14px;
+}
+
+.credit-balance-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: #64748b;
+}
+
+.credit-balance-value {
+	font-size: 13px;
+	font-weight: 700;
+	color: #4f46e5;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* ---------------------------------------------------------------------
+   6. CHARGEUR & ÉTATS DE LA TIMELINE
+   --------------------------------------------------------------------- */
+.timeline-loader-area {
+	display: flex;
+	justify-content: center;
+	margin-top: 35px;
+}
+
+.timeline-end-message {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	color: #64748b;
+	font-weight: 500;
+	padding: 10px 20px;
+	background: #f1f5f9;
+	border-radius: 20px;
+}
+
+.timeline-empty-state {
+	text-align: center;
+	padding: 50px 20px;
+	border-radius: 12px;
+	margin-top: 20px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.timeline-empty-state i {
+	font-size: 44px;
+	color: #94a3b8;
+	margin-bottom: 16px;
+}
+
+.timeline-empty-state h3 {
+	font-size: 18px;
+	color: #334155;
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+
+.timeline-empty-state p {
+	font-size: 14px;
+	color: #64748b;
+	margin: 0;
+}
+
+.timeline-item .fa-solid:before {
+	padding-right: 0px;
+}
+
+/* ---------------------------------------------------------------------
+   7. RESPONSIVE
+   --------------------------------------------------------------------- */
+@media (max-width: 768px) {
+	.timeline-day-zone {
+		padding: 16px;
+	}
+
+	.timeline-day-list {
+		--time-col-width: 45px;
+		--node-size: 28px;
+	}
+
+	.timeline-time-col {
+		font-size: 11px;
+		padding-right: 10px;
+	}
+
+	.timeline-card-wrapper {
+		margin-left: 10px;
+	}
+
+	.timeline-list {
+		--date-col-width: 110px;
+		--node-size: 30px;
+	}
+
+	.timeline-date-col {
+		padding-right: 12px;
+	}
+
+	.timeline-date-main {
+		font-size: 11.5px;
+	}
+
+	.timeline-date-time {
+		font-size: 10.5px;
+	}
+}

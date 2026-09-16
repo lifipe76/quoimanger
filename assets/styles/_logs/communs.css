@@ -1,0 +1,208 @@
+body #pageContainer {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.formContainer {
+    padding: 30px;
+    margin: 20px;
+}
+
+.bottom-actions-container {
+    grid-column: 3; /* Force les actions sur la 3ème colonne */
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    margin-top: -80px;
+    padding: 0;
+}
+
+.entete {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* [Zone vide] [Logo centré] [Actions à droite] */
+    align-items: center;
+    width: 100%;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.entete .logo {
+    grid-column: 2; /* Force le logo sur la colonne du milieu */
+    justify-self: center;
+}
+
+.entete .logo.phormulis {
+    background-image: url("/phormulis/static/logos/horizontal.png");
+    background-size: 254px 99px;
+    width: 254px;
+    height: 99px;
+}
+
+.entete .logo.emuage {
+    background-image: url("/emuage/static/logos/horizontal.png");
+    background-size: 254px 53px;
+    width: 254px;
+    height: 53px;
+}
+
+.entete .logo a {
+    width: 217px;
+    height: 60px;
+}
+
+.titre {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.titre h1 {
+    font-size: 38px;
+    font-weight: 700;
+    color: #101828;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.titre span {
+    text-align: center;
+    font-size: 25px;
+    font-weight: 600;
+    color: #667085;
+}
+
+#pageContainer .formContainer form {
+    width: 100%;
+    gap: 10px;
+    padding: 0 !important;
+}
+
+.formContainer .corps {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.formContainer .register {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    flex-direction: row;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.register a {
+    text-decoration-style: solid;
+    margin-left: 10px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.connect {
+    margin-top: 30px;
+}
+
+#connectExterneContainerFull {
+    display: flex;
+    flex-direction: column;
+}
+
+#connectExterneContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.connectExterne {
+    width: 48%;
+    cursor: pointer;
+}
+
+label {
+    margin-bottom: 0;
+}
+
+.connect button {
+    width: 100%;
+}
+
+.toggle-password-wrapper input {
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .titre h1 {
+        font-size: 24px;
+    }
+
+    .formContainer {
+        min-width: 360px;
+        padding: 20px;
+    }
+    .formContainer form {
+        gap: 10px !important;
+    }
+
+    form .champ {
+        gap: 0;
+    }
+
+    .entete .logo {
+        background-image: url("/static/logos/couleur.png");
+    }
+
+    .formContainer .entete {
+        justify-content: flex-start;
+    }
+
+    #connectExterneContainer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .connectExterne {
+        width: 100%;
+        justify-items: center;
+    }
+
+    .formContainer .register {
+        font-size: 16px;
+    }
+}
+
+/* #connectExterneContainer {
+		flex-direction: column;
+		gap: 10px;
+		justify-content: center;
+	}
+
+	.connectExterne {
+		min-width: 100%;
+		max-width: 100%;
+		width: 100%;
+		justify-items: center;
+	} */
+
+@media (min-width: 1101px) {
+    #pageContainer .formContainer {
+        gap: 50px;
+        min-width: 500px;
+        max-width: 500px;
+    }
+}
+
+#pageContainer .formContainer .titre h1 {
+    font-size: 24px;
+}
+
+#pageContainer .formContainer form .champ label {
+    margin-left: 0;
+}

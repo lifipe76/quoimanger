@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérifiez vos emails - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 520px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
+            ✉️
+        </div>
+        <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Vérifiez vos emails</h1>
+        <p class="page-subtitle">
+            Un email de réinitialisation vous a été envoyé
+        </p>
+    </div>
+
+    <div class="card" style="padding: 2.5rem 2rem;">
+        <p style="color: #334155; font-size: 1rem; line-height: 1.6; margin-top: 0;">
+            Si un compte correspond à votre adresse email, un lien sécurisé permettant de réinitialiser votre mot de passe vient d'être expédié.
+        </p>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0; display: flex; align-items: flex-start; gap: 0.75rem;">
+            <span style="font-size: 1.2rem;">⏱️</span>
+            <div style="font-size: 0.875rem; color: var(--text-muted);">
+                Ce lien de réinitialisation expirera dans <strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+            </div>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 2rem;">
+            Vous ne trouvez pas l'email ? Pensez à vérifier votre dossier de courriers indésirables (spams) ou demandez un nouveau lien ci-dessous.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <a href="{{ path('app_forgot_password_request') }}" class="btn btn-secondary" style="width: 100%;">
+                Renvoyer une demande
+            </a>
+            <a href="{{ path('web_login') }}" class="btn btn-primary" style="width: 100%;">
+                Retour à la page de connexion
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

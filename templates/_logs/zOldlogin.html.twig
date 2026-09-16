@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connectez vous !{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}   
+    {{ addCss('styles/_logs/login.css') }}
+    {{ addCss('styles/_logs/communs.css') }}
+    {{ addCss('styles/pageContainer.css') }}
+    {{ addCss('styles/formContainer.css') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}   
+{% endblock %}
+
+{% block body %}
+
+<div id='pageContainer'>
+
+    <div class='formContainer containerBlanc'>
+
+        {{ include('_logs/_composants/zoneEntete.html.twig') }}
+
+        {% if app.user %}
+            <div class='titre'><h1>Vous êtes déjà connecté</h1><span>{{ app.user.userIdentifier }}</span></div>
+        {% else %}
+            
+        {% endif %}
+      
+        <div class='corps'>
+        <form method="post">
+            {% if app.user %}
+             
+                <a class='button' href="{{ path('web_logout') }}">Se déconnecter</a>
+                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+            
+            {% else %}
+
+                {% if error %}
+                    <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                {% else %}
+                    {% set error=app.flashes('verify_email_error') %}
+                    {% if (error|length>0) %}
+                        {% for message in error %}
+                            <div class="alert alert-danger">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        {% set success=app.flashes('success') %}
+                        {% if (success|length>0) %}
+                            {% for message in success %}
+                                <div class="alert alert-success">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}    
+
+                <div class='champ'>
+                    <label for="username">{{ 'login.label.email'|trans() }}</label>
+                    <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
+                </div>
+
+                <div class="toggle-password-wrapper">
+                    <div class='champ'>
+                        <label for="password">{{ 'login.label.mdp'|trans() }}</label>
+                        <div class="champPasswordToggle">
+                            <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required data-controller="toggle-password" >
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                <div class="mdpoublie">
+                    <a href="{{url('app_forgot_password_request')}}">{{ 'login.mdpLost'|trans() }}</a>
+                </div>
+
+                <div class="connect">
+                    {{ composant('_composants/button',{'submit':true,'titre': 'login.actions.login'|trans()  })}}
+                </div>
+
+            {% endif %}
+
+        </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

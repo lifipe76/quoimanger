@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte - QuoiManger{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width: 650px; margin: 2.5rem auto 4rem; padding: 0 1.5rem;">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'danger' or label == 'error' ? 'danger' : 'success' }}" style="margin-bottom: 1.5rem;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <div>
+            <h1 class="page-title">Mon compte</h1>
+            <p class="page-subtitle">Gérez vos informations personnelles et votre sécurité</p>
+        </div>
+        <a href="{{ path('home') }}" class="btn btn-secondary">
+            ← Retour à l'accueil
+        </a>
+    </div>
+
+    <div class="card" style="padding: 2.5rem 2rem;">
+        <div style="display: flex; align-items: center; gap: 1.25rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--border-color); margin-bottom: 2rem;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; box-shadow: 0 4px 14px var(--primary-glow);">
+                {{ (user.firstname|first ~ user.lastname|first)|upper|default('👤') }}
+            </div>
+            <div>
+                <h2 style="margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--text-main);">
+                    {{ (user.firstname ~ ' ' ~ user.lastname)|trim ?: user.userIdentifier }}
+                </h2>
+                <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.2rem;">
+                    {{ user.email }}
+                </div>
+            </div>
+        </div>
+
+        {{ form_start(form) }}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    {{ form_label(form.firstname, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.firstname) }}
+                    {{ form_errors(form.firstname, {'attr': {'class': 'form-error'}}) }}
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    {{ form_label(form.lastname, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.lastname) }}
+                    {{ form_errors(form.lastname, {'attr': {'class': 'form-error'}}) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.email) }}
+                {{ form_errors(form.email, {'attr': {'class': 'form-error'}}) }}
+            </div>
+
+            <div style="margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--border-color);">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text-main);">
+                    Modifier le mot de passe
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                    Laissez les champs ci-dessous vides si vous ne souhaitez pas modifier votre mot de passe actuel.
+                </p>
+
+                <div class="form-group">
+                    {{ form_label(form.newPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.newPassword.first) }}
+                    {{ form_errors(form.newPassword.first, {'attr': {'class': 'form-error'}}) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.newPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.newPassword.second) }}
+                    {{ form_errors(form.newPassword.second, {'attr': {'class': 'form-error'}}) }}
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <a href="{{ path('home') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+

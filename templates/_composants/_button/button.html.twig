@@ -1,0 +1,17 @@
+{% set buttonTitle = titre|default(label|default('')) %}
+{% set isLink = (buttonHref is defined and buttonHref == true) or href is defined %}
+{% set linkUrl = href|default(route|default('#')) %}
+
+{% if buttonTitle != '' or icon is defined %}
+{% if isLink %}
+	<a href="{{ linkUrl }}" class="button{% if class is defined %} {{ class }}{% endif %}" {% if title is defined %}title="{{ title }}"{% endif %}>
+		{% if icon is defined %}{{ icon|raw }}{% endif %}
+		{% if buttonTitle != '' %}{{ buttonTitle|trans }}{% endif %}
+	</a>
+{% else %}	
+	<button type="{{ type|default('submit') }}" {% if id is defined %}form="{% if id != '' %}{{ id }}{% else %}formEnregistre{% endif %}"{% endif %} class="button{% if class is defined %} {{ class }}{% endif %}" {% if title is defined %}title="{{ title }}"{% endif %}>
+		{% if icon is defined %}{{ icon|raw }}{% endif %}
+		{% if buttonTitle != '' %}{{ buttonTitle|trans }}{% endif %}
+	</button>
+{% endif %}
+{% endif %}

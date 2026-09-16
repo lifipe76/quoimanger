@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isNew ? 'Nouvelle recette' : 'Modifier la recette' }} - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('styles/recettes.css') }}
+{% endblock %}
+
+{% block body %}
+<header class="nav-header">
+    <a href="{{ path('app_recettes_list') }}" class="nav-brand">🍽️ QuoiManger</a>
+    <nav class="nav-links">
+        <a href="{{ path('app_recettes_list') }}" class="nav-link active">Recettes</a>
+        <a href="{{ path('app_ingredients_list') }}" class="nav-link">Ingrédients</a>
+        <a href="/api" target="_blank" class="nav-link">API Swagger</a>
+    </nav>
+</header>
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">{{ isNew ? 'Créer une recette' : 'Modifier la recette' }}</h1>
+        <a href="{{ path('app_recettes_list') }}" class="btn btn-secondary">
+            Retour aux recettes
+        </a>
+    </div>
+
+    <div class="card">
+        {{ form_start(form, {'attr': {'id': 'recette-form'}}) }}
+            <div class="form-group">
+                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.designation) }}
+                {{ form_errors(form.designation, {'attr': {'class': 'form-error'}}) }}
+            </div>
+
+            <div class="ingredients-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem; color: #1e293b;">Ingrédients & Quantités</h3>
+                        <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.875rem;">
+                            Associez des ingrédients à la recette et spécifiez leurs quantités.
+                        </p>
+                    </div>
+                    <button type="button" id="add-ingredient-btn" class="btn btn-secondary btn-sm">
+                        + Ajouter un ingrédient
+                    </button>
+                </div>
+
+                {% if not hasIngredients %}
+                    <div class="alert alert-danger" style="margin-bottom: 1rem;">
+                        ⚠️ Aucun ingrédient n'est encore disponible dans la base.
+                        <a href="{{ path('app_ingredient_create') }}" target="_blank" style="font-weight: 700; text-decoration: underline;">
+                            Cliquez ici pour créer vos premiers ingrédients
+                        </a> puis rafraîchissez cette page.
+                    </div>
+                {% endif %}
+
+                <div id="ingredients-wrapper"
+                     data-prototype="{{ ('<div class="ingredient-row" data-index="__name__"><div class="select-col">' ~ form_widget(form.recetteIngredients.vars.prototype.ingredient) ~ '</div><div class="quantite-col">' ~ form_widget(form.recetteIngredients.vars.prototype.quantite) ~ '</div><div class="action-col"><button type="button" class="btn btn-danger btn-sm remove-row-btn" title="Supprimer cet ingrédient">✕</button></div></div>')|e('html_attr') }}"
+                     data-index="{{ form.recetteIngredients|length }}">
+                    {% for row in form.recetteIngredients %}
+                        <div class="ingredient-row" data-index="{{ loop.index0 }}">
+                            <div class="select-col">
+                                {{ form_widget(row.ingredient) }}
+                                {{ form_errors(row.ingredient, {'attr': {'class': 'form-error'}}) }}
+                            </div>
+                            <div class="quantite-col">
+                                {{ form_widget(row.quantite) }}
+                                {{ form_errors(row.quantite, {'attr': {'class': 'form-error'}}) }}
+                            </div>
+                            <div class="action-col">
+                                <button type="button" class="btn btn-danger btn-sm remove-row-btn" title="Supprimer cet ingrédient">✕</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <p id="no-ingredients-msg" style="color: var(--text-muted); font-style: italic; font-size: 0.9rem; {% if form.recetteIngredients|length > 0 %}display: none;{% endif %}">
+                    Aucun ingrédient associé pour le moment. Cliquez sur « + Ajouter un ingrédient » ci-dessus.
+                </p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                <a href="{{ path('app_recettes_list') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ isNew ? 'Créer la recette' : 'Enregistrer la recette' }}
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wrapper = document.getElementById('ingredients-wrapper');
+    const addBtn = document.getElementById('add-ingredient-btn');
+    const emptyMsg = document.getElementById('no-ingredients-msg');
+
+    function checkEmptyState() {
+        if (!emptyMsg) return;
+        const rows = wrapper.querySelectorAll('.ingredient-row');
+        emptyMsg.style.display = rows.length === 0 ? 'block' : 'none';
+    }
+
+    function bindRemoveButtons(container) {
+        container.querySelectorAll('.remove-row-btn').forEach(btn => {
+            btn.onclick = function() {
+                btn.closest('.ingredient-row').remove();
+                checkEmptyState();
+            };
+        });
+    }
+
+    if (addBtn && wrapper) {
+        addBtn.addEventListener('click', function() {
+            const prototype = wrapper.dataset.prototype;
+            let index = parseInt(wrapper.dataset.index, 10) || 0;
+            const newHtml = prototype.replace(/__name__/g, index);
+            wrapper.dataset.index = index + 1;
+
+            const temp = document.createElement('div');
+            temp.innerHTML = newHtml;
+            const newRow = temp.firstElementChild;
+            wrapper.appendChild(newRow);
+            bindRemoveButtons(newRow);
+            checkEmptyState();
+        });
+    }
+
+    bindRemoveButtons(wrapper);
+    checkEmptyState();
+});
+</script>
+{% endblock %}
+

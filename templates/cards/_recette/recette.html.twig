@@ -1,0 +1,88 @@
+{% set activeRealisation = realisation|default(null) %}
+{% set dateAffichage = activeRealisation ? activeRealisation.realiseAt : recette.lastRealiseAt %}
+
+<div class="card-recette" style="--card-index: {{ index|default(0) }};">
+    <div class="card-recette-header">
+        {% if activeRealisation %}
+            <span class="card-recette-status realisee">
+                <span>🍽️</span> Dégusté le {{ dateAffichage|date('d/m/Y à H:i') }}
+            </span>
+        {% elseif dateAffichage %}
+            <span class="card-recette-status realisee">
+                <span>✓</span> Réalisée le {{ dateAffichage|date('d/m/Y') }} {% if recette.realisations|length > 1 %}<small>({{ recette.realisations|length }}x)</small>{% endif %}
+            </span>
+        {% else %}
+            <span class="card-recette-status a-faire">
+                <span>✦</span> À réaliser
+            </span>
+        {% endif %}
+        <span class="card-recette-id">#{{ recette.id }}</span>
+    </div>
+
+    <h3 class="card-recette-title">
+        <a href="{{ path('app_recette_edit', {'id': recette.id}) }}">
+            {{ recette.designation }}
+        </a>
+    </h3>
+
+    <div class="card-recette-body">
+        <div class="card-recette-ingredients-title">
+            <span>Ingrédients</span>
+            <span>{{ recette.recetteIngredients|length }} au total</span>
+        </div>
+
+        {% if recette.recetteIngredients|length > 0 %}
+            <div class="card-recette-chips">
+                {% for ri in recette.recetteIngredients|slice(0, 5) %}
+                    <span class="ingredient-chip">
+                        {% if ri.quantite %}
+                            <strong>{{ ri.quantite }}</strong>
+                        {% endif %}
+                        <span>{{ ri.ingredient.designation }}</span>
+                    </span>
+                {% endfor %}
+                {% if recette.recetteIngredients|length > 5 %}
+                    <span class="ingredient-chip-more">
+                        +{{ recette.recetteIngredients|length - 5 }} autre(s)
+                    </span>
+                {% endif %}
+            </div>
+        {% else %}
+            <span class="card-recette-empty-ing">Aucun ingrédient associé</span>
+        {% endif %}
+    </div>
+
+    <div class="card-recette-footer">
+        <span class="card-recette-date">
+            Ajoutée {{ recette.createdAt ? recette.createdAt|date('d/m/Y') : '' }}
+        </span>
+
+        <div class="card-recette-actions">
+            {{ composant('_composants/button', {
+                'titre': 'Modifier',
+                'class': 'card-btn card-btn-edit',
+                'href': path('app_recette_edit', {'id': recette.id})
+            }) }}
+
+            {% if activeRealisation %}
+                <form method="post" action="{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}" onsubmit="return confirm('Retirer ce repas de la timeline ?');" style="margin: 0; display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}">
+                    {{ composant('_composants/button', {
+                        'titre': '✕',
+                        'class': 'card-btn card-btn-delete',
+                        'title': 'Retirer ce repas de la timeline'
+                    }) }}
+                </form>
+            {% else %}
+                <form method="post" action="{{ path('app_recette_delete', {'id': recette.id}) }}" onsubmit="return confirm('Supprimer définitivement la recette « {{ recette.designation|e('js') }} » ?');" style="margin: 0; display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_recette_' ~ recette.id) }}">
+                    {{ composant('_composants/button', {
+                        'titre': '🗑️',
+                        'class': 'card-btn card-btn-delete',
+                        'title': 'Supprimer la recette'
+                    }) }}
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>

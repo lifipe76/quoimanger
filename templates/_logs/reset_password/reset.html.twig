@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réinitialiser votre mot de passe{% endblock %}
+
+{% block body %}
+
+{% block stylesheets %}
+    {{ parent() }}   
+    {{ addCss('styles/_logs/resetPassword.css') }}
+    {{ addCss('styles/_logs/communs.css') }}
+    {{ addCss('styles/pageContainer.css') }}
+    {{ addCss('styles/formContainer.css') }}
+{% endblock %}
+
+<div id='pageContainer'>
+
+    <div class='formContainer containerBlanc'>
+
+        {# <a id='retour' href="{{url('web_login')}}">{{ux_icon('mdi:arrow-back', {height: '16px', width: '16px' })}}retour</a> #}
+
+        {{ include('_logs/_composants/zoneEntete.html.twig') }}
+
+        {{ include('_logs/_composants/zoneTitre.html.twig', {titre:"reset_password.reset.titre"|trans})}}
+
+        {{ form_start(resetForm) }}
+
+                {{ composant('_logs/_composants/togglePassword')}}
+                <div class="toggle-password-wrapper">
+                    <div class='champ'>
+                        {{ form_label(resetForm.plainPassword.first) }}                        
+                        <div class="champPasswordToggle">
+                            {{ form_widget(resetForm.plainPassword.first) }}
+                        </div>
+                        {{ form_errors(resetForm.plainPassword.first) }}
+                    </div>
+                </div>
+
+                <div class="toggle-password-wrapper">
+                    <div class='champ'>
+                        {{ form_label(resetForm.plainPassword.second) }}                        
+                        <div class="champPasswordToggle">
+                            {{ form_widget(resetForm.plainPassword.second) }}                            
+                        </div>
+                        {{ form_errors(resetForm.plainPassword.second) }}
+                    </div>
+                </div>
+
+
+        {# {{ form_row(resetForm.plainPassword, {'row_attr':{'class':'champ'}}) }} #}
+
+        <div class="connect">
+            {{ composant('_composants/button',{'submit':true,'titre':"reset_password.reset.button"|trans})}}
+        </div>
+
+        {{ form_end(resetForm) }}
+    
+        {# {{ include('_logs/_composants/zoneRegister.html.twig') }} #}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

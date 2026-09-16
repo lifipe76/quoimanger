@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérifiez vos mails.{% endblock %}
+
+
+{% block body %}
+
+{% block stylesheets %}
+    {{ parent() }}   
+    {{ addCss('styles/_logs/resetPassword.css') }}
+    {{ addCss('styles/_logs/communs.css') }}
+    {{ addCss('styles/pageContainer.css') }}
+    {{ addCss('styles/formContainer.css') }}
+{% endblock %}
+
+<div id='pageContainer'>
+
+    <div class='formContainer containerBlanc'>
+
+        {# <a id='retour' href="{{url('web_login')}}">{{ux_icon('mdi:arrow-back', {height: '16px', width: '16px' })}}retour</a> #}
+
+        {{ include('_logs/_composants/zoneEntete.html.twig') }}
+
+        {{ include('_logs/_composants/zoneTitre.html.twig', {titre:"reset_password.check_email.titre"|trans})}}
+       
+        <div class='corps'>
+
+        <p>{{"reset_password.check_email.explique"|trans}}</p>
+        <p>{{"reset_password.check_email.expire"|trans}} {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
+        <p>{{"reset_password.check_email.renvoi.text"|trans}} {{ composant('_composants/button',{'concerne':'app_forgot_password_request' ,'titre':"reset_password.check_email.renvoi.button"|trans})}}.</p>
+
+        </div>
+
+        {# {{ include('_logs/_composants/zoneRegister.html.twig') }} #}
+
+    </div>
+   
+</div>
+
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

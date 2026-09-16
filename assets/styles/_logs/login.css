@@ -1,0 +1,38 @@
+.mdpoublie {
+    font-family: Montserrat;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+    text-decoration-line: none;
+    text-decoration-style: solid;
+    margin: 0;
+    opacity: 50%;
+}
+
+.g_idçsugnin #container {
+    display: contents;
+}
+
+.alert {
+    height: 20px;
+    margin-left: 20px;
+    font-family: Montserrat;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ff0000;
+}
+
+@media (max-width: 1100px) {
+    .mdpoublie {
+        margin: 0;
+    }
+
+    .register {
+        font-size: 16px;
+    }
+}
+@media (min-width: 1100px) {
+    .menu {
+        font-size: 47px;
+    }
+}

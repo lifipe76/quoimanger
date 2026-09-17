@@ -26,16 +26,12 @@ class MenuTest extends WebTestCase
         }
     }
 
-    public function testMenuIsRenderedOnLoginPageWithActiveConnexionLink(): void
+    public function testMenuIsOmittedOnLoginPage(): void
     {
         $this->client->request('GET', '/login');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.nav-header');
-        $this->assertSelectorTextContains('.nav-brand', '🍽️ QuoiManger');
-        $this->assertSelectorTextContains('.nav-links a[href="/recettes"]', 'Recettes');
-        $this->assertSelectorTextContains('.nav-links a[href="/ingredients"]', 'Ingrédients');
-        $this->assertSelectorTextContains('.nav-links a.active', 'Connexion');
+        $this->assertSelectorNotExists('.nav-header');
     }
 
     public function testMenuIsRenderedOnRecettesPageWithActiveRecettesLink(): void

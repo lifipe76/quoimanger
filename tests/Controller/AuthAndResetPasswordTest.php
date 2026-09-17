@@ -32,7 +32,7 @@ class AuthAndResetPasswordTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Connexion');
-        $this->assertSelectorTextContains('.nav-brand', '🍽️ QuoiManger');
+        $this->assertSelectorNotExists('.nav-header');
         $this->assertSelectorExists('input[name="_username"]');
         $this->assertSelectorExists('input[name="_password"]');
         $this->assertSelectorExists('input[name="_csrf_token"]');
@@ -79,10 +79,9 @@ class AuthAndResetPasswordTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Mot de passe oublié');
-        $this->assertSelectorTextContains('.nav-brand', '🍽️ QuoiManger');
+        $this->assertSelectorNotExists('.nav-header');
         $this->assertSelectorExists('input[name="reset_password_request_form[email]"]');
         $this->assertSelectorTextContains('button[type="submit"]', 'Envoyer le lien de réinitialisation');
-        $this->assertSelectorTextContains('.container a[href="/login"]', 'Retour à la connexion');
     }
 
     public function testForgotPasswordRequestSubmissionRedirectsToCheckEmail(): void

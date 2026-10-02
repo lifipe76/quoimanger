@@ -14,9 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 class HomeController extends AbstractController
 {
-    #[IsGranted('ROLE_USER')]
+
     #[Route('/', name: 'home', methods: ['GET'])]
     public function home(
         RecetteRealisationRepository $realisationRepository,
@@ -31,7 +32,6 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_USER')]
     #[Route('/realisation/add', name: 'app_realisation_add', methods: ['POST'])]
     public function addRealisation(
         Request $request,
@@ -80,7 +80,6 @@ class HomeController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    #[IsGranted('ROLE_USER')]
     #[Route('/realisation/{id<\d+>}/delete', name: 'app_realisation_delete', methods: ['POST'])]
     public function deleteRealisation(
         RecetteRealisation $realisation,

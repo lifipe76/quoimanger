@@ -4,13 +4,9 @@
 
 {% block menu %}{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ addCss('styles/recettes.css') }}
-{% endblock %}
-
 {% block body %}
 <div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+
     {% if app.user %}
         <div class="card" style="text-align: center; padding: 2.5rem 2rem;">
             <div style="font-size: 3rem; margin-bottom: 0.75rem;">👋</div>
@@ -48,6 +44,14 @@
         {% endfor %}
 
         <div class="card">
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Connexion</h1>
+                <p class="page-subtitle">
+                    Accédez à vos recettes et suivez vos repas au quotidien
+                </p>
+            </div>
+
             <form method="post" action="{{ path('web_login') }}">
                 <div class="form-group">
                     <label for="username" class="form-label">Adresse email</label>

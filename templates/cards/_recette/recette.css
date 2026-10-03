@@ -66,9 +66,70 @@
 .card-recette-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.85rem;
+}
+
+.card-recette-header-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.card-recette-header-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.card-recette-moment {
+    font-size: 0.725rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.card-recette-moment.moment-matin {
+    background: #fef9c3;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+}
+
+.card-recette-moment.moment-midi {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.card-recette-moment.moment-soir {
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+}
+
+.card-btn-pencil {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.25rem 0.45rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.card-btn-pencil:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    transform: scale(1.1);
 }
 
 .card-recette-status {
@@ -87,10 +148,24 @@
     border: 1px solid #a7f3d0;
 }
 
+.card-recette-status.realisee-bubble {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    font-weight: 700;
+}
+
 .card-recette-status.a-faire {
     background: #fff7ed;
     color: #ea580c;
     border: 1px solid #fed7aa;
+}
+
+.card-recette-status.status-days-ago {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
 }
 
 .card-recette-id {
@@ -118,6 +193,29 @@
 
 .card-recette-title a:hover {
     color: #db4807;
+}
+
+.card-title-clickable {
+    cursor: pointer;
+    display: inline;
+    transition: color 0.2s ease;
+}
+
+.card-title-clickable:hover .recipe-title-main {
+    color: #db4807;
+    text-decoration: underline decoration-dashed 1.5px;
+    text-underline-offset: 4px;
+}
+
+.recipe-title-complement {
+    color: #db4807;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-left: 0.35rem;
+}
+
+.card-title-clickable:hover .recipe-title-complement {
+    opacity: 0.85;
 }
 
 .card-recette-body {
@@ -220,6 +318,23 @@
     width: auto;
     min-height: auto;
     line-height: 1.2;
+}
+
+.card-btn-date,
+.button.card-btn-date {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+    box-shadow: none;
+}
+
+.card-btn-date:hover,
+.button.card-btn-date:hover {
+    background: #ffedd5;
+    color: #9a3412;
+    border-color: #fdba74;
+    box-shadow: none;
+    transform: none;
 }
 
 .card-btn-edit,

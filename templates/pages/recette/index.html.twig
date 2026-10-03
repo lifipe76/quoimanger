@@ -9,14 +9,6 @@
 
 {% block body %}
 <div class="container">
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
     <div class="page-header">
         <div>
             <h1 class="page-title">Mes Recettes</h1>

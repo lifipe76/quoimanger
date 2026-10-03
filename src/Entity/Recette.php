@@ -160,6 +160,50 @@ class Recette
         return $this;
     }
 
+    /**
+     * Retourne le nombre de jours écoulés depuis la dernière réalisation
+     */
+    public function getDaysSinceLastRealisation(): ?int
+    {
+        $last = $this->getLastRealiseAt();
+        if (!$last) {
+            return null;
+        }
+
+        $now = new \DateTimeImmutable('today');
+        $lastDate = (new \DateTimeImmutable($last->format('Y-m-d')));
+
+        if ($lastDate >= $now) {
+            return 0;
+        }
+
+        return (int) $lastDate->diff($now)->days;
+    }
+
+    /**
+     * Libellé pour le popup : Dernière fois le DATE et nombre de jours
+     */
+    public function getLastRealiseLabel(): string
+    {
+        $last = $this->getLastRealiseAt();
+        if (!$last) {
+            return 'Jamais réalisée';
+        }
+
+        $days = $this->getDaysSinceLastRealisation();
+        $dateStr = $last->format('d/m/Y');
+
+        if ($days === 0) {
+            return sprintf('Dernière fois le %s (aujourd\'hui)', $dateStr);
+        }
+
+        if ($days === 1) {
+            return sprintf('Dernière fois le %s (hier / 1 jour)', $dateStr);
+        }
+
+        return sprintf('Dernière fois le %s (il y a %d jours)', $dateStr, $days);
+    }
+
     public function __toString(): string
     {
         return (string) $this->designation;

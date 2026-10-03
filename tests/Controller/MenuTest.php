@@ -36,6 +36,11 @@ class MenuTest extends WebTestCase
 
     public function testMenuIsRenderedOnRecettesPageWithActiveRecettesLink(): void
     {
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $user = $em->getRepository(User::class)->findOneBy(['email' => 'test@test.com']);
+        $this->assertNotNull($user);
+        $this->client->loginUser($user);
+
         $this->client->request('GET', '/recettes');
 
         $this->assertResponseIsSuccessful();
@@ -45,6 +50,11 @@ class MenuTest extends WebTestCase
 
     public function testMenuIsRenderedOnIngredientsPageWithActiveIngredientsLink(): void
     {
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $user = $em->getRepository(User::class)->findOneBy(['email' => 'test@test.com']);
+        $this->assertNotNull($user);
+        $this->client->loginUser($user);
+
         $this->client->request('GET', '/ingredients');
 
         $this->assertResponseIsSuccessful();

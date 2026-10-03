@@ -9,32 +9,16 @@
 
 {% block body %}
 <div class="container timeline-page">
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
-
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">Timeline des Repas</h1>
-            <p class="page-subtitle">Historique horaire de vos réalisations culinaires</p>
-        </div>
-    </div>
-
     <!-- Timeline Wrapper -->
     <div class="timeline-wrapper">
         <!-- 1er élément : Rectangle vide / Carte d'action rapide -->
         <div class="timeline-item timeline-item-cta">
             <div class="timeline-marker cta-marker">
                 <span class="marker-pulse"></span>
-                <span class="marker-icon">✨</span>
+                <span class="marker-icon">🍴</span>
             </div>
             <div class="timeline-content">
                 <div class="card-empty-cta" onclick="openRepasModal()">
-                    <div class="empty-cta-icon">🍴</div>
                     <h3 class="empty-cta-title">Qu'avez-vous mangé aujourd'hui ?</h3>
                     <p class="empty-cta-desc">
                         Cliquez pour rentrer votre repas du moment et l'ajouter à votre timeline.
@@ -46,27 +30,50 @@
             </div>
         </div>
 
-        <!-- Liste des réalisations en ordre décroissant horaire -->
-        {% if timeline|length > 0 %}
-            {% for item in timeline %}
-                <div class="timeline-item" style="--card-index: {{ loop.index0 }};">
-                    <div class="timeline-marker">
-                        <span class="marker-dot"></span>
+        <!-- Liste des réalisations regroupées par jour -->
+        {% if timelineByDay|length > 0 %}
+            {% for dayKey, dayItems in timelineByDay %}
+                <div class="timeline-day-group">
+                    <div class="timeline-day-header">
+                        <div class="timeline-day-badge">
+                            <time datetime="{{ dayKey }}">
+                                {% set dateObj = dayItems[0].realiseAt %}
+                                {% set isToday = dateObj|date('Y-m-d') == 'now'|date('Y-m-d') %}
+                                {% set isYesterday = dateObj|date('Y-m-d') == '-1 day'|date('Y-m-d') %}
+                                {% set jours = {
+                                    '1': 'Lundi',
+                                    '2': 'Mardi',
+                                    '3': 'Mercredi',
+                                    '4': 'Jeudi',
+                                    '5': 'Vendredi',
+                                    '6': 'Samedi',
+                                    '7': 'Dimanche'
+                                } %}
+                                {% set jourNom = jours[dateObj|date('N')]|default('') %}
+                                {% if isToday %}
+                                    <span class="day-badge-highlight">Aujourd'hui</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                                {% elseif isYesterday %}
+                                    <span class="day-badge-highlight">Hier</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                                {% else %}
+                                    {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                                {% endif %}
+                            </time>
+                        </div>
                     </div>
 
-                    <div class="timeline-badge-time">
-                        <span class="badge-time-icon">🕒</span>
-                        <time datetime="{{ item.realiseAt|date('c') }}">
-                            {{ item.realiseAt|date('d/m/Y') }} à <strong>{{ item.realiseAt|date('H:i') }}</strong>
-                        </time>
-                    </div>
-
-                    <div class="timeline-content">
-                        {{ composant('cards/recette', {
-                            'recette': item.recette,
-                            'realisation': item,
-                            'index': loop.index0
-                        }) }}
+                    <div class="timeline-day-content">
+                        <div class="timeline-day-meals">
+                            {% for item in dayItems %}
+                                <div class="timeline-meal-wrapper" style="--card-index: {{ loop.index0 }};">
+                                    {{ composant('cards/recette', {
+                                        'recette': item.recette,
+                                        'realisation': item,
+                                        'index': loop.index0,
+                                        'showIngredients': false
+                                    }) }}
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -88,21 +95,39 @@
 <!-- Modal Popup "Je rentre mon repas" -->
 <div id="repas-modal" class="modal-overlay" style="display: none;" onclick="handleModalBackdropClick(event)">
     <div class="modal-dialog">
-        <div class="modal-header">
-            <div>
-                <h2 class="modal-title">🍴 Je rentre mon repas</h2>
-                <p class="modal-subtitle">Sélectionnez la recette préparée pour la valider aujourd'hui</p>
-            </div>
-            <button type="button" class="modal-close-btn" onclick="closeRepasModal()" title="Fermer">✕</button>
-        </div>
+        <button type="button" class="modal-close-btn" onclick="closeRepasModal()" title="Fermer">✕</button>
 
-        <div class="modal-search">
-            <span class="search-icon">🔍</span>
-            <input type="text"
-                   id="recipe-filter-input"
-                   class="form-control"
-                   placeholder="Rechercher une recette..."
-                   oninput="filterRecipesList(this.value)">
+        <!-- Barre supérieure : Recherche à gauche + Bulles Matin Midi Soir à droite sur la même ligne -->
+        <div class="modal-top-bar">
+            <div class="modal-search-field">
+                <span class="search-icon">🔍</span>
+                <input type="text"
+                       id="recipe-filter-input"
+                       class="form-control"
+                       placeholder="Rechercher une recette..."
+                       oninput="filterRecipesList(this.value)">
+            </div>
+
+            <div class="moment-toggle-group">
+                <button type="button"
+                        class="btn-moment-toggle {{ defaultMoment == 'matin' ? 'active' : '' }}"
+                        data-moment="matin"
+                        onclick="selectRepasMoment('matin')">
+                    Matin
+                </button>
+                <button type="button"
+                        class="btn-moment-toggle {{ defaultMoment == 'midi' ? 'active' : '' }}"
+                        data-moment="midi"
+                        onclick="selectRepasMoment('midi')">
+                    Midi
+                </button>
+                <button type="button"
+                        class="btn-moment-toggle {{ defaultMoment == 'soir' ? 'active' : '' }}"
+                        data-moment="soir"
+                        onclick="selectRepasMoment('soir')">
+                    Soir
+                </button>
+            </div>
         </div>
 
         <div class="modal-recipes-list" id="modal-recipes-container">
@@ -110,10 +135,24 @@
                 {% for r in recettes %}
                     <form method="post" action="{{ path('app_realisation_add') }}" class="modal-recipe-form" data-name="{{ r.designation|lower }}">
                         <input type="hidden" name="recette_id" value="{{ r.id }}">
+                        <input type="hidden" name="moment" class="input-form-moment" value="{{ defaultMoment }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('add_realisation') }}">
                         <button type="submit" class="modal-recipe-item">
                             <div class="recipe-item-main">
                                 <span class="recipe-item-name">{{ r.designation }}</span>
+                                <div class="recipe-item-badges">
+                                    {% set rank = ranks[r.id]|default(null) %}
+                                    {% if rank %}
+                                        <span class="badge-rank badge-rank-{{ rank <= 3 ? rank : 'other' }}" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} plat le plus mangé">
+                                            {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge-rank badge-rank-none" title="Non classé">-</span>
+                                    {% endif %}
+                                    <span class="badge-eaten-count">
+                                        {{ r.realisations|length > 0 ? ('Mangé ' ~ r.realisations|length ~ ' fois') : 'Jamais mangé' }}
+                                    </span>
+                                </div>
                                 <span class="recipe-item-ingredients">
                                     {{ r.recetteIngredients|length }} ingrédient(s)
                                     {% if r.recetteIngredients|length > 0 %}
@@ -124,12 +163,12 @@
 
                             <div class="recipe-item-meta">
                                 {% if r.lastRealiseAt %}
-                                    <span class="badge-last-cooked">
-                                        Dernière fois le {{ r.lastRealiseAt|date('d/m/Y') }}
+                                    <span class="badge-last-cooked" title="Dernière dégustation">
+                                        {{ r.lastRealiseLabel }}
                                     </span>
                                 {% else %}
                                     <span class="badge-never-cooked">
-                                        Jamais réalisée
+                                        ✦ Jamais réalisée
                                     </span>
                                 {% endif %}
                                 <span class="recipe-item-action">Valider →</span>
@@ -151,6 +190,138 @@
             <span>Vous ne trouvez pas votre recette ?</span>
             <a href="{{ path('app_recette_create') }}" class="link-create-new">+ Créer une nouvelle recette</a>
         </div>
+    </div>
+</div>
+
+<!-- Modal Popup "Modifier le repas" -->
+<div id="edit-meal-modal" class="modal-overlay" style="display: none;" onclick="handleEditMealBackdropClick(event)">
+    <div class="modal-dialog modal-dialog-sm" style="max-width: 520px;">
+        <button type="button" class="modal-close-btn" onclick="closeEditMealModal()" title="Fermer">✕</button>
+
+        <div class="modal-header">
+            <h2 class="modal-title">Modifier le repas : <strong id="edit-meal-recipe-name" style="color: #db4807;"></strong></h2>
+        </div>
+
+        <form method="post" id="edit-meal-form" action="">
+            <input type="hidden" name="_token" id="edit-meal-token" value="">
+            <input type="hidden" name="moment" id="edit-meal-moment-input" value="soir">
+
+            <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+                <div class="form-group mb-4">
+                    <label for="edit-meal-date-input" style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b; font-size: 0.95rem;">
+                        Date du repas
+                    </label>
+                    <input type="date"
+                           name="realise_at"
+                           id="edit-meal-date-input"
+                           class="form-control"
+                           required
+                           style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1.05rem; box-sizing: border-box;">
+                </div>
+
+                <div class="form-group mb-3">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b; font-size: 0.95rem;">
+                        Moment du repas
+                    </label>
+                    <div class="moment-toggle-group">
+                        <button type="button" class="btn-edit-moment-toggle" data-moment="matin" onclick="selectEditMoment('matin')">
+                            Matin
+                        </button>
+                        <button type="button" class="btn-edit-moment-toggle" data-moment="midi" onclick="selectEditMoment('midi')">
+                            Midi
+                        </button>
+                        <button type="button" class="btn-edit-moment-toggle" data-moment="soir" onclick="selectEditMoment('soir')">
+                            Soir
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label for="edit-meal-complement-input" style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b; font-size: 0.95rem;">
+                        Complément (texte libre)
+                    </label>
+                    <input type="text"
+                           name="complement"
+                           id="edit-meal-complement-input"
+                           class="form-control"
+                           placeholder="Ex: riz, frites maison, salade..."
+                           maxlength="255"
+                           style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 1.25rem 1.75rem; background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                <div id="delete-meal-container">
+                    <button type="button"
+                            class="btn-delete-meal"
+                            onclick="submitDeleteMeal()"
+                            style="background: transparent; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        Supprimer ce repas
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn" onclick="closeEditMealModal()" style="padding: 0.6rem 1.25rem; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-weight: 600; cursor: pointer;">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.4rem; border-radius: 10px; background: #db4807; color: #ffffff; border: none; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(219, 72, 7, 0.3);">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <form method="post" id="delete-meal-form" action="" style="display: none;">
+            <input type="hidden" name="_token" id="delete-meal-token" value="">
+        </form>
+    </div>
+</div>
+
+<!-- Modal Popup "Complément du repas" -->
+<div id="complement-modal" class="modal-overlay" style="display: none;" onclick="handleComplementBackdropClick(event)">
+    <div class="modal-dialog modal-dialog-sm" style="max-width: 500px;">
+        <button type="button" class="modal-close-btn" onclick="closeComplementModal()" title="Fermer">✕</button>
+
+        <div class="modal-header">
+            <h2 class="modal-title">Complément : <strong id="complement-modal-recipe-name" style="color: #db4807;"></strong></h2>
+        </div>
+
+        <form method="post" id="complement-form" action="">
+            <input type="hidden" name="_token" id="complement-token" value="">
+
+            <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+                <div class="form-group mb-2">
+                    <label for="complement-input" style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b; font-size: 0.95rem;">
+                        Accompagnement ou précision (texte libre)
+                    </label>
+                    <input type="text"
+                           name="complement"
+                           id="complement-input"
+                           class="form-control"
+                           placeholder="Ex: riz, frites, salade verte..."
+                           maxlength="255"
+                           style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; margin-bottom: 0;">
+                        Laissez vide pour retirer le complément.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 1.25rem 1.75rem; background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                <button type="button" class="btn" onclick="clearComplementInput()" style="padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #64748b; font-weight: 600; cursor: pointer;">
+                    Effacer
+                </button>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="button" class="btn" onclick="closeComplementModal()" style="padding: 0.6rem 1.25rem; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-weight: 600; cursor: pointer;">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.4rem; border-radius: 10px; background: #db4807; color: #ffffff; border: none; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(219, 72, 7, 0.3);">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -183,9 +354,134 @@ function handleModalBackdropClick(event) {
     }
 }
 
+function selectRepasMoment(moment) {
+    document.querySelectorAll('.btn-moment-toggle').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.moment === moment);
+    });
+    document.querySelectorAll('.input-form-moment').forEach(input => {
+        input.value = moment;
+    });
+}
+
+function openEditMealModal(updateUrl, currentIsoDate, currentMoment, recipeTitle, updateToken, deleteUrl, deleteToken, currentComplement) {
+    const modal = document.getElementById('edit-meal-modal');
+    const updateForm = document.getElementById('edit-meal-form');
+    const dateInput = document.getElementById('edit-meal-date-input');
+    const complementInput = document.getElementById('edit-meal-complement-input');
+    const updateTokenInput = document.getElementById('edit-meal-token');
+    const recipeNameEl = document.getElementById('edit-meal-recipe-name');
+    const deleteForm = document.getElementById('delete-meal-form');
+    const deleteTokenInput = document.getElementById('delete-meal-token');
+
+    if (modal && updateForm && dateInput) {
+        updateForm.action = updateUrl;
+        dateInput.value = currentIsoDate ? currentIsoDate.split('T')[0] : '';
+        if (complementInput) {
+            complementInput.value = currentComplement || '';
+        }
+        updateTokenInput.value = updateToken;
+        if (recipeNameEl && recipeTitle) {
+            recipeNameEl.textContent = recipeTitle;
+        }
+
+        selectEditMoment(currentMoment || 'soir');
+
+        if (deleteForm && deleteUrl && deleteTokenInput) {
+            deleteForm.action = deleteUrl;
+            deleteTokenInput.value = deleteToken;
+        }
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => dateInput.focus(), 100);
+    }
+}
+
+function closeEditMealModal() {
+    const modal = document.getElementById('edit-meal-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function handleEditMealBackdropClick(event) {
+    if (event.target === event.currentTarget) {
+        closeEditMealModal();
+    }
+}
+
+function selectEditMoment(moment) {
+    const input = document.getElementById('edit-meal-moment-input');
+    if (input) {
+        input.value = moment;
+    }
+    document.querySelectorAll('.btn-edit-moment-toggle').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.moment === moment);
+    });
+}
+
+function submitDeleteMeal() {
+    if (confirm('Retirer définitivement ce repas de la timeline ?')) {
+        const form = document.getElementById('delete-meal-form');
+        if (form) {
+            form.submit();
+        }
+    }
+}
+
+function openComplementModal(updateUrl, currentComplement, recipeTitle, updateToken) {
+    const modal = document.getElementById('complement-modal');
+    const form = document.getElementById('complement-form');
+    const input = document.getElementById('complement-input');
+    const tokenInput = document.getElementById('complement-token');
+    const titleEl = document.getElementById('complement-modal-recipe-name');
+
+    if (modal && form && input) {
+        form.action = updateUrl;
+        input.value = currentComplement || '';
+        if (tokenInput) {
+            tokenInput.value = updateToken;
+        }
+        if (titleEl) {
+            titleEl.textContent = recipeTitle || '';
+        }
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 100);
+    }
+}
+
+function closeComplementModal() {
+    const modal = document.getElementById('complement-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function handleComplementBackdropClick(event) {
+    if (event.target === event.currentTarget) {
+        closeComplementModal();
+    }
+}
+
+function clearComplementInput() {
+    const input = document.getElementById('complement-input');
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+}
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeRepasModal();
+        closeEditMealModal();
+        closeComplementModal();
     }
 });
 

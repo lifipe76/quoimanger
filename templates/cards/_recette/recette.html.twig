@@ -3,77 +3,130 @@
 
 <div class="card-recette" style="--card-index: {{ index|default(0) }};">
     <div class="card-recette-header">
-        {% if activeRealisation %}
-            <span class="card-recette-status realisee">
-                <span>🍽️</span> Dégusté le {{ dateAffichage|date('d/m/Y à H:i') }}
-            </span>
-        {% elseif dateAffichage %}
-            <span class="card-recette-status realisee">
-                <span>✓</span> Réalisée le {{ dateAffichage|date('d/m/Y') }} {% if recette.realisations|length > 1 %}<small>({{ recette.realisations|length }}x)</small>{% endif %}
-            </span>
-        {% else %}
-            <span class="card-recette-status a-faire">
-                <span>✦</span> À réaliser
-            </span>
-        {% endif %}
-        <span class="card-recette-id">#{{ recette.id }}</span>
+        <div class="card-recette-header-left">
+            {% if activeRealisation %}
+                <span class="card-recette-status realisee-bubble" title="Intervalle depuis la précédente dégustation de ce plat">
+                    {{ activeRealisation.intervalLabel }}
+                </span>
+                {% if activeRealisation.moment %}
+                    <span class="card-recette-moment moment-{{ activeRealisation.moment }}">
+                        {{ activeRealisation.momentLabel }}
+                    </span>
+                {% endif %}
+            {% elseif dateAffichage %}
+                {% set nbRealisations = recette.realisations|length %}
+                {% set daysSince = recette.daysSinceLastRealisation %}
+                <span class="card-recette-status realisee" title="Nombre de réalisations">
+                    Réalisée {{ nbRealisations }} fois
+                </span>
+                {% if daysSince is not null %}
+                    <span class="card-recette-status status-days-ago" title="Dernière réalisation : {{ dateAffichage|date('d/m/Y') }}">
+                        {% if daysSince == 0 %}
+                            Aujourd'hui
+                        {% elseif daysSince == 1 %}
+                            Hier
+                        {% else %}
+                            Il y a {{ daysSince }} jours
+                        {% endif %}
+                    </span>
+                {% endif %}
+            {% else %}
+                <span class="card-recette-status a-faire">
+                    À réaliser
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="card-recette-header-right">
+            <span class="card-recette-id">#{{ recette.id }}</span>
+            {% if activeRealisation %}
+                <button type="button"
+                        class="card-btn-pencil"
+                        title="Modifier ce repas"
+                        onclick="openEditMealModal(
+                            '{{ path('app_realisation_update_date', {'id': activeRealisation.id}) }}',
+                            '{{ activeRealisation.realiseAt|date('Y-m-d') }}',
+                            '{{ activeRealisation.moment }}',
+                            '{{ recette.designation|e('js') }}',
+                            '{{ csrf_token('update_realisation_date_' ~ activeRealisation.id) }}',
+                            '{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}',
+                            '{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}',
+                            '{{ activeRealisation.complement|e('js') }}'
+                        )">
+                    ✏️
+                </button>
+            {% endif %}
+        </div>
     </div>
 
     <h3 class="card-recette-title">
-        <a href="{{ path('app_recette_edit', {'id': recette.id}) }}">
-            {{ recette.designation }}
-        </a>
+        {% if activeRealisation %}
+            <span class="card-title-clickable"
+                  role="button"
+                  tabindex="0"
+                  title="Cliquer pour ajouter ou modifier un complément (ex: riz, salade...)"
+                  onclick="openComplementModal(
+                      '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
+                      '{{ activeRealisation.complement|e('js') }}',
+                      '{{ recette.designation|e('js') }}',
+                      '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
+                  )"
+                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+                <span class="recipe-title-main">{{ recette.designation }}</span>
+                {% if activeRealisation.complement %}
+                    <span class="recipe-title-complement">{{ activeRealisation.complement starts with '(' or activeRealisation.complement starts with '-' ? activeRealisation.complement : '(' ~ activeRealisation.complement ~ ')' }}</span>
+                {% endif %}
+            </span>
+        {% else %}
+            <a href="{{ path('app_recette_edit', {'id': recette.id}) }}">
+                {{ recette.designation }}
+            </a>
+        {% endif %}
     </h3>
 
-    <div class="card-recette-body">
-        <div class="card-recette-ingredients-title">
-            <span>Ingrédients</span>
-            <span>{{ recette.recetteIngredients|length }} au total</span>
-        </div>
-
-        {% if recette.recetteIngredients|length > 0 %}
-            <div class="card-recette-chips">
-                {% for ri in recette.recetteIngredients|slice(0, 5) %}
-                    <span class="ingredient-chip">
-                        {% if ri.quantite %}
-                            <strong>{{ ri.quantite }}</strong>
-                        {% endif %}
-                        <span>{{ ri.ingredient.designation }}</span>
-                    </span>
-                {% endfor %}
-                {% if recette.recetteIngredients|length > 5 %}
-                    <span class="ingredient-chip-more">
-                        +{{ recette.recetteIngredients|length - 5 }} autre(s)
-                    </span>
-                {% endif %}
+    {% set displayIngredients = showIngredients is defined ? showIngredients : (activeRealisation is null) %}
+    {% if displayIngredients %}
+        <div class="card-recette-body">
+            <div class="card-recette-ingredients-title">
+                <span>Ingrédients</span>
+                <span>{{ recette.recetteIngredients|length }} au total</span>
             </div>
-        {% else %}
-            <span class="card-recette-empty-ing">Aucun ingrédient associé</span>
-        {% endif %}
-    </div>
 
-    <div class="card-recette-footer">
-        <span class="card-recette-date">
-            Ajoutée {{ recette.createdAt ? recette.createdAt|date('d/m/Y') : '' }}
-        </span>
-
-        <div class="card-recette-actions">
-            {{ composant('_composants/button', {
-                'titre': 'Modifier',
-                'class': 'card-btn card-btn-edit',
-                'href': path('app_recette_edit', {'id': recette.id})
-            }) }}
-
-            {% if activeRealisation %}
-                <form method="post" action="{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}" onsubmit="return confirm('Retirer ce repas de la timeline ?');" style="margin: 0; display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}">
-                    {{ composant('_composants/button', {
-                        'titre': '✕',
-                        'class': 'card-btn card-btn-delete',
-                        'title': 'Retirer ce repas de la timeline'
-                    }) }}
-                </form>
+            {% if recette.recetteIngredients|length > 0 %}
+                <div class="card-recette-chips">
+                    {% for ri in recette.recetteIngredients|slice(0, 5) %}
+                        <span class="ingredient-chip">
+                            {% if ri.quantite %}
+                                <strong>{{ ri.quantite }}</strong>
+                            {% endif %}
+                            <span>{{ ri.ingredient.designation }}</span>
+                        </span>
+                    {% endfor %}
+                    {% if recette.recetteIngredients|length > 5 %}
+                        <span class="ingredient-chip-more">
+                            +{{ recette.recetteIngredients|length - 5 }} autre(s)
+                        </span>
+                    {% endif %}
+                </div>
             {% else %}
+                <span class="card-recette-empty-ing">Aucun ingrédient associé</span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if activeRealisation is null %}
+        <div class="card-recette-footer">
+            <span class="card-recette-date">
+                Ajoutée {{ recette.createdAt ? recette.createdAt|date('d/m/Y') : '' }}
+            </span>
+
+            <div class="card-recette-actions">
+                {{ composant('_composants/button', {
+                    'titre': 'Modifier',
+                    'class': 'card-btn card-btn-edit',
+                    'href': path('app_recette_edit', {'id': recette.id})
+                }) }}
+
                 <form method="post" action="{{ path('app_recette_delete', {'id': recette.id}) }}" onsubmit="return confirm('Supprimer définitivement la recette « {{ recette.designation|e('js') }} » ?');" style="margin: 0; display: inline;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete_recette_' ~ recette.id) }}">
                     {{ composant('_composants/button', {
@@ -82,7 +135,7 @@
                         'title': 'Supprimer la recette'
                     }) }}
                 </form>
-            {% endif %}
+            </div>
         </div>
-    </div>
+    {% endif %}
 </div>

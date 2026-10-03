@@ -35,14 +35,6 @@
             </div>
         {% endif %}
 
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label == 'danger' or label == 'error' ? 'danger' : 'success' }}" style="margin-bottom: 1.5rem;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endfor %}
-
         <div class="card">
 
             <div style="text-align: center; margin-bottom: 2rem;">

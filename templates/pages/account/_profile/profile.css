@@ -1,0 +1,416 @@
+/* ==========================================================================
+   Composant Account Profile & Famille - Styles
+   ========================================================================== */
+
+/* Onglets de navigation */
+.account-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color, #e2e8f0);
+    padding-bottom: 0;
+}
+
+.account-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.6rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-muted, #64748b);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.account-tab-btn:hover {
+    color: var(--primary, #db4807);
+    background: rgba(219, 72, 7, 0.04);
+}
+
+.account-tab-btn.active {
+    color: var(--primary, #db4807);
+    border-bottom-color: var(--primary, #db4807);
+    background: rgba(219, 72, 7, 0.07);
+}
+
+.account-tab-btn .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #475569;
+    transition: all 0.2s ease;
+}
+
+.account-tab-btn.active .tab-badge {
+    background: var(--primary, #db4807);
+    color: #ffffff;
+}
+
+/* Panneaux d'onglets */
+.account-tab-pane {
+    display: none;
+}
+
+.account-tab-pane.active {
+    display: block;
+    animation: accountFadeIn 0.22s ease-in-out;
+}
+
+@keyframes accountFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cartes Profil et Famille */
+.profile-card,
+.family-card {
+    padding: 2.5rem 2rem;
+}
+
+/* En-tête du profil */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary, #db4807), var(--primary-hover, #f05f14));
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px var(--primary-glow, rgba(219, 72, 7, 0.25));
+    flex-shrink: 0;
+}
+
+.profile-name {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+}
+
+.profile-email {
+    color: var(--text-muted, #64748b);
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+/* Grille de champs du formulaire */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.profile-grid .form-group {
+    margin-bottom: 0;
+}
+
+/* Section sécurité / mot de passe */
+.profile-security-section {
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.profile-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text-main, #0f172a);
+}
+
+.profile-section-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted, #64748b);
+    margin-bottom: 1.25rem;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* ==========================================================================
+   Section Ma Famille
+   ========================================================================== */
+.family-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.family-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.family-title-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.family-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main, #0f172a);
+}
+
+.family-subtitle {
+    margin: 0.2rem 0 0 0;
+    color: var(--text-muted, #64748b);
+    font-size: 0.875rem;
+}
+
+.family-leave-form {
+    margin: 0;
+}
+
+.family-rename-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+    max-width: 450px;
+}
+
+.family-rename-form .form-control {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+}
+
+.family-members-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.75rem;
+}
+
+.family-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+}
+
+.family-member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+}
+
+.family-member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.family-member-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #475569;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.family-member-name {
+    font-weight: 600;
+    color: var(--text-main, #0f172a);
+    font-size: 0.95rem;
+}
+
+.family-member-tag-you {
+    font-size: 0.75rem;
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    margin-left: 0.4rem;
+    font-weight: 600;
+}
+
+.family-member-email {
+    font-size: 0.8rem;
+    color: var(--text-muted, #64748b);
+}
+
+.family-empty-desc {
+    color: var(--text-muted, #64748b);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+/* Bloc d'invitation */
+.family-invite-box {
+    background: #fdfaf7;
+    border: 1.5px dashed #fed7aa;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.family-invite-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #9a3412;
+    margin: 0 0 0.5rem 0;
+}
+
+.family-invite-desc {
+    font-size: 0.85rem;
+    color: #7c2d12;
+    margin: 0 0 1rem 0;
+}
+
+.family-invite-form {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.family-invite-input {
+    flex: 1;
+    min-width: 220px;
+}
+
+/* Liste des invitations envoyées en attente */
+.family-pending-invitations {
+    margin-top: 1rem;
+}
+
+.family-pending-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-muted, #64748b);
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.family-pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.family-pending-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.family-pending-date {
+    color: var(--text-muted, #64748b);
+    margin-left: 0.5rem;
+}
+
+.family-pending-cancel-form {
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .account-tabs {
+        width: 100%;
+    }
+
+    .account-tab-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .profile-card,
+    .family-card {
+        padding: 1.5rem 1rem;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .family-rename-form {
+        max-width: 100%;
+        flex-direction: column;
+    }
+
+    .profile-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .profile-actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .family-invite-form {
+        flex-direction: column;
+    }
+
+    .family-invite-form .button {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -4,12 +4,23 @@
 
 {% if buttonTitle != '' or icon is defined %}
 {% if isLink %}
-	<a href="{{ linkUrl }}" class="button{% if class is defined %} {{ class }}{% endif %}" {% if title is defined %}title="{{ title }}"{% endif %}>
+	<a href="{{ linkUrl }}" 
+	   {% if id is defined and id %}id="{{ id }}"{% endif %}
+	   class="btn button{% if class is defined %} {{ class }}{% endif %}" 
+	   {% if style is defined and style %}style="{{ style }}"{% endif %}
+	   {% if title is defined %}title="{{ title }}"{% endif %}
+	   {% if onclick is defined %}onclick="{{ onclick }}"{% endif %}>
 		{% if icon is defined %}{{ icon|raw }}{% endif %}
 		{% if buttonTitle != '' %}{{ buttonTitle|trans }}{% endif %}
 	</a>
 {% else %}	
-	<button type="{{ type|default('submit') }}" {% if id is defined %}form="{% if id != '' %}{{ id }}{% else %}formEnregistre{% endif %}"{% endif %} class="button{% if class is defined %} {{ class }}{% endif %}" {% if title is defined %}title="{{ title }}"{% endif %}>
+	<button type="{{ type|default('submit') }}" 
+	        {% if id is defined and id %}id="{{ id }}"{% endif %}
+	        {% if formId is defined and formId %}form="{{ formId }}"{% endif %}
+	        class="btn button{% if class is defined %} {{ class }}{% endif %}" 
+	        {% if style is defined and style %}style="{{ style }}"{% endif %}
+	        {% if title is defined %}title="{{ title }}"{% endif %}
+	        {% if onclick is defined %}onclick="{{ onclick }}"{% endif %}>
 		{% if icon is defined %}{{ icon|raw }}{% endif %}
 		{% if buttonTitle != '' %}{{ buttonTitle|trans }}{% endif %}
 	</button>

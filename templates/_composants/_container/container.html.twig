@@ -1,0 +1,6 @@
+{# Composant Container - Structure de page #}
+{% if content is defined and content %}
+    <div class="container{% if class is defined and class %} {{ class }}{% endif %}"{% if style is defined and style %} style="{{ style }}"{% endif %}>
+        {{ content|raw }}
+    </div>
+{% endif %}

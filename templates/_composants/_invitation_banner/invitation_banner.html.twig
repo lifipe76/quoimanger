@@ -1,0 +1,38 @@
+{% if app.user %}
+    {% set pendingInvites = pending_family_invitations() %}
+    {% if pendingInvites|length > 0 %}
+        <div class="invitation-banners-wrapper">
+            {% for invite in pendingInvites %}
+                <div class="family-invitation-banner">
+                    <div class="family-invitation-banner-content">
+                        <div class="family-invitation-banner-text">
+                            <span class="family-invitation-banner-icon">💌</span>
+                            <span>
+                                <strong>{{ invite.demandeur.displayName }}</strong> vous invite à rejoindre sa famille 
+                                <strong>« {{ invite.famille.nom }} »</strong> !
+                            </span>
+                        </div>
+                        <div class="family-invitation-banner-actions">
+                            <form method="post" action="{{ path('app_famille_invitation_accepter', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('accept_invitation_' ~ invite.id) }}">
+                                {{ composant('_composants/button', {
+                                    'titre': 'Accepter',
+                                    'type': 'submit',
+                                    'class': 'btn-primary btn-sm'
+                                }) }}
+                            </form>
+                            <form method="post" action="{{ path('app_famille_invitation_refuser', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refuse_invitation_' ~ invite.id) }}">
+                                {{ composant('_composants/button', {
+                                    'titre': 'Refuser',
+                                    'type': 'submit',
+                                    'class': 'btn-secondary btn-sm'
+                                }) }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endif %}

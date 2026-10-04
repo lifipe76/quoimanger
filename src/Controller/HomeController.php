@@ -21,11 +21,13 @@ class HomeController extends AbstractController
     #[Route('/', name: 'home', methods: ['GET'])]
     public function home(
         RecetteRealisationRepository $realisationRepository,
-        RecetteRepository $recetteRepository
+        RecetteRepository $recetteRepository,
+        \App\Service\RecipeSuggestionService $suggestionService
     ): Response {
         $timeline = $realisationRepository->findTimeline();
         $recettes = $recetteRepository->findAllOrderedByLastRealisation();
         $ranks = $this->calculateRecipeRanks($recettes);
+        $suggestion = $suggestionService->getSuggestion($recettes);
 
         // Regroupement de la timeline par jour (format Y-m-d)
         $timelineByDay = [];
@@ -37,12 +39,19 @@ class HomeController extends AbstractController
         // Par défaut, sélectionner la bulle Soir
         $defaultMoment = 'soir';
 
-        return $this->render('pages/home/index.html.twig', [
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
+        $familleMembres = $currentUser?->getFamille()?->getMembres() ?? [];
+
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/home',
             'timeline' => $timeline,
             'timelineByDay' => $timelineByDay,
             'defaultMoment' => $defaultMoment,
             'recettes' => $recettes,
             'ranks' => $ranks,
+            'familleMembres' => $familleMembres,
+            'suggestion' => $suggestion,
         ]);
     }
 
@@ -158,6 +167,45 @@ class HomeController extends AbstractController
                 $complement = $request->request->get('complement');
                 $realisation->setComplement($complement !== null ? (string) $complement : null);
             }
+
+            if ($request->request->has('has_participants_field')) {
+                $participantIds = (array) $request->request->all('participants');
+                $realisation->clearParticipants();
+                if (!empty($participantIds)) {
+                    $participants = $em->getRepository(\App\Entity\User::class)->findBy(['id' => $participantIds]);
+                    foreach ($participants as $p) {
+                        $realisation->addParticipant($p);
+                    }
+                }
+            }
+
+            if ($request->request->has('notes')) {
+                $notesData = (array) $request->request->all('notes');
+                $noteRepo = $em->getRepository(\App\Entity\RealisationNote::class);
+                foreach ($notesData as $userId => $noteVal) {
+                    $uid = (int) $userId;
+                    $val = (int) $noteVal;
+                    $member = $em->getRepository(\App\Entity\User::class)->find($uid);
+                    if ($member) {
+                        $existingNote = $noteRepo->findOneBy([
+                            'realisation' => $realisation,
+                            'user' => $member,
+                        ]);
+                        if ($val >= 1 && $val <= 5) {
+                            if (!$existingNote) {
+                                $existingNote = new \App\Entity\RealisationNote();
+                                $existingNote->setRealisation($realisation);
+                                $existingNote->setUser($member);
+                                $em->persist($existingNote);
+                            }
+                            $existingNote->setNote($val);
+                        } elseif ($val === 0 && $existingNote) {
+                            $em->remove($existingNote);
+                        }
+                    }
+                }
+            }
+
             $em->flush();
             $this->addFlash('success', sprintf('Date du repas mise à jour au %s.', $newDate->format('d/m/Y')));
         } catch (\Exception) {
@@ -201,6 +249,75 @@ class HomeController extends AbstractController
                 $realisation->getRecette()->getDesignation()
             ));
         }
+
+        return $this->redirectToRoute('home');
+    }
+
+    #[Route('/realisation/{id<\d+>}/rate', name: 'app_realisation_rate', methods: ['POST'])]
+    public function rateRealisation(
+        RecetteRealisation $realisation,
+        Request $request,
+        EntityManagerInterface $em,
+        \App\Repository\UserRepository $userRepository,
+        \App\Repository\RealisationNoteRepository $noteRepository
+    ): Response {
+        /** @var \App\Entity\User $currentUser */
+        $currentUser = $this->getUser();
+
+        $token = (string) $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('rate_realisation_' . $realisation->getId(), $token)) {
+            if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+                return new JsonResponse(['error' => 'Jeton CSRF invalide.'], Response::HTTP_FORBIDDEN);
+            }
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('home');
+        }
+
+        // Utilisateur cible (current user par défaut, ou membre de la même famille)
+        $targetUser = $currentUser;
+        $targetUserId = (int) $request->request->get('user_id', 0);
+        if ($targetUserId > 0 && $targetUserId !== $currentUser->getId()) {
+            $otherUser = $userRepository->find($targetUserId);
+            if ($otherUser && $currentUser->getFamille() && $otherUser->getFamille() === $currentUser->getFamille()) {
+                $targetUser = $otherUser;
+            }
+        }
+
+        $noteValue = (int) $request->request->get('note', 0);
+
+        $existingNote = $noteRepository->findOneBy([
+            'realisation' => $realisation,
+            'user' => $targetUser,
+        ]);
+
+        if ($noteValue <= 0) {
+            if ($existingNote) {
+                $em->remove($existingNote);
+                $em->flush();
+            }
+        } else {
+            $noteValue = max(1, min(5, $noteValue));
+            if (!$existingNote) {
+                $existingNote = new \App\Entity\RealisationNote();
+                $existingNote->setRealisation($realisation);
+                $existingNote->setUser($targetUser);
+                $em->persist($existingNote);
+            }
+            $existingNote->setNote($noteValue);
+            $em->flush();
+        }
+
+        if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+            return new JsonResponse([
+                'success' => true,
+                'realisationId' => $realisation->getId(),
+                'userNote' => $realisation->getNoteForUser($currentUser),
+                'recipeAverage' => $realisation->getRecette()->getAverageNote(),
+                'recipeCount' => $realisation->getRecette()->getNotesCount(),
+            ]);
+        }
+
+        $this->addFlash('success', 'Votre note a bien été enregistrée.');
 
         return $this->redirectToRoute('home');
     }

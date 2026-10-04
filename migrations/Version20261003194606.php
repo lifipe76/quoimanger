@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20261002212654 extends AbstractMigration
+final class Version20261003194606 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,12 +20,12 @@ final class Version20261002212654 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE recette_realisations ADD complement VARCHAR(255) DEFAULT NULL');
+        $this->addSql('ALTER TABLE recette_realisations ADD moment VARCHAR(20) DEFAULT NULL, ADD complement VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE recette_realisations DROP complement');
+        $this->addSql('ALTER TABLE recette_realisations DROP moment, DROP complement');
     }
 }

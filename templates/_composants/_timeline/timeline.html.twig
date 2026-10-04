@@ -1,1 +1,6 @@
-<div class="timeline-container">
+{# Composant Timeline - Container de chronologie #}
+{% if content is defined and content %}
+    <div class="timeline-wrapper{% if class is defined and class %} {{ class }}{% endif %}"{% if style is defined and style %} style="{{ style }}"{% endif %}>
+        {{ content|raw }}
+    </div>
+{% endif %}

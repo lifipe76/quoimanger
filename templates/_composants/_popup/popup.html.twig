@@ -1,0 +1,26 @@
+{# Composant générique Popup / Modal #}
+<div id="{{ id }}" 
+     class="modal-overlay{{ overlayClass is defined and overlayClass ? ' ' ~ overlayClass : '' }}" 
+     style="{{ overlayStyle|default('display: none;') }}" 
+     onclick="{{ onBackdropClick|default("handleModalBackdropClick(event, '" ~ id ~ "')") }}">
+    <div class="modal-dialog{{ dialogClass is defined and dialogClass ? ' ' ~ dialogClass : '' }}"
+         {% if dialogStyle is defined and dialogStyle %}style="{{ dialogStyle }}"{% endif %}>
+        
+        <button type="button" 
+                class="modal-close-btn" 
+                onclick="{{ onClose|default("closeModal('" ~ id ~ "')") }}" 
+                title="{{ closeTitle|default('Fermer') }}" 
+                aria-label="{{ closeTitle|default('Fermer') }}">✕</button>
+
+        {% if title is defined and title %}
+            <div class="modal-header">
+                <h2 class="modal-title">{{ title|raw }}</h2>
+                {% if subtitle is defined and subtitle %}
+                    <p class="modal-subtitle">{{ subtitle|raw }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {{ content|default(body|default(''))|raw }}
+    </div>
+</div>

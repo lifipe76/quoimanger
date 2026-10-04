@@ -21,7 +21,8 @@ class RecetteController extends AbstractController
     {
         $recettes = $recetteRepository->findBy([], ['id' => 'DESC']);
 
-        return $this->render('pages/recette/index.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/recette/index',
             'recettes' => $recettes,
         ]);
     }
@@ -56,7 +57,8 @@ class RecetteController extends AbstractController
             return $this->redirectToRoute('app_recettes_list');
         }
 
-        return $this->render('pages/recette/form.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/recette/form',
             'recette' => $recette,
             'form' => $form->createView(),
             'isNew' => $isNew,

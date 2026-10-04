@@ -1,0 +1,132 @@
+(function () {
+    function initToasts() {
+        document
+            .querySelectorAll(".toast-notification:not([data-initialized])")
+            .forEach(function (toast) {
+                toast.setAttribute("data-initialized", "true");
+                setupToastCountdown(toast);
+            });
+    }
+
+    function setupToastCountdown(toast) {
+        var duration = parseInt(toast.dataset.duration || "4000", 10);
+        var progressBar = toast.querySelector(".toast-progress-bar");
+        var countdownEl = toast.querySelector(".toast-countdown");
+
+        var remainingMs = duration;
+        var isPaused = false;
+        var lastTime = performance.now();
+        var animationFrameId = null;
+
+        if (progressBar) {
+            progressBar.style.animationDuration = duration + "ms";
+        }
+
+        toast.addEventListener("mouseenter", function () {
+            isPaused = true;
+            if (progressBar) {
+                progressBar.style.animationPlayState = "paused";
+            }
+        });
+
+        toast.addEventListener("mouseleave", function () {
+            isPaused = false;
+            lastTime = performance.now();
+            if (progressBar) {
+                progressBar.style.animationPlayState = "running";
+            }
+        });
+
+        function updateCountdown(now) {
+            if (!toast.isConnected) {
+                return;
+            }
+
+            if (!isPaused) {
+                var delta = now - lastTime;
+                remainingMs -= delta;
+            }
+            lastTime = now;
+
+            if (countdownEl) {
+                var secondsLeft = Math.max(0, Math.ceil(remainingMs / 1000));
+                countdownEl.textContent = secondsLeft + "s";
+            }
+
+            if (remainingMs <= 0) {
+                dismissToast(toast);
+                return;
+            }
+
+            animationFrameId = requestAnimationFrame(updateCountdown);
+        }
+
+        animationFrameId = requestAnimationFrame(updateCountdown);
+    }
+
+    window.dismissToast = function (toast) {
+        if (!toast || toast.classList.contains("toast-closing")) return;
+        toast.classList.add("toast-closing");
+        setTimeout(function () {
+            if (toast && toast.parentNode) {
+                toast.remove();
+            }
+        }, 300);
+    };
+
+    window.showToast = function (message, type, duration) {
+        type = type || "success";
+        duration = duration || 4000;
+
+        var container = document.getElementById("toast-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toast-container";
+            container.className = "toast-container";
+            document.body.appendChild(container);
+        }
+
+        var isDanger = type === "danger" || type === "error";
+        var alertClass = isDanger ? "danger" : "success";
+        var seconds = Math.ceil(duration / 1000);
+
+        var toast = document.createElement("div");
+        toast.className =
+            "toast-notification alert alert-" +
+            alertClass +
+            " toast-" +
+            alertClass;
+        toast.dataset.duration = duration;
+        toast.setAttribute("role", "alert");
+
+        toast.innerHTML =
+            '<div class="toast-body">' +
+            '<span class="toast-message">' +
+            message +
+            "</span>" +
+            '<span class="toast-countdown">' +
+            seconds +
+            "s</span>" +
+            '<button type="button" class="toast-close-btn" title="Fermer" aria-label="Fermer">✕</button>' +
+            "</div>" +
+            '<div class="toast-progress">' +
+            '<div class="toast-progress-bar"></div>' +
+            "</div>";
+
+        toast
+            .querySelector(".toast-close-btn")
+            .addEventListener("click", function () {
+                dismissToast(toast);
+            });
+
+        container.appendChild(toast);
+        toast.setAttribute("data-initialized", "true");
+        setupToastCountdown(toast);
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initToasts);
+    } else {
+        initToasts();
+    }
+})();

@@ -1,0 +1,181 @@
+/* ==========================================================================
+   Composant Container - Mise en page et structure
+   ========================================================================== */
+
+/* Conteneur principal */
+.container {
+    max-width: 1200px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+}
+
+/* En-tête de page */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
+}
+
+.page-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+
+/* Grille de cartes */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.75rem;
+    perspective: 1200px;
+}
+
+/* Carte générique */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+    font-size: 0.95rem;
+    color: #334155;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(219, 72, 7, 0.15);
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+/* Alertes & Notifications */
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.75rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.alert-success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-danger {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* État vide (empty state) */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    max-width: 450px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 1.25rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        margin-bottom: 1.25rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .page-header > div {
+        width: 100%;
+    }
+
+    .page-header .button,
+    .page-header .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.15rem;
+    }
+
+    .card {
+        padding: 1.35rem 1.15rem;
+        border-radius: 14px;
+    }
+
+    .empty-state {
+        padding: 2.5rem 1rem;
+    }
+}

@@ -5,8 +5,7 @@
 {% block menu %}{% endblock %}
 
 {% block body %}
-<div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
-
+{% set requestContent %}
     {% for flash_error in app.flashes('reset_password_error') %}
         <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
             {{ flash_error }}
@@ -35,12 +34,19 @@
                 {{ form_errors(requestForm.email, {'attr': {'class': 'form-error'} }) }}
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 0.5rem;">
-                Envoyer le lien de réinitialisation
-            </button>
+            {{ composant('_composants/button', {
+                'titre': 'Envoyer le lien de réinitialisation',
+                'type': 'submit',
+                'class': 'btn-primary',
+                'style': 'width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 0.5rem;'
+            }) }}
         {{ form_end(requestForm) }}
 
     </div>
-    
-</div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'style': 'max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'content': requestContent
+}) }}
 {% endblock %}

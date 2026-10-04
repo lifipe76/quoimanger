@@ -242,13 +242,16 @@ class TimelineAndModalTest extends WebTestCase
         $crawler = $this->client->request('GET', '/');
         $this->assertResponseIsSuccessful();
 
-        // 1. Sur la timeline, le titre est cliquable et ouvre le modal de complément
-        $titleEl = $crawler->filter(sprintf('.card-title-clickable[onclick*="/realisation/%d/update-complement"]', $realisation->getId()));
-        $this->assertGreaterThan(0, $titleEl->count(), 'Timeline card title should be clickable with update-complement action');
-        $this->assertStringContainsString('Blanquette de veau test', $titleEl->text());
+        // 1. Sur la timeline, le titre pointe vers la recette et le bouton + ouvre le modal de complément
+        $titleLink = $crawler->filter(sprintf('.card-recette-title a[href="/recette/%d"]', $recette->getId()));
+        $this->assertGreaterThan(0, $titleLink->count(), 'Timeline card title should link to the recipe');
+        $this->assertStringContainsString('Blanquette de veau test', $titleLink->text());
+
+        $addBtn = $crawler->filter(sprintf('.card-recette-btn-complement-add[onclick*="/realisation/%d/update-complement"]', $realisation->getId()));
+        $this->assertGreaterThan(0, $addBtn->count(), 'Timeline card should have a + button to add complement');
 
         // Récupérer le token CSRF pour update_complement
-        $onclick = $titleEl->attr('onclick');
+        $onclick = $addBtn->attr('onclick');
         preg_match_all("/'([^']*)'/", $onclick, $tokenMatches);
         $token = $tokenMatches[1][3] ?? '';
 
@@ -258,13 +261,17 @@ class TimelineAndModalTest extends WebTestCase
             'complement' => 'riz',
         ]);
         $this->assertResponseRedirects('/');
-        $this->client->followRedirect();
+        $crawlerAfter = $this->client->followRedirect();
 
         // 3. Vérifier le flash message et l'affichage dans la page
         $this->assertSelectorExists('.alert-success');
         $content = $this->client->getResponse()->getContent();
         $this->assertStringContainsString('Complément mis à jour', $content);
         $this->assertStringContainsString('(riz)', $content);
+
+        // Vérifier que le texte d'accompagnement est présent et cliquable
+        $complementBtn = $crawlerAfter->filter(sprintf('.card-recette-complement-text[onclick*="/realisation/%d/update-complement"]', $realisation->getId()));
+        $this->assertGreaterThan(0, $complementBtn->count(), 'Complement text should be clickable to update complement');
 
         // 4. Vérifier en base que la recette reste "Blanquette de veau test" et que le complément est "riz"
         $freshEm = static::getContainer()->get(EntityManagerInterface::class);
@@ -341,5 +348,104 @@ class TimelineAndModalTest extends WebTestCase
             $freshEm->remove($recetteToRemove);
         }
         $freshEm->flush();
+    }
+
+    public function testPopupAndToastComponentCssAndJsInjected(): void
+    {
+        $this->client->request('GET', '/');
+        $this->assertResponseIsSuccessful();
+
+        $content = (string) $this->client->getResponse()->getContent();
+
+        // 1. Toast CSS & JS
+        $this->assertStringContainsString('.toast-container', $content);
+        $this->assertStringContainsString('toastSlideInRight', $content);
+        $this->assertStringContainsString('dismissToast', $content);
+
+        // 2. Base Popup component CSS & JS
+        $this->assertStringContainsString('.modal-overlay', $content);
+        $this->assertStringContainsString('fadeInModal', $content);
+        $this->assertStringContainsString('openModal', $content);
+        $this->assertStringContainsString('closeModal', $content);
+
+        // 3. Branches CSS & JS
+        $this->assertStringContainsString('.modal-top-bar', $content);
+        $this->assertStringContainsString('filterRecipesList', $content);
+        $this->assertStringContainsString('.btn-edit-moment-toggle', $content);
+        $this->assertStringContainsString('openEditMealModal', $content);
+        $this->assertStringContainsString('openComplementModal', $content);
+
+        // 4. Container & Home Component CSS
+        $this->assertStringContainsString('--primary: #db4807', $content);
+        $this->assertStringContainsString('.timeline-wrapper', $content);
+    }
+
+    public function testRecettesAndIngredientsPagesUseComponentsWithoutRecettesCss(): void
+    {
+        // 1. Page Recettes
+        $this->client->request('GET', '/recettes');
+        $this->assertResponseIsSuccessful();
+        $recettesContent = (string) $this->client->getResponse()->getContent();
+        $this->assertStringContainsString('--primary: #db4807', $recettesContent);
+        $this->assertStringContainsString('.card-recette', $recettesContent);
+        $this->assertStringNotContainsString('addCss', $recettesContent);
+
+        // 2. Page Ingrédients
+        $this->client->request('GET', '/ingredients');
+        $this->assertResponseIsSuccessful();
+        $ingredientsContent = (string) $this->client->getResponse()->getContent();
+        $this->assertStringContainsString('--primary: #db4807', $ingredientsContent);
+        $this->assertStringContainsString('.card-ingredient', $ingredientsContent);
+        $this->assertStringNotContainsString('addCss', $ingredientsContent);
+    }
+
+    public function testMealSuggestionAndTopRowLayout(): void
+    {
+        // 1. Créer une recette spécifique pour le test de suggestion
+        $recette = new \App\Entity\Recette();
+        $recette->setDesignation('Poulet rôti du dimanche test');
+        $this->em->persist($recette);
+
+        // Réalisation passée il y a 21 jours (même jour de semaine)
+        $today = new \DateTimeImmutable('today');
+        $pastDate = $today->modify('-21 days');
+        $realisation = new \App\Entity\RecetteRealisation();
+        $realisation->setRecette($recette);
+        $realisation->setRealiseAt($pastDate);
+        $realisation->setMoment('midi');
+        $this->em->persist($realisation);
+        $this->em->flush();
+
+        $crawler = $this->client->request('GET', '/');
+        $this->assertResponseIsSuccessful();
+
+        // 2. Vérifier que la première ligne contient bien le titre et le bouton sur la même ligne
+        $this->assertSelectorExists('.cta-top-row');
+        $this->assertSelectorTextContains('.cta-top-row .empty-cta-title', "Qu'avez-vous mangé aujourd'hui ?");
+        $this->assertSelectorTextContains('.cta-top-row button', 'Je rentre mon repas');
+
+        // 3. Vérifier que le bloc suggestion est rendu
+        $this->assertSelectorExists('.cta-suggestion-row');
+        $this->assertSelectorExists('.cta-suggestion-row form.suggestion-form');
+        $this->assertSelectorExists('.cta-suggestion-row .suggestion-btn');
+
+        // 4. Cliquer / soumettre la suggestion pour l'enregistrer comme mangé
+        $form = $crawler->filter('.cta-suggestion-row form.suggestion-form')->form();
+        $this->client->submit($form);
+
+        $this->assertResponseRedirects('/');
+        $this->client->followRedirect();
+
+        $this->assertSelectorExists('.alert-success');
+        $this->assertStringContainsString('Repas enregistré avec succès', $this->client->getResponse()->getContent());
+
+        // Nettoyage
+        $freshEm = static::getContainer()->get(\Doctrine\ORM\EntityManagerInterface::class);
+        $freshEm->createQuery('DELETE FROM App\Entity\RecetteRealisation r WHERE r.recette = :recette')
+            ->setParameter('recette', $recette)
+            ->execute();
+        $freshEm->createQuery('DELETE FROM App\Entity\Recette r WHERE r.id = :id')
+            ->setParameter('id', $recette->getId())
+            ->execute();
     }
 }

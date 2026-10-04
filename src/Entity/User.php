@@ -64,6 +64,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer', enumType: Civility::class, nullable: true)]
     private ?Civility $civility = null;
 
+    #[ORM\ManyToOne(targetEntity: Famille::class, inversedBy: 'membres')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Famille $famille = null;
+
     public function __construct() {}
 
     public function getId(): ?int
@@ -223,5 +227,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getCiviliteShort(): ?string
     {
         return $this->civility?->short();
+    }
+
+    public function getFamille(): ?Famille
+    {
+        return $this->famille;
+    }
+
+    public function setFamille(?Famille $famille): static
+    {
+        $this->famille = $famille;
+        return $this;
+    }
+
+    public function getDisplayName(): string
+    {
+        $name = trim(($this->firstname ?? '') . ' ' . ($this->lastname ?? ''));
+        return $name !== '' ? $name : (string) $this->email;
     }
 }

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="50%" stop-color="#db4807"/>
+      <stop offset="100%" stop-color="#9a3412"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#7c2d12" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- Background with subtle rounded corners -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  
+  <!-- Outer Plate Rim -->
+  <circle cx="256" cy="256" r="150" fill="#ffffff" filter="url(#shadow)"/>
+  <!-- Inner Plate Recess -->
+  <circle cx="256" cy="256" r="115" fill="#f8fafc"/>
+  <circle cx="256" cy="256" r="110" fill="#f1f5f9"/>
+
+  <!-- Left: Fork -->
+  <g fill="#db4807">
+    <!-- Handle -->
+    <rect x="195" y="240" width="10" height="90" rx="5"/>
+    <!-- Fork Neck -->
+    <path d="M190 220 Q200 245 210 220 L210 205 Q200 200 190 205 Z"/>
+    <!-- Fork Prongs -->
+    <rect x="190" y="180" width="4" height="35" rx="2"/>
+    <rect x="198" y="180" width="4" height="35" rx="2"/>
+    <rect x="206" y="180" width="4" height="35" rx="2"/>
+  </g>
+
+  <!-- Right: Knife -->
+  <g fill="#db4807">
+    <!-- Handle -->
+    <rect x="307" y="240" width="10" height="90" rx="5"/>
+    <!-- Blade -->
+    <path d="M307 240 L307 185 Q307 175 317 185 Q325 210 317 240 Z"/>
+  </g>
+
+  <!-- Center Heart / Smile / Taste detail -->
+  <path d="M256 242 C252 235 244 235 240 240 C235 246 238 253 256 268 C274 253 277 246 272 240 C268 235 260 235 256 242 Z" fill="#ea580c"/>
+</svg>

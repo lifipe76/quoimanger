@@ -240,19 +240,25 @@ i.fa-fw {
 
 @media (max-width: 768px) {
     .nav-header {
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 1rem;
     }
 
-    .nav-links {
-        gap: 0.25rem;
+    .nav-brand {
+        font-size: 1.2rem;
     }
 
-    .nav-link {
-        padding: 0.45rem 0.65rem;
-        font-size: 0.85rem;
+    /* Les liens de navigation sont pris en charge par la bottom nav bar sur mobile */
+    .nav-links .nav-link {
+        display: none;
+    }
+
+    .user-menu-container {
+        margin-left: auto;
     }
 
     .popup-menu-user {
-        right: -8px;
+        right: 0;
+        min-width: 210px;
+        max-width: calc(100vw - 20px);
     }
 }

@@ -5,8 +5,7 @@
 {% block menu %}{% endblock %}
 
 {% block body %}
-<div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
-
+{% set loginContent %}
     {% if app.user %}
         <div class="card" style="text-align: center; padding: 2.5rem 2rem;">
             <div style="font-size: 3rem; margin-bottom: 0.75rem;">👋</div>
@@ -16,15 +15,24 @@
             </p>
 
             <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-                <a href="{{ path('home') }}" class="btn btn-primary" style="width: 100%;">
-                    Accéder à la Timeline des Repas
-                </a>
-                <a href="{{ path('app_recettes_list') }}" class="btn btn-secondary" style="width: 100%;">
-                    Voir toutes les recettes
-                </a>
-                <a href="{{ path('web_logout') }}" class="btn btn-danger" style="width: 100%; margin-top: 0.5rem;">
-                    Se déconnecter
-                </a>
+                {{ composant('_composants/button', {
+                    'titre': 'Accéder à la Timeline des Repas',
+                    'href': path('home'),
+                    'class': 'btn-primary',
+                    'style': 'width: 100%;'
+                }) }}
+                {{ composant('_composants/button', {
+                    'titre': 'Voir toutes les recettes',
+                    'href': path('app_recettes_list'),
+                    'class': 'btn-secondary',
+                    'style': 'width: 100%;'
+                }) }}
+                {{ composant('_composants/button', {
+                    'titre': 'Se déconnecter',
+                    'href': path('web_logout'),
+                    'class': 'btn-danger',
+                    'style': 'width: 100%; margin-top: 0.5rem;'
+                }) }}
             </div>
         </div>
     {% else %}
@@ -94,14 +102,29 @@
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
-                    Se connecter
-                </button>
+                {{ composant('_composants/button', {
+                    'titre': 'Se connecter',
+                    'type': 'submit',
+                    'class': 'btn-primary',
+                    'style': 'width: 100%; padding: 0.85rem; font-size: 1rem;'
+                }) }}
             </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted); padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                Pas encore de compte ?
+                <a href="{{ path('app_register') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                    Créer un compte
+                </a>
+            </div>
         </div>
 
     {% endif %}
-</div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'style': 'max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'content': loginContent
+}) }}
 
 <script>
 function togglePasswordVisibility(inputId, btn) {

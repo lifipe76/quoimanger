@@ -20,7 +20,8 @@ class IngredientController extends AbstractController
     {
         $ingredients = $ingredientRepository->findBy([], ['designation' => 'ASC']);
 
-        return $this->render('pages/ingredient/index.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/ingredient/index',
             'ingredients' => $ingredients,
         ]);
     }
@@ -47,7 +48,8 @@ class IngredientController extends AbstractController
             return $this->redirectToRoute('app_ingredients_list');
         }
 
-        return $this->render('pages/ingredient/form.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/ingredient/form',
             'ingredient' => $ingredient,
             'form' => $form->createView(),
             'isNew' => $isNew,

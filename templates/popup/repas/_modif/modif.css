@@ -1,0 +1,70 @@
+/* Styles spécifiques pour le popup Modifier le repas */
+.btn-edit-moment-toggle {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    padding: 0.35rem 0.95rem;
+    border-radius: 9999px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-moment-toggle:hover {
+    background: #ffedd5;
+    border-color: #fdba74;
+}
+
+.btn-edit-moment-toggle.active {
+    background: #db4807;
+    border-color: #db4807;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(219, 72, 7, 0.3);
+}
+
+.btn-delete-meal {
+    background: transparent;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-meal:hover {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fca5a5 !important;
+}
+
+@media (max-width: 600px) {
+    #edit-meal-form .modal-footer {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 0.65rem !important;
+    }
+
+    #delete-meal-container {
+        width: 100%;
+    }
+
+    .btn-delete-meal {
+        width: 100%;
+        text-align: center;
+        padding: 0.65rem;
+    }
+
+    #edit-meal-form .modal-footer > div:last-child {
+        display: flex;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    #edit-meal-form .modal-footer > div:last-child .button {
+        flex: 1;
+        justify-content: center;
+    }
+}

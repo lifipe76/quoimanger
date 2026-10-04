@@ -2,26 +2,23 @@
 
 {% block title %}{{ isNew ? 'Nouvelle recette' : 'Modifier la recette' }} - QuoiManger{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ addCss('styles/recettes.css') }}
-{% endblock %}
-
 {% block body %}
-<div class="container">
+{% set formContent %}
     <div class="page-header">
         <h1 class="page-title">{{ isNew ? 'Créer une recette' : 'Modifier la recette' }}</h1>
-        <a href="{{ path('app_recettes_list') }}" class="btn btn-secondary">
-            Retour aux recettes
-        </a>
+        {{ composant('_composants/button', {
+            'titre': 'Retour aux recettes',
+            'href': path('app_recettes_list'),
+            'class': 'btn-secondary'
+        }) }}
     </div>
 
     <div class="card">
-        {{ form_start(form, {'attr': {'id': 'recette-form'}}) }}
+        {{ form_start(form, {'attr': {'id': 'recette-form'} }) }}
             <div class="form-group">
-                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(form.designation) }}
-                {{ form_errors(form.designation, {'attr': {'class': 'form-error'}}) }}
+                {{ form_errors(form.designation, {'attr': {'class': 'form-error'} }) }}
             </div>
 
             <div class="ingredients-section">
@@ -32,9 +29,12 @@
                             Associez des ingrédients à la recette et spécifiez leurs quantités.
                         </p>
                     </div>
-                    <button type="button" id="add-ingredient-btn" class="btn btn-secondary btn-sm">
-                        + Ajouter un ingrédient
-                    </button>
+                    {{ composant('_composants/button', {
+                        'id': 'add-ingredient-btn',
+                        'titre': '+ Ajouter un ingrédient',
+                        'type': 'button',
+                        'class': 'btn-secondary btn-sm'
+                    }) }}
                 </div>
 
                 {% if not hasIngredients %}
@@ -72,55 +72,23 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                <a href="{{ path('app_recettes_list') }}" class="btn btn-secondary">Annuler</a>
-                <button type="submit" class="btn btn-primary">
-                    {{ isNew ? 'Créer la recette' : 'Enregistrer la recette' }}
-                </button>
+                {{ composant('_composants/button', {
+                    'titre': 'Annuler',
+                    'href': path('app_recettes_list'),
+                    'class': 'btn-secondary'
+                }) }}
+                {{ composant('_composants/button', {
+                    'titre': isNew ? 'Créer la recette' : 'Enregistrer la recette',
+                    'type': 'submit',
+                    'class': 'btn-primary'
+                }) }}
             </div>
         {{ form_end(form) }}
     </div>
-</div>
+{% endset %}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const wrapper = document.getElementById('ingredients-wrapper');
-    const addBtn = document.getElementById('add-ingredient-btn');
-    const emptyMsg = document.getElementById('no-ingredients-msg');
+{{ composant('_composants/container', {
+    'content': formContent
+}) }}
 
-    function checkEmptyState() {
-        if (!emptyMsg) return;
-        const rows = wrapper.querySelectorAll('.ingredient-row');
-        emptyMsg.style.display = rows.length === 0 ? 'block' : 'none';
-    }
-
-    function bindRemoveButtons(container) {
-        container.querySelectorAll('.remove-row-btn').forEach(btn => {
-            btn.onclick = function() {
-                btn.closest('.ingredient-row').remove();
-                checkEmptyState();
-            };
-        });
-    }
-
-    if (addBtn && wrapper) {
-        addBtn.addEventListener('click', function() {
-            const prototype = wrapper.dataset.prototype;
-            let index = parseInt(wrapper.dataset.index, 10) || 0;
-            const newHtml = prototype.replace(/__name__/g, index);
-            wrapper.dataset.index = index + 1;
-
-            const temp = document.createElement('div');
-            temp.innerHTML = newHtml;
-            const newRow = temp.firstElementChild;
-            wrapper.appendChild(newRow);
-            bindRemoveButtons(newRow);
-            checkEmptyState();
-        });
-    }
-
-    bindRemoveButtons(wrapper);
-    checkEmptyState();
-});
-</script>
 {% endblock %}
-

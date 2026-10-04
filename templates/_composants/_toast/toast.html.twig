@@ -1,0 +1,20 @@
+<!-- Toast Notifications avec décompte -->
+<div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            {% set isDanger = label in ['danger', 'error'] %}
+            <div class="toast-notification alert alert-{{ isDanger ? 'danger' : 'success' }} toast-{{ isDanger ? 'danger' : 'success' }}"
+                 data-duration="4000"
+                 role="alert">
+                <div class="toast-body">
+                    <span class="toast-message">{{ message }}</span>
+                    <span class="toast-countdown">4s</span>
+                    <button type="button" class="toast-close-btn" onclick="dismissToast(this.closest('.toast-notification'))" title="Fermer" aria-label="Fermer">✕</button>
+                </div>
+                <div class="toast-progress">
+                    <div class="toast-progress-bar"></div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>

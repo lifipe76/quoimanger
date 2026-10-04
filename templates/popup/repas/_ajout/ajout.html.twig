@@ -1,0 +1,106 @@
+<!-- Modal Popup "Je rentre mon repas" -->
+{% set popupContent %}
+    <!-- Barre supérieure : Recherche à gauche + Bulles Matin Midi Soir à droite sur la même ligne -->
+    <div class="modal-top-bar">
+        <div class="modal-search-field">
+            <span class="search-icon">🔍</span>
+            <input type="text"
+                   id="recipe-filter-input"
+                   class="form-control"
+                   placeholder="Rechercher une recette..."
+                   oninput="filterRecipesList(this.value)">
+        </div>
+
+        <div class="moment-toggle-group">
+            <button type="button"
+                    class="btn-moment-toggle {{ defaultMoment == 'matin' ? 'active' : '' }}"
+                    data-moment="matin"
+                    onclick="selectRepasMoment('matin')">
+                Matin
+            </button>
+            <button type="button"
+                    class="btn-moment-toggle {{ defaultMoment == 'midi' ? 'active' : '' }}"
+                    data-moment="midi"
+                    onclick="selectRepasMoment('midi')">
+                Midi
+            </button>
+            <button type="button"
+                    class="btn-moment-toggle {{ defaultMoment == 'soir' ? 'active' : '' }}"
+                    data-moment="soir"
+                    onclick="selectRepasMoment('soir')">
+                Soir
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-recipes-list" id="modal-recipes-container">
+        {% if recettes|length > 0 %}
+            {% for r in recettes %}
+                <form method="post" action="{{ path('app_realisation_add') }}" class="modal-recipe-form" data-name="{{ r.designation|lower }}">
+                    <input type="hidden" name="recette_id" value="{{ r.id }}">
+                    <input type="hidden" name="moment" class="input-form-moment" value="{{ defaultMoment }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('add_realisation') }}">
+                    <button type="submit" class="modal-recipe-item">
+                        <div class="recipe-item-main">
+                            <span class="recipe-item-name">{{ r.designation }}</span>
+                            <div class="recipe-item-badges">
+                                {% set rank = ranks[r.id]|default(null) %}
+                                {% if rank %}
+                                    <span class="badge-rank badge-rank-{{ rank <= 3 ? rank : 'other' }}" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} plat le plus mangé">
+                                        {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="badge-rank badge-rank-none" title="Non classé">-</span>
+                                {% endif %}
+                                <span class="badge-eaten-count">
+                                    {{ r.realisations|length > 0 ? ('Mangé ' ~ r.realisations|length ~ ' fois') : 'Jamais mangé' }}
+                                </span>
+                            </div>
+                            <span class="recipe-item-ingredients">
+                                {{ r.recetteIngredients|length }} ingrédient(s)
+                                {% if r.recetteIngredients|length > 0 %}
+                                    • ({{ r.recetteIngredients|map(ri => ri.ingredient.designation)|slice(0, 3)|join(', ') }}{% if r.recetteIngredients|length > 3 %}...{% endif %})
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="recipe-item-meta">
+                            {% if r.lastRealiseAt %}
+                                <span class="badge-last-cooked" title="Dernière dégustation">
+                                    {{ r.lastRealiseLabel }}
+                                </span>
+                            {% else %}
+                                <span class="badge-never-cooked">
+                                    ✦ Jamais réalisée
+                                </span>
+                            {% endif %}
+                            <span class="recipe-item-action">Valider →</span>
+                        </div>
+                    </button>
+                </form>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" style="padding: 2rem 1rem;">
+                <div style="margin-top: 0.5rem;">
+                    {{ composant('_composants/button', {
+                        'titre': '+ Créer une recette d\'abord',
+                        'href': path('app_recette_create'),
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer">
+        <span>Vous ne trouvez pas votre recette ?</span>
+        <a href="{{ path('app_recette_create') }}" class="link-create-new">+ Créer une nouvelle recette</a>
+    </div>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'repas-modal',
+    'content': popupContent,
+    'onClose': 'closeRepasModal()',
+    'onBackdropClick': 'handleModalBackdropClick(event, "repas-modal")'
+}) }}

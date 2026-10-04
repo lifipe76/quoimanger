@@ -2,21 +2,18 @@
 
 {% block title %}Recettes - QuoiManger{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ addCss('styles/recettes.css') }}
-{% endblock %}
-
 {% block body %}
-<div class="container">
+{% set indexContent %}
     <div class="page-header">
         <div>
             <h1 class="page-title">Mes Recettes</h1>
             <p class="page-subtitle">{{ recettes|length }} recette{{ recettes|length > 1 ? 's' : '' }} au menu</p>
         </div>
-        <a href="{{ path('app_recette_create') }}" class="btn btn-primary">
-            + Ajouter une recette
-        </a>
+        {{ composant('_composants/button', {
+            'titre': '+ Ajouter une recette',
+            'href': path('app_recette_create'),
+            'class': 'btn-primary'
+        }) }}
     </div>
 
     {% if recettes|length > 0 %}
@@ -30,10 +27,18 @@
             <div class="empty-state-icon">🍳</div>
             <h2>Aucune recette pour le moment</h2>
             <p>Commencez par ajouter votre première recette avec ses ingrédients favoris.</p>
-            <a href="{{ path('app_recette_create') }}" class="btn btn-primary" style="margin-top: 1.5rem;">
-                + Créer ma première recette
-            </a>
+            <div style="margin-top: 1.5rem;">
+                {{ composant('_composants/button', {
+                    'titre': '+ Créer ma première recette',
+                    'href': path('app_recette_create'),
+                    'class': 'btn-primary'
+                }) }}
+            </div>
         </div>
     {% endif %}
-</div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'content': indexContent
+}) }}
 {% endblock %}

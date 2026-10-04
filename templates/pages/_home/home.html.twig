@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Timeline des repas - QuoiManger{% endblock %}
+
+{% block body %}
+{% set timelineContent %}
+    <!-- 1er élément : Rectangle vide / Carte d'action rapide -->
+    <div class="timeline-item timeline-item-cta">
+        <div class="timeline-marker cta-marker">
+            <span class="marker-pulse"></span>
+            <span class="marker-icon">🍴</span>
+        </div>
+        <div class="timeline-content">
+            <div class="card-empty-cta">
+                <div class="cta-top-row">
+                    <h3 class="empty-cta-title">Qu'avez-vous mangé aujourd'hui ?</h3>
+                    {{ composant('_composants/button', {
+                        'titre': 'Je rentre mon repas',
+                        'type': 'button',
+                        'class': 'btn-primary btn-cta',
+                        'onclick': 'openRepasModal()'
+                    }) }}
+                </div>
+
+                {% if suggestion and suggestion.recette %}
+                    <div class="cta-suggestion-row">
+                        <form method="post" action="{{ path('app_realisation_add') }}" class="suggestion-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('add_realisation') }}">
+                            <input type="hidden" name="recette_id" value="{{ suggestion.recette.id }}">
+                            <input type="hidden" name="moment" value="{{ defaultMoment|default('soir') }}">
+                            <input type="hidden" name="date" value="{{ 'now'|date('Y-m-d') }}">
+
+                            <div class="suggestion-main-info">
+                                <span class="suggestion-label">Idée repas :</span>
+                                <a href="{{ path('app_recette_edit', {'id': suggestion.recette.id}) }}" class="suggestion-title-link">
+                                    {{ suggestion.recette.designation }}
+                                </a>
+                                {% if suggestion.reason %}
+                                    <span class="suggestion-badge">{{ suggestion.reason }}</span>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="suggestion-btn suggestion-btn-plus" title="Enregistrer « {{ suggestion.recette.designation }} » comme mangé aujourd'hui">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des réalisations regroupées par jour -->
+    {% if timelineByDay|length > 0 %}
+        {% for dayKey, dayItems in timelineByDay %}
+            <div class="timeline-day-group">
+                <div class="timeline-day-header">
+                    <div class="timeline-day-badge">
+                        <time datetime="{{ dayKey }}">
+                            {% set dateObj = dayItems[0].realiseAt %}
+                            {% set isToday = dateObj|date('Y-m-d') == 'now'|date('Y-m-d') %}
+                            {% set isYesterday = dateObj|date('Y-m-d') == '-1 day'|date('Y-m-d') %}
+                            {% set jours = {
+                                '1': 'Lundi',
+                                '2': 'Mardi',
+                                '3': 'Mercredi',
+                                '4': 'Jeudi',
+                                '5': 'Vendredi',
+                                '6': 'Samedi',
+                                '7': 'Dimanche'
+                            } %}
+                            {% set jourNom = jours[dateObj|date('N')]|default('') %}
+                            {% if isToday %}
+                                <span class="day-badge-highlight">Aujourd'hui</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% elseif isYesterday %}
+                                <span class="day-badge-highlight">Hier</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% else %}
+                                {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% endif %}
+                        </time>
+                    </div>
+                </div>
+
+                <div class="timeline-day-content">
+                    <div class="timeline-day-meals">
+                        {% for item in dayItems %}
+                            <div class="timeline-meal-wrapper" style="--card-index: {{ loop.index0 }};">
+                                {{ composant('cards/recette', {
+                                    'recette': item.recette,
+                                    'realisation': item,
+                                    'index': loop.index0,
+                                    'showIngredients': false
+                                }) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+                <div class="card empty-state" style="margin-top: 1rem;">
+                    <div class="empty-state-icon">📖</div>
+                    <h3>Aucun repas enregistré pour l'instant</h3>
+                    <p>Utilisez le bouton ci-dessus pour sélectionner votre premier repas !</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endset %}
+
+{% set homeContent %}
+    {{ composant('_composants/timeline', {
+        'content': timelineContent
+    }) }}
+{% endset %}
+
+{{ composant('_composants/container', {
+    'class': 'timeline-page',
+    'content': homeContent
+}) }}
+
+{{ composant('popup/repas/ajout', _context) }}
+
+{{ composant('popup/repas/modif', _context) }}
+
+{{ composant('popup/repas/accompagnement', _context) }}
+
+{% endblock %}

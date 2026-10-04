@@ -1,0 +1,57 @@
+<!-- Modal Popup "Complément du repas" -->
+{% set popupContent %}
+    <form method="post" id="complement-form" action="">
+        <input type="hidden" name="_token" id="complement-token" value="">
+
+        <div class="modal-body" style="padding: 1.5rem 1.75rem;">
+            <div class="form-group mb-2">
+                <label for="complement-input" style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b; font-size: 0.95rem;">
+                    Accompagnement ou précision (texte libre)
+                </label>
+                <input type="text"
+                       name="complement"
+                       id="complement-input"
+                       class="form-control"
+                       placeholder="Ex: riz, frites, salade verte..."
+                       maxlength="255"
+                       style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+                <p style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; margin-bottom: 0;">
+                    Laissez vide pour retirer le complément.
+                </p>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 1.25rem 1.75rem; background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+            {{ composant('_composants/button', {
+                'titre': 'Effacer',
+                'type': 'button',
+                'class': 'btn-secondary',
+                'onclick': 'clearComplementInput()'
+            }) }}
+
+            <div style="display: flex; gap: 0.75rem;">
+                {{ composant('_composants/button', {
+                    'titre': 'Annuler',
+                    'type': 'button',
+                    'class': 'btn-secondary',
+                    'onclick': 'closeComplementModal()'
+                }) }}
+                {{ composant('_composants/button', {
+                    'titre': 'Enregistrer',
+                    'type': 'submit',
+                    'class': 'btn-primary'
+                }) }}
+            </div>
+        </div>
+    </form>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'complement-modal',
+    'dialogClass': 'modal-dialog-sm',
+    'dialogStyle': 'max-width: 500px;',
+    'title': 'Complément : <strong id="complement-modal-recipe-name" style="color: #db4807;"></strong>',
+    'content': popupContent,
+    'onClose': 'closeComplementModal()',
+    'onBackdropClick': 'handleComplementBackdropClick(event)'
+}) }}

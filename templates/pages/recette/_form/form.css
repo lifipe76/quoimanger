@@ -1,0 +1,45 @@
+/* Section Ingrédients Dynamiques dans le Formulaire Recette */
+.ingredients-section {
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.ingredient-row {
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    background: #f8fafc;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    transition: border-color 0.2s ease;
+}
+
+.ingredient-row:focus-within {
+    border-color: var(--primary, #db4807);
+}
+
+.ingredient-row .select-col {
+    flex: 3;
+}
+
+.ingredient-row .quantite-col {
+    flex: 2;
+}
+
+.ingredient-row .action-col {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 768px) {
+    .ingredient-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ingredient-row .action-col {
+        align-self: flex-end;
+    }
+}

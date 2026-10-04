@@ -13,6 +13,11 @@
                         {{ activeRealisation.momentLabel }}
                     </span>
                 {% endif %}
+                {% if activeRealisation.participants is defined and activeRealisation.participants|length > 0 %}
+                    <span class="card-recette-status card-recette-participants-bubble" title="Pris par : {% for p in activeRealisation.participants %}{{ p.displayName }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                        {% for p in activeRealisation.participants %}{{ p.firstname|default(p.displayName) }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    </span>
+                {% endif %}
             {% elseif dateAffichage %}
                 {% set nbRealisations = recette.realisations|length %}
                 {% set daysSince = recette.daysSinceLastRealisation %}
@@ -40,6 +45,20 @@
         <div class="card-recette-header-right">
             <span class="card-recette-id">#{{ recette.id }}</span>
             {% if activeRealisation %}
+                {% set participantIds = [] %}
+                {% if activeRealisation.participants is defined %}
+                    {% for p in activeRealisation.participants %}
+                        {% set participantIds = participantIds|merge([p.id]) %}
+                    {% endfor %}
+                {% endif %}
+                {% set notesMap = {} %}
+                {% if activeRealisation.notes is defined %}
+                    {% for n in activeRealisation.notes %}
+                        {% if n.user %}
+                            {% set notesMap = notesMap|merge({ (n.user.id): n.note }) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
                 <button type="button"
                         class="card-btn-pencil"
                         title="Modifier ce repas"
@@ -51,7 +70,9 @@
                             '{{ csrf_token('update_realisation_date_' ~ activeRealisation.id) }}',
                             '{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}',
                             '{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}',
-                            '{{ activeRealisation.complement|e('js') }}'
+                            '{{ activeRealisation.complement|e('js') }}',
+                            {{ participantIds|json_encode }},
+                            {{ notesMap|json_encode }}
                         )">
                     ✏️
                 </button>
@@ -60,29 +81,77 @@
     </div>
 
     <h3 class="card-recette-title">
+        <a href="{{ path('app_recette_edit', {'id': recette.id}) }}" class="recipe-title-link">
+            {{ recette.designation }}
+        </a>
         {% if activeRealisation %}
-            <span class="card-title-clickable"
-                  role="button"
-                  tabindex="0"
-                  title="Cliquer pour ajouter ou modifier un complément (ex: riz, salade...)"
-                  onclick="openComplementModal(
-                      '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
-                      '{{ activeRealisation.complement|e('js') }}',
-                      '{{ recette.designation|e('js') }}',
-                      '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
-                  )"
-                  onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
-                <span class="recipe-title-main">{{ recette.designation }}</span>
-                {% if activeRealisation.complement %}
-                    <span class="recipe-title-complement">{{ activeRealisation.complement starts with '(' or activeRealisation.complement starts with '-' ? activeRealisation.complement : '(' ~ activeRealisation.complement ~ ')' }}</span>
-                {% endif %}
-            </span>
-        {% else %}
-            <a href="{{ path('app_recette_edit', {'id': recette.id}) }}">
-                {{ recette.designation }}
-            </a>
+            {% if activeRealisation.complement %}
+                <button type="button"
+                        class="card-recette-btn-complement card-recette-complement-text"
+                        title="Modifier l'accompagnement (actuel : {{ activeRealisation.complement }})"
+                        onclick="openComplementModal(
+                            '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
+                            '{{ activeRealisation.complement|e('js') }}',
+                            '{{ recette.designation|e('js') }}',
+                            '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
+                        )">
+                    <span class="recipe-title-complement">{{ activeRealisation.complement starts with '(' ? activeRealisation.complement : '(' ~ activeRealisation.complement ~ ')' }}</span>
+                </button>
+            {% else %}
+                <button type="button"
+                        class="card-recette-btn-complement card-recette-btn-complement-add"
+                        title="Ajouter un accompagnement (ex: riz, salade...)"
+                        onclick="openComplementModal(
+                            '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
+                            '',
+                            '{{ recette.designation|e('js') }}',
+                            '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
+                        )">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            {% endif %}
         {% endif %}
     </h3>
+
+    <!-- Ligne de note moyenne : 5 étoiles classiques + nombre de notations -->
+    <div class="card-recette-rating-row">
+        <div class="card-recette-stars-group" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount }} notation{{ recette.notesCount > 1 ? 's' : '' }})">
+            {% set avgNote = recette.averageNote|default(0) %}
+            <span class="stars-display">
+                {% for i in 1..5 %}
+                    {% if avgNote >= i %}
+                        <span class="star star-filled">★</span>
+                    {% elseif avgNote >= (i - 0.5) %}
+                        <span class="star star-half" style="position: relative; display: inline-block; color: #cbd5e1;"><span style="position: absolute; overflow: hidden; width: 50%; color: #f59e0b;">★</span>★</span>
+                    {% else %}
+                        <span class="star star-empty">☆</span>
+                    {% endif %}
+                {% endfor %}
+            </span>
+            <span class="rating-count">({{ recette.notesCount }})</span>
+            {% if recette.averageNote %}
+                <span class="rating-avg-value">{{ recette.averageNote }}</span>
+            {% endif %}
+        </div>
+
+        {% if activeRealisation and app.user %}
+            {% set userNote = activeRealisation.noteForUser(app.user) %}
+            <div class="card-recette-quick-rate">
+                <span class="quick-rate-label">Ma note :</span>
+                <div class="quick-stars-wrapper" data-realisation-id="{{ activeRealisation.id }}" data-csrf="{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}">
+                    {% for star in 1..5 %}
+                        <button type="button"
+                                class="quick-star-btn {{ userNote and userNote >= star ? 'active' : '' }}"
+                                data-star="{{ star }}"
+                                title="Noter {{ star }} étoile{{ star > 1 ? 's' : '' }}"
+                                onclick="rateRealisation({{ activeRealisation.id }}, {{ star }}, '{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}')">
+                            ★
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
 
     {% set displayIngredients = showIngredients is defined ? showIngredients : (activeRealisation is null) %}
     {% if displayIngredients %}

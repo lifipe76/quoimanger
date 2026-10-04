@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Entity\Traits\DatesTrait;
 use App\Repository\RecetteRealisationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -59,9 +61,26 @@ class RecetteRealisation
     #[Groups(['realisation:read', 'realisation:write', 'recette:read'])]
     private ?string $complement = null;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'realisation_participants')]
+    #[Groups(['realisation:read', 'realisation:write'])]
+    private Collection $participants;
+
+    /**
+     * @var Collection<int, RealisationNote>
+     */
+    #[ORM\OneToMany(targetEntity: RealisationNote::class, mappedBy: 'realisation', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['realisation:read'])]
+    private Collection $notes;
+
     public function __construct()
     {
         $this->realiseAt = new \DateTimeImmutable();
+        $this->participants = new ArrayCollection();
+        $this->notes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -201,5 +220,109 @@ class RecetteRealisation
         }
 
         return sprintf('Ça faisait %d jours', $days);
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getParticipants(): Collection
+    {
+        return $this->participants;
+    }
+
+    public function addParticipant(User $user): static
+    {
+        if (!$this->participants->contains($user)) {
+            $this->participants->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipant(User $user): static
+    {
+        $this->participants->removeElement($user);
+
+        return $this;
+    }
+
+    public function clearParticipants(): static
+    {
+        $this->participants->clear();
+
+        return $this;
+    }
+
+    public function isPourTous(): bool
+    {
+        return $this->participants->isEmpty();
+    }
+
+    public function hasParticipant(User $user): bool
+    {
+        return $this->isPourTous() || $this->participants->contains($user);
+    }
+
+    /**
+     * @return Collection<int, RealisationNote>
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(RealisationNote $note): static
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes->add($note);
+            $note->setRealisation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(RealisationNote $note): static
+    {
+        if ($this->notes->removeElement($note)) {
+            if ($note->getRealisation() === $this) {
+                $note->setRealisation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getNoteForUser(?User $user): ?int
+    {
+        if (!$user) {
+            return null;
+        }
+
+        foreach ($this->notes as $note) {
+            if ($note->getUser() && $note->getUser()->getId() === $user->getId()) {
+                return $note->getNote();
+            }
+        }
+
+        return null;
+    }
+
+    public function getNotesCount(): int
+    {
+        return $this->notes->count();
+    }
+
+    public function getAverageNote(): ?float
+    {
+        if ($this->notes->isEmpty()) {
+            return null;
+        }
+
+        $total = 0;
+        foreach ($this->notes as $note) {
+            $total += $note->getNote();
+        }
+
+        return round($total / $this->notes->count(), 1);
     }
 }

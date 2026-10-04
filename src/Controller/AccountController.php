@@ -19,7 +19,8 @@ class AccountController extends AbstractController
     public function profile(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $hasher
+        UserPasswordHasherInterface $hasher,
+        \App\Repository\FamilleInvitationRepository $invitationRepository
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -40,9 +41,26 @@ class AccountController extends AbstractController
             return $this->redirectToRoute('app_account_profile');
         }
 
-        return $this->render('pages/account/profile.html.twig', [
+        $activeTab = $request->query->get('tab', 'profil');
+        if (!in_array($activeTab, ['profil', 'famille'], true)) {
+            $activeTab = 'profil';
+        }
+
+        $sentInvitations = [];
+        if ($user->getFamille()) {
+            $sentInvitations = $invitationRepository->findBy([
+                'famille' => $user->getFamille(),
+                'statut' => \App\Entity\FamilleInvitation::STATUT_EN_ATTENTE,
+            ]);
+        }
+
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => 'pages/account/profile',
             'form' => $form,
             'user' => $user,
+            'famille' => $user->getFamille(),
+            'sentInvitations' => $sentInvitations,
+            'activeTab' => $activeTab,
         ]);
     }
 }

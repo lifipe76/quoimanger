@@ -1,0 +1,180 @@
+/*********************************************/
+/*  COMPOSANT POPUP / MODAL                  */
+/*********************************************/
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeInModal 0.25s ease-out;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-dialog {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    animation: scaleInModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog-sm {
+    max-width: 520px;
+}
+
+@keyframes scaleInModal {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modal-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0.3rem 0 0 0;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    z-index: 50;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.modal-close-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 1.5rem 1.75rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #64748b;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+/* ==========================================================================
+   Responsive Mobile - Mode Bottom Sheet App Native
+   ========================================================================== */
+
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-dialog,
+    .modal-dialog-sm {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 90vh !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 22px;
+        border-top-right-radius: 22px;
+        margin: 0;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-close-btn {
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+        box-shadow: none;
+    }
+
+    .modal-header {
+        padding: 1rem 1.15rem;
+        padding-right: 3.25rem;
+    }
+
+    .modal-title {
+        font-size: 1.15rem;
+    }
+
+    .modal-body {
+        padding: 1.15rem 1rem !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-footer {
+        padding: 0.85rem 1rem !important;
+        padding-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px)) !important;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+}

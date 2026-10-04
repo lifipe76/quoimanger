@@ -1,46 +1,104 @@
 /*********************************************/
-/*  BUTTON                                   */
+/*  COMPOSANT BUTTON                         */
 /*********************************************/
-button:disabled {
-    cursor: not-allowed; /* curseur interdit */
-    opacity: 0.7; /* petit effet visuel en plus */
+
+button:disabled,
+.btn:disabled,
+.button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
 }
 
-.button {
-    padding: 10px 30px;
-    /* font-family: 'MuseoModerno'; */
-    font-size: 18px;
-    font-weight: 600;
-    background-color: var(--button-bg);
-    color: var(--button-color);
-    border-radius: var(--border-radius);
-    border: none;
-    display: flex;
-    justify-content: center;
+.button,
+.btn {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 12px;
+    border: none;
     cursor: pointer;
+    text-decoration: none;
     text-align: center;
-    transition:
-        color 0.3s ease,
-        box-shadow 0.3s ease;
+    line-height: 1.4;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-sizing: border-box;
     width: fit-content;
 }
 
-.button:hover {
-    background-color: var(--button-bg-hover);
-    color: var(--button-color-hover);
-    box-shadow: 0 4px 10px var(--button-shadow-hover);
+/* Variantes */
+.button.btn-primary,
+.button-primary,
+.btn-primary {
+    background: linear-gradient(
+        135deg,
+        var(--primary-dark, #b83805),
+        var(--primary, #db4807) 60%,
+        var(--primary-hover, #f05f14)
+    );
+    color: #ffffff;
+    box-shadow: 0 4px 14px var(--primary-glow, rgba(219, 72, 7, 0.25));
 }
 
-.button:active {
+.button.btn-primary:hover,
+.button-primary:hover,
+.btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(219, 72, 7, 0.45);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.button.btn-primary:active,
+.btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 4px 10px var(--button-shadow-hover);
 }
 
-.button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
+.button.btn-secondary,
+.button-secondary,
+.btn-secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.button.btn-secondary:hover,
+.button-secondary:hover,
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.button.btn-danger,
+.button-danger,
+.btn-danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.button.btn-danger:hover,
+.button-danger:hover,
+.btn-danger:hover {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.button.btn-sm,
+.btn-sm {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+.button.btn-cta,
+.btn-cta {
+    font-size: 1rem;
+    padding: 0.75rem 1.75rem;
+    box-shadow: 0 4px 14px rgba(219, 72, 7, 0.35);
 }
 
 .buttonSvg {
@@ -48,12 +106,12 @@ button:disabled {
 }
 
 .button a {
-    color: #e0e0e0;
+    color: inherit;
 }
 
 .buttonDisabled {
-    cursor: not-allowed !important; /* curseur interdit */
-    opacity: 0.7 !important; /* petit effet visuel en plus */
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
 }
 
 .buttonGris {
@@ -61,8 +119,9 @@ button:disabled {
 }
 
 .button svg {
-    width: 30px;
-    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
 }
 
 .delete {
@@ -90,7 +149,7 @@ button:disabled {
     background-color: #000;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
-    background-color: var(--accentuation-color);
+    background-color: var(--accentuation-color, var(--primary));
     cursor: pointer;
 }
 
@@ -113,102 +172,10 @@ button:disabled {
     border-top: 2px solid transparent;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
-    /* margin-right: 20px; */
 }
 
 @keyframes spin {
     to {
         transform: rotate(360deg);
-    }
-}
-
-.button:hover:has(.spinner) {
-    box-shadow:
-        0 4px 8px rgba(219, 72, 7, 0.4),
-        0 0 10px rgba(219, 72, 7, 0.3);
-    color: #e0e0e0;
-    background-image: linear-gradient(
-        135deg,
-        #b83805,
-        #db4807 20%,
-        #db4807 80%,
-        #f05f14
-    );
-    background-color: var(--accentuation-color);
-}
-
-/*********************************************/
-/*  RESPONSIVE TEL                           */
-/*********************************************/
-@media (max-width: 1100px) {
-    .buttonSvg {
-        padding: 5px 15px 5px 10px;
-    }
-
-    .button {
-        font-size: 14px;
-    }
-}
-
-@media (min-width: 1100px) {
-    .buttonWeb {
-        padding: 10px 30px;
-        /* font-family: 'MuseoModerno'; */
-        font-size: 20px;
-        font-weight: 800;
-        background-color: var(--accentuation-color);
-        background-image: linear-gradient(
-            135deg,
-            #b83805,
-            #db4807 20%,
-            #db4807 80%,
-            #f05f14
-        );
-        color: #e0e0e0;
-        border-radius: var(--border-radius);
-        border: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        text-align: center;
-        transition:
-            color 0.3s ease,
-            box-shadow 0.3s ease;
-        box-shadow:
-            0 4px 8px rgba(219, 72, 7, 0.4),
-            0 0 10px rgba(219, 72, 7, 0.3);
-    }
-
-    .buttonWeb a {
-        color: #e0e0e0;
-    }
-
-    .buttonWeb:hover {
-        background-color: #f5520d; /* plus clair */
-        box-shadow:
-            0 6px 12px rgba(219, 72, 7, 0.6),
-            0 0 20px rgba(219, 72, 7, 0.5);
-        color: #fdf8f3;
-    }
-
-    .buttonWeb svg {
-        width: 30px;
-        margin-right: 10px;
-    }
-
-    .buttonWeb:hover:has(.spinner) {
-        box-shadow:
-            0 4px 8px rgba(219, 72, 7, 0.4),
-            0 0 10px rgba(219, 72, 7, 0.3);
-        color: #e0e0e0;
-        background-image: linear-gradient(
-            135deg,
-            #b83805,
-            #db4807 20%,
-            #db4807 80%,
-            #f05f14
-        );
-        background-color: var(--accentuation-color);
     }
 }

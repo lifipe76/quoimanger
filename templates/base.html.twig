@@ -1,24 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <title>{% block title %}QuoiManger - Suivi des repas{% endblock %}</title>
+
+        <!-- PWA Web App Manifest & Mobile Web App Meta -->
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#db4807">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="QuoiManger">
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+        <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+
         {% block stylesheets %}
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-            {{ addCss('styles/recettes.css') }}
+            {{ addCss('styles/global.css') }}
         {% endblock %}
 
         {% block javascripts %}
+            <script>
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', function () {
+                        navigator.serviceWorker.register('/sw.js').catch(function (err) {
+                            console.log('SW registration error:', err);
+                        });
+                    });
+                }
+            </script>
         {% endblock %}
     </head>
     <body>
+        {{ composant('_composants/container') }}
+
+        {{ composant('_composants/invitation_banner') }}
+
         {% block menu %}
             {{ composant('menu') }}
         {% endblock %}
 
-        {% include '_composants/toasts.html.twig' %}
+        {{ composant('_composants/toast', _context) }}
 
         {% block body %}{% endblock %}
+
+        <!-- Navigation barre mobile imitation application native -->
+        {{ composant('_composants/bottom_nav') }}
     </body>
 </html>

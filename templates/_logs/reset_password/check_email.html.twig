@@ -2,13 +2,8 @@
 
 {% block title %}Vérifiez vos emails - QuoiManger{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ addCss('styles/recettes.css') }}
-{% endblock %}
-
 {% block body %}
-<div class="container" style="max-width: 520px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+{% set emailContent %}
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
             ✉️
@@ -36,13 +31,24 @@
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <a href="{{ path('app_forgot_password_request') }}" class="btn btn-secondary" style="width: 100%;">
-                Renvoyer une demande
-            </a>
-            <a href="{{ path('web_login') }}" class="btn btn-primary" style="width: 100%;">
-                Retour à la page de connexion
-            </a>
+            {{ composant('_composants/button', {
+                'titre': 'Renvoyer une demande',
+                'href': path('app_forgot_password_request'),
+                'class': 'btn-secondary',
+                'style': 'width: 100%;'
+            }) }}
+            {{ composant('_composants/button', {
+                'titre': 'Retour à la page de connexion',
+                'href': path('web_login'),
+                'class': 'btn-primary',
+                'style': 'width: 100%;'
+            }) }}
         </div>
     </div>
-</div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'style': 'max-width: 520px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'content': emailContent
+}) }}
 {% endblock %}

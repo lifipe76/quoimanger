@@ -91,24 +91,17 @@
     border-radius: 9999px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
-.card-recette-moment.moment-matin {
-    background: #fef9c3;
-    color: #854d0e;
-    border: 1px solid #fef08a;
-}
-
-.card-recette-moment.moment-midi {
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
-}
-
+.card-recette-moment.moment-matin,
+.card-recette-moment.moment-midi,
 .card-recette-moment.moment-soir {
-    background: #f3e8ff;
-    color: #6b21a8;
-    border: 1px solid #e9d5ff;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
 .card-btn-pencil {
@@ -135,36 +128,24 @@
 .card-recette-status {
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.3rem 0.65rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 9999px;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-}
-
-.card-recette-status.realisee {
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-}
-
-.card-recette-status.realisee-bubble {
-    background: #ecfdf5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
-    font-weight: 700;
-}
-
-.card-recette-status.a-faire {
-    background: #fff7ed;
-    color: #ea580c;
-    border: 1px solid #fed7aa;
-}
-
-.card-recette-status.status-days-ago {
-    background: #f1f5f9;
+    background: #f8fafc;
     color: #475569;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #e2e8f0;
+}
+
+.card-recette-status.realisee,
+.card-recette-status.realisee-bubble,
+.card-recette-status.a-faire,
+.card-recette-status.status-days-ago,
+.card-recette-status.card-recette-participants-bubble {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
     font-weight: 600;
 }
 
@@ -183,39 +164,198 @@
     color: #0f172a;
     margin: 0 0 1rem 0;
     line-height: 1.35;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
 }
 
-.card-recette-title a {
+.card-recette-title a,
+.recipe-title-link {
     color: inherit;
     text-decoration: none;
-    transition: color 0.2s;
-}
-
-.card-recette-title a:hover {
-    color: #db4807;
-}
-
-.card-title-clickable {
-    cursor: pointer;
-    display: inline;
     transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    line-height: inherit;
 }
 
-.card-title-clickable:hover .recipe-title-main {
-    color: #db4807;
-    text-decoration: underline decoration-dashed 1.5px;
-    text-underline-offset: 4px;
+.card-recette-title a:hover,
+.recipe-title-link:hover {
+    color: var(--primary, #db4807);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
-.recipe-title-complement {
-    color: #db4807;
+/* Boutons et accompagnements */
+.card-recette-btn-complement {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    line-height: inherit;
+}
+
+.card-recette-btn-complement-add {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    color: #64748b;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.card-recette-btn-complement-add:hover {
+    background: #fff7ed;
+    border-color: var(--primary, #db4807);
+    border-style: solid;
+    color: var(--primary, #db4807);
+    transform: scale(1.15);
+    box-shadow: 0 2px 8px var(--primary-glow, rgba(219, 72, 7, 0.25));
+}
+
+.card-recette-btn-complement-add svg {
+    pointer-events: none;
+    display: block;
+    width: 9px;
+    height: 9px;
+}
+
+/* Aucun encadré pour les accompagnements : juste le texte entre parenthèses */
+.card-recette-complement-text {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: var(--primary, #db4807);
+    font-size: 1.15rem;
     font-weight: 600;
-    font-size: 1.1rem;
-    margin-left: 0.35rem;
+    line-height: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
 }
 
-.card-title-clickable:hover .recipe-title-complement {
-    opacity: 0.85;
+.card-recette-complement-text:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.card-recette-complement-text .recipe-title-complement {
+    color: var(--primary, #db4807);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: inherit;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Ligne de notation et étoiles */
+.card-recette-rating-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.95rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.card-recette-stars-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.stars-display {
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: 1px;
+}
+
+.star-filled {
+    color: #f59e0b;
+}
+
+.star-empty {
+    color: #cbd5e1;
+}
+
+.rating-count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-left: 0.25rem;
+}
+
+.rating-avg-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #d97706;
+    margin-left: 0.25rem;
+}
+
+/* Notation rapide par l'utilisateur */
+.card-recette-quick-rate {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.quick-rate-label {
+    font-weight: 600;
+    font-size: 0.775rem;
+}
+
+.quick-stars-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.quick-star-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 1.05rem;
+    line-height: 1;
+    color: #cbd5e1;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.quick-star-btn:hover,
+.quick-star-btn.hover-active,
+.quick-star-btn.active {
+    color: #f59e0b;
+}
+
+.quick-star-btn:hover {
+    transform: scale(1.25);
 }
 
 .card-recette-body {
@@ -366,4 +506,79 @@
     color: #dc2626;
     box-shadow: none;
     transform: none;
+}
+
+/* ==========================================================================
+   Responsive Mobile pour Card Recette
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .card-recette {
+        padding: 1.15rem 1rem;
+        border-radius: 14px;
+        transform: none !important;
+        animation: none;
+    }
+
+    .card-recette:hover {
+        transform: none !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-recette-header {
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-recette-header-left {
+        gap: 0.35rem;
+    }
+
+    .card-recette-status,
+    .card-recette-moment {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .card-recette-title {
+        font-size: 1.15rem;
+        margin-bottom: 0.75rem;
+        gap: 0.35rem;
+    }
+
+    .card-recette-rating-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding-bottom: 0.6rem;
+    }
+
+    .card-recette-stars-group {
+        font-size: 1.1rem;
+    }
+
+    .card-recette-quick-rate {
+        width: 100%;
+        justify-content: space-between;
+        padding: 0.35rem 0.75rem;
+        box-sizing: border-box;
+    }
+
+    .quick-star-btn {
+        font-size: 1.25rem;
+        padding: 4px 6px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    .card-recette-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+    }
+
+    .card-recette-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }

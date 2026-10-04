@@ -1,0 +1,183 @@
+/* ==========================================================================
+   Page Home - Styles du bloc d'action rapide et de suggestion
+   ========================================================================== */
+
+.card-empty-cta {
+    background: #ffffff;
+    border: 2px dashed #cbd5e1;
+    border-radius: 18px;
+    padding: 1.5rem 1.75rem;
+    text-align: left;
+    cursor: default;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.card-empty-cta:hover {
+    border-color: #f97316;
+    box-shadow: 0 8px 24px -6px rgba(219, 72, 7, 0.12);
+}
+
+.cta-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.empty-cta-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-main, #0f172a);
+    letter-spacing: -0.02em;
+}
+
+/* Ligne de suggestion sous le bloc d'action */
+.cta-suggestion-row {
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.suggestion-form {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    box-sizing: border-box;
+}
+
+.suggestion-main-info {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.suggestion-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.suggestion-title-link {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.suggestion-title-link:hover {
+    color: var(--primary, #db4807);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.suggestion-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    white-space: normal;
+    word-break: break-word;
+    display: inline-block;
+    max-width: 100%;
+    box-sizing: border-box;
+    line-height: 1.35;
+}
+
+/* Bouton + style stylo (card-btn-pencil) */
+.suggestion-btn,
+.suggestion-btn-plus {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    cursor: pointer;
+    line-height: 1;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    flex-shrink: 0;
+    font-family: inherit;
+}
+
+.suggestion-btn:hover,
+.suggestion-btn-plus:hover {
+    background: #fff7ed;
+    color: var(--primary, #db4807);
+    border-color: #fdba74;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px var(--primary-glow, rgba(219, 72, 7, 0.2));
+}
+
+.suggestion-btn:active,
+.suggestion-btn-plus:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 600px) {
+    .card-empty-cta {
+        padding: 1.15rem 1rem;
+        border-radius: 14px;
+    }
+
+    .cta-top-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+    }
+
+    .cta-top-row .button,
+    .cta-top-row .btn-cta {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .empty-cta-title {
+        font-size: 1.15rem;
+        line-height: 1.3;
+    }
+
+    .cta-suggestion-row {
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+    }
+
+    .suggestion-form {
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .suggestion-main-info {
+        gap: 0.4rem;
+    }
+
+    .suggestion-title-link {
+        font-size: 0.95rem;
+    }
+
+    .suggestion-badge {
+        font-size: 0.72rem;
+        padding: 0.15rem 0.5rem;
+        max-width: 100%;
+    }
+}

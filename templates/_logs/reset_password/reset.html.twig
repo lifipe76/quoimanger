@@ -2,13 +2,8 @@
 
 {% block title %}Réinitialiser votre mot de passe - QuoiManger{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ addCss('styles/recettes.css') }}
-{% endblock %}
-
 {% block body %}
-<div class="container" style="max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;">
+{% set resetContent %}
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
             🔒
@@ -82,9 +77,12 @@
                 {{ form_errors(resetForm.plainPassword.second, {'attr': {'class': 'form-error'}}) }}
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 1rem;">
-                Enregistrer le mot de passe
-            </button>
+            {{ composant('_composants/button', {
+                'titre': 'Enregistrer le mot de passe',
+                'type': 'submit',
+                'class': 'btn-primary',
+                'style': 'width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 1rem;'
+            }) }}
         {{ form_end(resetForm) }}
     </div>
 
@@ -93,7 +91,12 @@
             ← Retour à la connexion
         </a>
     </div>
-</div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'style': 'max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'content': resetContent
+}) }}
 
 <script>
 function togglePasswordVisibility(inputId, btn) {

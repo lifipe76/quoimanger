@@ -204,6 +204,42 @@ class Recette
         return sprintf('Dernière fois le %s (il y a %d jours)', $dateStr, $days);
     }
 
+    /**
+     * Retourne le nombre total de notes reçues par cette recette
+     */
+    #[Groups(['recette:read'])]
+    public function getNotesCount(): int
+    {
+        $count = 0;
+        foreach ($this->realisations as $realisation) {
+            $count += $realisation->getNotesCount();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Retourne la note moyenne (sur 5) de la recette
+     */
+    #[Groups(['recette:read'])]
+    public function getAverageNote(): ?float
+    {
+        $total = 0;
+        $count = 0;
+        foreach ($this->realisations as $realisation) {
+            foreach ($realisation->getNotes() as $note) {
+                $total += $note->getNote();
+                $count++;
+            }
+        }
+
+        if ($count === 0) {
+            return null;
+        }
+
+        return round($total / $count, 1);
+    }
+
     public function __toString(): string
     {
         return (string) $this->designation;

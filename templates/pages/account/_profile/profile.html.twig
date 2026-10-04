@@ -1,0 +1,233 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte - QuoiManger{% endblock %}
+
+{% block body %}
+{% set profileContent %}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Mon compte</h1>
+            <p class="page-subtitle">Gérez vos informations personnelles et votre foyer familial</p>
+        </div>
+        {{ composant('_composants/button', {
+            'titre': "← Retour à l'accueil",
+            'href': path('home'),
+            'class': 'btn-secondary'
+        }) }}
+    </div>
+
+    <!-- Onglets de navigation -->
+    <div class="account-tabs" role="tablist">
+        <button type="button" class="account-tab-btn {{ activeTab|default('profil') == 'profil' ? 'active' : '' }}" data-tab="profil" role="tab" aria-selected="{{ activeTab|default('profil') == 'profil' ? 'true' : 'false' }}">
+            <i class="fa-solid fa-user-gear fa-fw"></i>
+            <span>Profil</span>
+        </button>
+        <button type="button" class="account-tab-btn {{ activeTab|default('profil') == 'famille' ? 'active' : '' }}" data-tab="famille" role="tab" aria-selected="{{ activeTab|default('profil') == 'famille' ? 'true' : 'false' }}">
+            <i class="fa-solid fa-users fa-fw"></i>
+            <span>Ma famille</span>
+            {% if famille %}
+                <span class="tab-badge">{{ famille.membres|length }}</span>
+            {% endif %}
+        </button>
+    </div>
+
+    <!-- Contenu Onglet 1 : Profil -->
+    <div id="tab-profil" class="account-tab-pane {{ activeTab|default('profil') == 'profil' ? 'active' : '' }}" role="tabpanel">
+        <div class="card profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ (user.firstname|first ~ user.lastname|first)|upper|default('👤') }}
+                </div>
+                <div>
+                    <h2 class="profile-name">
+                        {{ (user.firstname ~ ' ' ~ user.lastname)|trim ?: user.userIdentifier }}
+                    </h2>
+                    <div class="profile-email">
+                        {{ user.email }}
+                    </div>
+                </div>
+            </div>
+
+            {{ form_start(form) }}
+                <div class="profile-grid">
+                    <div class="form-group">
+                        {{ form_label(form.firstname, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.firstname) }}
+                        {{ form_errors(form.firstname, {'attr': {'class': 'form-error'}}) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.lastname, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.lastname) }}
+                        {{ form_errors(form.lastname, {'attr': {'class': 'form-error'}}) }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.email) }}
+                    {{ form_errors(form.email, {'attr': {'class': 'form-error'}}) }}
+                </div>
+
+                <div class="profile-security-section">
+                    <h3 class="profile-section-title">
+                        Modifier le mot de passe
+                    </h3>
+                    <p class="profile-section-desc">
+                        Laissez les champs ci-dessous vides si vous ne souhaitez pas modifier votre mot de passe actuel.
+                    </p>
+
+                    <div class="form-group">
+                        {{ form_label(form.newPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.newPassword.first) }}
+                        {{ form_errors(form.newPassword.first, {'attr': {'class': 'form-error'}}) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.newPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.newPassword.second) }}
+                        {{ form_errors(form.newPassword.second, {'attr': {'class': 'form-error'}}) }}
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    {{ composant('_composants/button', {
+                        'titre': 'Annuler',
+                        'href': path('home'),
+                        'class': 'btn-secondary'
+                    }) }}
+                    {{ composant('_composants/button', {
+                        'titre': 'Enregistrer les modifications',
+                        'type': 'submit',
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <!-- Contenu Onglet 2 : Ma Famille -->
+    <div id="tab-famille" class="account-tab-pane {{ activeTab|default('profil') == 'famille' ? 'active' : '' }}" role="tabpanel">
+        <div class="card family-card">
+            <div class="family-header">
+                <div class="family-title-group">
+                    <div class="family-title-icon">👨‍👩‍👧‍👦</div>
+                    <div>
+                        <h2 class="family-title">
+                            {{ famille ? famille.nom : 'Ma Famille' }}
+                        </h2>
+                        <p class="family-subtitle">
+                            Regroupez vos proches pour suivre qui partage chaque repas au quotidien
+                        </p>
+                    </div>
+                </div>
+
+                {% if famille %}
+                    <form method="post" action="{{ path('app_famille_quitter') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette famille ?');" class="family-leave-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('quitter_famille') }}">
+                        {{ composant('_composants/button', {
+                            'titre': 'Quitter la famille',
+                            'type': 'submit',
+                            'class': 'btn-danger btn-sm'
+                        }) }}
+                    </form>
+                {% endif %}
+            </div>
+
+            {% if famille %}
+                <!-- Renommer la famille -->
+                <form method="post" action="{{ path('app_famille_renommer') }}" class="family-rename-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('famille_renommer') }}">
+                    <input type="text" name="nom" value="{{ famille.nom }}" class="form-control" placeholder="Nom de la famille..." required>
+                    {{ composant('_composants/button', {
+                        'titre': 'Renommer',
+                        'type': 'submit',
+                        'class': 'btn-secondary btn-sm'
+                    }) }}
+                </form>
+
+                <!-- Liste des membres -->
+                <h3 class="family-members-title">
+                    Membres de la famille ({{ famille.membres|length }})
+                </h3>
+                <div class="family-members-list">
+                    {% for membre in famille.membres %}
+                        <div class="family-member-item">
+                            <div class="family-member-info">
+                                <div class="family-member-avatar">
+                                    {{ (membre.firstname|first ~ membre.lastname|first)|upper|default('👤') }}
+                                </div>
+                                <div>
+                                    <span class="family-member-name">
+                                        {{ membre.displayName }}
+                                    </span>
+                                    {% if membre == user %}
+                                        <span class="family-member-tag-you">Vous</span>
+                                    {% endif %}
+                                    <div class="family-member-email">{{ membre.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="family-empty-desc">
+                    Vous ne faites partie d'aucune famille pour le moment. Invitez un proche par email ci-dessous pour créer votre foyer familial !
+                </p>
+            {% endif %}
+
+            <!-- Formulaire d'invitation -->
+            <div class="family-invite-box">
+                <h3 class="family-invite-title">
+                    ✉️ Inviter un proche par email
+                </h3>
+                <p class="family-invite-desc">
+                    Un bandeau s'affichera sur son compte pour lui proposer de rejoindre votre famille.
+                </p>
+
+                <form method="post" action="{{ path('app_famille_inviter') }}" class="family-invite-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('famille_inviter') }}">
+                    <input type="email" name="invite_email" placeholder="nom.proche@exemple.com" required class="form-control family-invite-input">
+                    {{ composant('_composants/button', {
+                        'titre': 'Envoyer l\'invitation',
+                        'type': 'submit',
+                        'class': 'btn-primary'
+                    }) }}
+                </form>
+            </div>
+
+            <!-- Invitations envoyées en attente -->
+            {% if sentInvitations is defined and sentInvitations|length > 0 %}
+                <div class="family-pending-invitations">
+                    <h4 class="family-pending-title">
+                        Invitations envoyées en attente
+                    </h4>
+                    <div class="family-pending-list">
+                        {% for inv in sentInvitations %}
+                            <div class="family-pending-item">
+                                <div>
+                                    <strong>{{ inv.inviteEmail }}</strong>
+                                    <span class="family-pending-date">
+                                        (envoyée le {{ inv.createdAt|date('d/m/Y') }})
+                                    </span>
+                                </div>
+                                <form method="post" action="{{ path('app_famille_invitation_annuler', {'id': inv.id}) }}" class="family-pending-cancel-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('cancel_invitation_' ~ inv.id) }}">
+                                    {{ composant('_composants/button', {
+                                        'titre': 'Annuler',
+                                        'type': 'submit',
+                                        'class': 'btn-secondary btn-sm'
+                                    }) }}
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'content': profileContent
+}) }}
+{% endblock %}

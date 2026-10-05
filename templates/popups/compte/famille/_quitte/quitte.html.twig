@@ -1,0 +1,44 @@
+<!-- Modal Popup "Quitter la famille" -->
+{% set leaveContent %}
+    <form method="post" action="{{ path('app_famille_quitter') }}" id="leave-family-form" class="family-leave-form leave-family-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('quitter_famille') }}">
+
+        <div class="modal-body leave-family-modal-body">
+            <div class="leave-family-warning-box">
+                <div class="leave-family-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="leave-family-text">
+                    <h3 class="leave-family-question">
+                        Êtes-vous sûr de vouloir quitter votre famille ?
+                    </h3>
+                    <p class="leave-family-desc">
+                        Vous ne ferez plus partie de « <strong>{{ famille ? famille.nom : 'cette famille' }}</strong> » et vous ne partagerez plus le suivi des repas avec ses membres.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer leave-family-modal-footer">
+            {{ composant('_composants/button', {
+                'titre': 'Annuler',
+                'type': 'button',
+                'class': 'btn-secondary',
+                'onclick': "closeModal('leave-family-modal')"
+            }) }}
+            {{ composant('_composants/button', {
+                'titre': 'Quitter la famille',
+                'type': 'submit',
+                'class': 'btn-danger'
+            }) }}
+        </div>
+    </form>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'leave-family-modal',
+    'title': 'Quitter la famille',
+    'content': leaveContent,
+    'onClose': "closeModal('leave-family-modal')",
+    'onBackdropClick': "handleModalBackdropClick(event, 'leave-family-modal')"
+}) }}

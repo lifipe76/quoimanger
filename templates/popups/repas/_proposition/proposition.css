@@ -1,0 +1,74 @@
+/* Styles pour le popup de proposition de repas */
+.modal-proposition-header {
+    padding: 1.25rem 1.5rem 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-proposition-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.modal-proposition-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.modal-date-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-date-row label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.modal-date-input {
+    padding: 0.4rem 0.75rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #f8fafc;
+}
+
+.modal-date-input:focus {
+    outline: none;
+    border-color: #c4a587;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(196, 165, 135, 0.2);
+}
+
+.modal-date-quick-btns {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.btn-date-quick {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-date-quick:hover,
+.btn-date-quick.active {
+    background: #c4a587;
+    border-color: #c4a587;
+    color: #fff;
+}

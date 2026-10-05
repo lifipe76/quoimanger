@@ -1,0 +1,130 @@
+<!-- Modal Popup "Je propose un repas" -->
+{% set popupContent %}
+    <div class="modal-proposition-header">
+        <h3 class="modal-proposition-title">Proposer un repas à la famille</h3>
+        <p class="modal-proposition-subtitle">Choisissez une recette et un moment pour la soumettre au vote de vos proches.</p>
+    </div>
+
+    <!-- Choix de la date -->
+    <div class="modal-date-row">
+        <label for="proposition-date-input">Date :</label>
+        <input type="date"
+               id="proposition-date-input"
+               class="modal-date-input"
+               value="{{ 'now'|date('Y-m-d') }}"
+               onchange="onPropositionDateInputChange(this.value)">
+        <div class="modal-date-quick-btns">
+            <button type="button" class="btn-date-quick active" onclick="selectPropositionDate('{{ 'now'|date('Y-m-d') }}', this)">Aujourd'hui</button>
+            <button type="button" class="btn-date-quick" onclick="selectPropositionDate('{{ '+1 day'|date('Y-m-d') }}', this)">Demain</button>
+        </div>
+    </div>
+
+    <!-- Barre supérieure : Recherche à gauche + Bulles Matin Midi Soir à droite -->
+    <div class="modal-top-bar">
+        <div class="modal-search-field">
+            <span class="search-icon">🔍</span>
+            <input type="text"
+                   id="proposition-recipe-filter-input"
+                   class="form-control"
+                   placeholder="Rechercher une recette..."
+                   oninput="filterPropositionRecipesList(this.value)">
+        </div>
+
+        <div class="moment-toggle-group">
+            <button type="button"
+                    class="btn-moment-toggle btn-prop-moment-toggle {{ defaultMoment|default('soir') == 'matin' ? 'active' : '' }}"
+                    data-moment="matin"
+                    onclick="selectPropositionMoment('matin')">
+                Matin
+            </button>
+            <button type="button"
+                    class="btn-moment-toggle btn-prop-moment-toggle {{ defaultMoment|default('soir') == 'midi' ? 'active' : '' }}"
+                    data-moment="midi"
+                    onclick="selectPropositionMoment('midi')">
+                Midi
+            </button>
+            <button type="button"
+                    class="btn-moment-toggle btn-prop-moment-toggle {{ defaultMoment|default('soir') == 'soir' ? 'active' : '' }}"
+                    data-moment="soir"
+                    onclick="selectPropositionMoment('soir')">
+                Soir
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-recipes-list" id="modal-proposition-recipes-container">
+        {% if recettes|length > 0 %}
+            {% for r in recettes %}
+                <form method="post" action="{{ path('app_repas_proposer') }}" class="modal-recipe-form modal-prop-recipe-form" data-name="{{ r.designation|lower }}">
+                    <input type="hidden" name="recette_id" value="{{ r.id }}">
+                    <input type="hidden" name="moment" class="input-form-moment input-prop-form-moment" value="{{ defaultMoment|default('soir') }}">
+                    <input type="hidden" name="date" class="input-prop-form-date" value="{{ 'now'|date('Y-m-d') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('proposer_repas') }}">
+                    <button type="submit" class="modal-recipe-item">
+                        <div class="recipe-item-main">
+                            <span class="recipe-item-name">{{ r.designation }}</span>
+                            <div class="recipe-item-badges">
+                                {% set rank = ranks[r.id]|default(null) %}
+                                {% if rank %}
+                                    <span class="badge-rank badge-rank-{{ rank <= 3 ? rank : 'other' }}">
+                                        {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                                    </span>
+                                {% endif %}
+                                <span class="badge-eaten-count">
+                                    {{ r.realisations|length > 0 ? ('Mangé ' ~ r.realisations|length ~ ' fois') : 'Jamais mangé' }}
+                                </span>
+                            </div>
+                            <span class="recipe-item-ingredients">
+                                {{ r.recetteIngredients|length }} ingrédient(s)
+                                {% if r.recetteIngredients|length > 0 %}
+                                    • ({{ r.recetteIngredients|map(ri => ri.ingredient.designation)|slice(0, 3)|join(', ') }}{% if r.recetteIngredients|length > 3 %}...{% endif %})
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="recipe-item-meta">
+                            {% if r.lastRealiseAt %}
+                                <span class="badge-last-cooked" title="Dernière dégustation">
+                                    {{ r.lastRealiseLabel }}
+                                </span>
+                            {% else %}
+                                <span class="badge-never-cooked">
+                                    ✦ Jamais réalisée
+                                </span>
+                            {% endif %}
+                            <span class="recipe-item-action">Proposer →</span>
+                        </div>
+                    </button>
+                </form>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" style="padding: 2rem 1rem;">
+                <p>Aucune recette disponible pour le moment.</p>
+                <div style="margin-top: 0.5rem;">
+                    {{ composant('_composants/button', {
+                        'titre': '+ Créer une recette d\'abord',
+                        'href': path('app_recette_create'),
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer modal-footer-center">
+        {{ composant('_composants/button', {
+            'titre': 'Annuler',
+            'type': 'button',
+            'class': 'btn-secondary',
+            'onclick': 'closePropositionModal()',
+            'style': 'width: 100%;'
+        }) }}
+    </div>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'repas-proposition-modal',
+    'content': popupContent,
+    'onClose': 'closePropositionModal()',
+    'onBackdropClick': 'handleModalBackdropClick(event, "repas-proposition-modal")'
+}) }}

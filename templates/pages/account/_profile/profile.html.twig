@@ -5,28 +5,20 @@
 {% block body %}
 {% set profileContent %}
     <div class="page-header">
-        <div>
-            <h1 class="page-title">Mon compte</h1>
-            <p class="page-subtitle">Gérez vos informations personnelles et votre foyer familial</p>
-        </div>
-        {{ composant('_composants/button', {
-            'titre': "← Retour à l'accueil",
-            'href': path('home'),
-            'class': 'btn-secondary'
-        }) }}
+        <h1 class="page-title">Mon compte</h1>
     </div>
 
     <!-- Onglets de navigation -->
     <div class="account-tabs" role="tablist">
         <button type="button" class="account-tab-btn {{ activeTab|default('profil') == 'profil' ? 'active' : '' }}" data-tab="profil" role="tab" aria-selected="{{ activeTab|default('profil') == 'profil' ? 'true' : 'false' }}">
-            <i class="fa-solid fa-user-gear fa-fw"></i>
             <span>Profil</span>
         </button>
         <button type="button" class="account-tab-btn {{ activeTab|default('profil') == 'famille' ? 'active' : '' }}" data-tab="famille" role="tab" aria-selected="{{ activeTab|default('profil') == 'famille' ? 'true' : 'false' }}">
-            <i class="fa-solid fa-users fa-fw"></i>
             <span>Ma famille</span>
-            {% if famille %}
-                <span class="tab-badge">{{ famille.membres|length }}</span>
+            {% if receivedInvitations is defined and receivedInvitations|length > 0 %}
+                <span class="tab-alert-badge" title="Invitation en attente">!</span>
+            {% elseif famille %}
+                <span class="tab-badge">{{ (confirmedMembres|default(famille.membres))|length }}</span>
             {% endif %}
         </button>
     </div>
@@ -36,7 +28,7 @@
         <div class="card profile-card">
             <div class="profile-header">
                 <div class="profile-avatar">
-                    {{ (user.firstname|first ~ user.lastname|first)|upper|default('👤') }}
+                    {{ (user.firstname|first ~ user.lastname|first)|upper|default((user.email|first)|upper) }}
                 </div>
                 <div>
                     <h2 class="profile-name">
@@ -78,13 +70,31 @@
 
                     <div class="form-group">
                         {{ form_label(form.newPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.newPassword.first) }}
+                        <div class="password-input-wrapper">
+                            {{ form_widget(form.newPassword.first) }}
+                            <button type="button"
+                                    class="toggle-password-btn"
+                                    onclick="togglePasswordVisibility('{{ form.newPassword.first.vars.id }}', this)"
+                                    title="Afficher/Masquer le mot de passe"
+                                    aria-label="Afficher ou masquer le mot de passe">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                         {{ form_errors(form.newPassword.first, {'attr': {'class': 'form-error'}}) }}
                     </div>
 
                     <div class="form-group">
                         {{ form_label(form.newPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.newPassword.second) }}
+                        <div class="password-input-wrapper">
+                            {{ form_widget(form.newPassword.second) }}
+                            <button type="button"
+                                    class="toggle-password-btn"
+                                    onclick="togglePasswordVisibility('{{ form.newPassword.second.vars.id }}', this)"
+                                    title="Afficher/Masquer le mot de passe"
+                                    aria-label="Afficher ou masquer le mot de passe">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                         {{ form_errors(form.newPassword.second, {'attr': {'class': 'form-error'}}) }}
                     </div>
                 </div>
@@ -110,10 +120,14 @@
         <div class="card family-card">
             <div class="family-header">
                 <div class="family-title-group">
-                    <div class="family-title-icon">👨‍👩‍👧‍👦</div>
                     <div>
                         <h2 class="family-title">
-                            {{ famille ? famille.nom : 'Ma Famille' }}
+                            <span>{{ famille ? famille.nom : 'Ma Famille' }}</span>
+                            {% if famille and isChef and not isPendingMember %}
+                                <button type="button" class="family-edit-btn" onclick="openModal('rename-family-modal')" title="Renommer la famille" aria-label="Renommer la famille">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                            {% endif %}
                         </h2>
                         <p class="family-subtitle">
                             Regroupez vos proches pour suivre qui partage chaque repas au quotidien
@@ -121,45 +135,83 @@
                     </div>
                 </div>
 
-                {% if famille %}
-                    <form method="post" action="{{ path('app_famille_quitter') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir quitter cette famille ?');" class="family-leave-form">
-                        <input type="hidden" name="_token" value="{{ csrf_token('quitter_famille') }}">
+                {% if famille and not isChef and not isPendingMember %}
+                    <div class="family-leave-wrapper">
                         {{ composant('_composants/button', {
                             'titre': 'Quitter la famille',
-                            'type': 'submit',
-                            'class': 'btn-danger btn-sm'
+                            'type': 'button',
+                            'class': 'btn-danger btn-sm family-leave-btn',
+                            'onclick': "openModal('leave-family-modal')"
                         }) }}
-                    </form>
+                    </div>
                 {% endif %}
             </div>
 
-            {% if famille %}
-                <!-- Renommer la famille -->
-                <form method="post" action="{{ path('app_famille_renommer') }}" class="family-rename-form">
-                    <input type="hidden" name="_token" value="{{ csrf_token('famille_renommer') }}">
-                    <input type="text" name="nom" value="{{ famille.nom }}" class="form-control" placeholder="Nom de la famille..." required>
-                    {{ composant('_composants/button', {
-                        'titre': 'Renommer',
-                        'type': 'submit',
-                        'class': 'btn-secondary btn-sm'
-                    }) }}
-                </form>
+            <!-- Invitations reçues en attente de réponse (si c'est vous qui avez reçu une invitation) -->
+            {% if receivedInvitations is defined and receivedInvitations|length > 0 %}
+                <div class="family-received-invitations-box">
+                    <h3 class="family-received-title">
+                        Invitation{% if receivedInvitations|length > 1 %}s{% endif %} reçue{% if receivedInvitations|length > 1 %}s{% endif %} en attente
+                    </h3>
+                    <p class="family-received-desc">
+                        Vous avez reçu une proposition pour rejoindre un foyer familial. Vous pouvez accepter ou refuser ci-dessous :
+                    </p>
+                    <div class="family-received-list">
+                        {% for invite in receivedInvitations %}
+                            <div class="family-received-item">
+                                <div>
+                                    <div class="family-received-name">
+                                        Famille « {{ invite.famille.nom }} »
+                                    </div>
+                                    <div class="family-received-sender">
+                                        Invité(e) par <strong>{{ invite.demandeur.displayName }}</strong>
+                                        <span class="family-pending-date">(le {{ invite.createdAt|date('d/m/Y') }})</span>
+                                    </div>
+                                </div>
+                                <div class="family-received-actions">
+                                    <form method="post" action="{{ path('app_famille_invitation_accepter', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('accept_invitation_' ~ invite.id) }}">
+                                        {{ composant('_composants/button', {
+                                            'titre': 'Accepter',
+                                            'type': 'submit',
+                                            'class': 'btn-primary btn-sm'
+                                        }) }}
+                                    </form>
+                                    <form method="post" action="{{ path('app_famille_invitation_refuser', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('refuse_invitation_' ~ invite.id) }}">
+                                        {{ composant('_composants/button', {
+                                            'titre': 'Refuser',
+                                            'type': 'submit',
+                                            'class': 'btn-secondary btn-sm'
+                                        }) }}
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
+            {% if famille %}
+                {% set membersToDisplay = confirmedMembres|default(famille.membres) %}
                 <!-- Liste des membres -->
                 <h3 class="family-members-title">
-                    Membres de la famille ({{ famille.membres|length }})
+                    Membres de la famille ({{ membersToDisplay|length + (isPendingMember ? 1 : 0) }}{% if isChef and sentInvitations is defined and sentInvitations|length > 0 %} + {{ sentInvitations|length }} en attente{% endif %})
                 </h3>
                 <div class="family-members-list">
-                    {% for membre in famille.membres %}
+                    {% for membre in membersToDisplay %}
                         <div class="family-member-item">
                             <div class="family-member-info">
                                 <div class="family-member-avatar">
-                                    {{ (membre.firstname|first ~ membre.lastname|first)|upper|default('👤') }}
+                                    {{ (membre.firstname|first ~ membre.lastname|first)|upper|default((membre.email|first)|upper) }}
                                 </div>
                                 <div>
                                     <span class="family-member-name">
                                         {{ membre.displayName }}
                                     </span>
+                                    {% if famille.isChef(membre) %}
+                                        <span class="family-member-tag-chef">Chef de famille</span>
+                                    {% endif %}
                                     {% if membre == user %}
                                         <span class="family-member-tag-you">Vous</span>
                                     {% endif %}
@@ -168,49 +220,47 @@
                             </div>
                         </div>
                     {% endfor %}
-                </div>
-            {% else %}
-                <p class="family-empty-desc">
-                    Vous ne faites partie d'aucune famille pour le moment. Invitez un proche par email ci-dessous pour créer votre foyer familial !
-                </p>
-            {% endif %}
 
-            <!-- Formulaire d'invitation -->
-            <div class="family-invite-box">
-                <h3 class="family-invite-title">
-                    ✉️ Inviter un proche par email
-                </h3>
-                <p class="family-invite-desc">
-                    Un bandeau s'affichera sur son compte pour lui proposer de rejoindre votre famille.
-                </p>
-
-                <form method="post" action="{{ path('app_famille_inviter') }}" class="family-invite-form">
-                    <input type="hidden" name="_token" value="{{ csrf_token('famille_inviter') }}">
-                    <input type="email" name="invite_email" placeholder="nom.proche@exemple.com" required class="form-control family-invite-input">
-                    {{ composant('_composants/button', {
-                        'titre': 'Envoyer l\'invitation',
-                        'type': 'submit',
-                        'class': 'btn-primary'
-                    }) }}
-                </form>
-            </div>
-
-            <!-- Invitations envoyées en attente -->
-            {% if sentInvitations is defined and sentInvitations|length > 0 %}
-                <div class="family-pending-invitations">
-                    <h4 class="family-pending-title">
-                        Invitations envoyées en attente
-                    </h4>
-                    <div class="family-pending-list">
-                        {% for inv in sentInvitations %}
-                            <div class="family-pending-item">
-                                <div>
-                                    <strong>{{ inv.inviteEmail }}</strong>
-                                    <span class="family-pending-date">
-                                        (envoyée le {{ inv.createdAt|date('d/m/Y') }})
-                                    </span>
+                    {# Si l'utilisateur connecté est invité et en attente d'acceptation dans cette famille #}
+                    {% if isPendingMember and pendingInvitation is defined and pendingInvitation %}
+                        <div class="family-member-item family-member-pending">
+                            <div class="family-member-info">
+                                <div class="family-member-avatar">
+                                    {{ (user.firstname|first ~ user.lastname|first)|upper|default((user.email|first)|upper) }}
                                 </div>
-                                <form method="post" action="{{ path('app_famille_invitation_annuler', {'id': inv.id}) }}" class="family-pending-cancel-form">
+                                <div>
+                                    <span class="family-member-name">
+                                        {{ user.displayName }}
+                                    </span>
+                                    <span class="family-member-tag-you">Vous</span>
+                                    <span class="family-member-tag-pending">
+                                        En attente d'acceptation
+                                    </span>
+                                    <div class="family-member-email">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {# Membres invités en attente d'acceptation : UNIQUEMENT visibles par le chef de famille ! #}
+                    {% if isChef and sentInvitations is defined and sentInvitations|length > 0 %}
+                        {% for inv in sentInvitations %}
+                            <div class="family-member-item family-member-pending">
+                                <div class="family-member-info">
+                                    <div class="family-member-avatar">
+                                        {{ (inv.inviteUser ? (inv.inviteUser.firstname|first ~ inv.inviteUser.lastname|first)|upper : (inv.inviteEmail|first)|upper) }}
+                                    </div>
+                                    <div>
+                                        <span class="family-member-name" style="color: #64748b;">
+                                            {{ inv.inviteUser ? inv.inviteUser.displayName : inv.inviteEmail }}
+                                        </span>
+                                        <span class="family-member-tag-pending">
+                                            En attente d'acceptation
+                                        </span>
+                                        <div class="family-member-email">{{ inv.inviteEmail }}</div>
+                                    </div>
+                                </div>
+                                <form method="post" action="{{ path('app_famille_invitation_annuler', {'id': inv.id}) }}" class="family-pending-cancel-form" style="margin: 0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('cancel_invitation_' ~ inv.id) }}">
                                     {{ composant('_composants/button', {
                                         'titre': 'Annuler',
@@ -220,7 +270,37 @@
                                 </form>
                             </div>
                         {% endfor %}
-                    </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="family-empty-desc">
+                    {% if receivedInvitations is defined and receivedInvitations|length > 0 %}
+                        Vous n'avez pas encore rejoint de famille. Vous avez une invitation en attente ci-dessus pour rejoindre un foyer, ou vous pouvez inviter un proche par email ci-dessous pour créer le vôtre.
+                    {% else %}
+                        Vous ne faites partie d'aucune famille pour le moment. Invitez un proche par email ci-dessous pour créer votre foyer familial !
+                    {% endif %}
+                </p>
+            {% endif %}
+
+            <!-- Formulaire d'invitation (visible uniquement pour le chef ou si aucune famille) -->
+            {% if (not famille and not isPendingMember) or (isChef and not isPendingMember) %}
+                <div class="family-invite-box">
+                    <h3 class="family-invite-title">
+                        Inviter un proche par email
+                    </h3>
+                    <p class="family-invite-desc">
+                        Un bandeau s'affichera sur son compte pour lui proposer de rejoindre votre famille.
+                    </p>
+
+                    <form method="post" action="{{ path('app_famille_inviter') }}" class="family-invite-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('famille_inviter') }}">
+                        <input type="email" name="invite_email" placeholder="nom.proche@exemple.com" required class="form-control family-invite-input">
+                        {{ composant('_composants/button', {
+                            'titre': 'Envoyer l\'invitation',
+                            'type': 'submit',
+                            'class': 'btn-primary'
+                        }) }}
+                    </form>
                 </div>
             {% endif %}
         </div>
@@ -230,4 +310,12 @@
 {{ composant('_composants/container', {
     'content': profileContent
 }) }}
+
+{% if famille and not isChef and not isPendingMember %}
+    {{ composant('popups/compte/famille/quitte', {'famille': famille}) }}
+{% endif %}
+
+{% if famille and isChef and not isPendingMember %}
+    {{ composant('popups/compte/famille/renommer', {'famille': famille}) }}
+{% endif %}
 {% endblock %}

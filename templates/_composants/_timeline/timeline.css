@@ -16,7 +16,7 @@
     bottom: 2rem;
     left: 17px;
     width: 3px;
-    background: linear-gradient(180deg, #db4807 0%, #cbd5e1 30%, #e2e8f0 100%);
+    background: linear-gradient(180deg, #c4a587 0%, #cbd5e1 30%, #e2e8f0 100%);
     border-radius: 3px;
 }
 
@@ -41,9 +41,9 @@
     width: 16px;
     height: 16px;
     background: #ffffff;
-    border: 3px solid #db4807;
+    border: 3px solid #c4a587;
     border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(219, 72, 7, 0.2);
+    box-shadow: 0 0 0 4px rgba(196, 165, 135, 0.25);
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
@@ -51,7 +51,7 @@
 
 .timeline-item:hover .marker-dot {
     transform: scale(1.3);
-    box-shadow: 0 0 0 6px rgba(219, 72, 7, 0.35);
+    box-shadow: 0 0 0 6px rgba(196, 165, 135, 0.4);
 }
 
 .cta-marker {
@@ -68,8 +68,8 @@
     position: absolute;
     width: 36px;
     height: 36px;
-    background: #fff7ed;
-    border: 2px solid #db4807;
+    background: #fbf7f4;
+    border: 2px solid #c4a587;
     border-radius: 50%;
     animation: pulseGlow 2s infinite;
 }
@@ -77,15 +77,15 @@
 @keyframes pulseGlow {
     0% {
         transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(219, 72, 7, 0.5);
+        box-shadow: 0 0 0 0 rgba(196, 165, 135, 0.5);
     }
     70% {
         transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(219, 72, 7, 0);
+        box-shadow: 0 0 0 10px rgba(196, 165, 135, 0);
     }
     100% {
         transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(219, 72, 7, 0);
+        box-shadow: 0 0 0 0 rgba(196, 165, 135, 0);
     }
 }
 
@@ -140,7 +140,7 @@
 }
 
 .timeline-day-badge .day-badge-highlight {
-    color: #db4807;
+    color: #c4a587;
     font-weight: 800;
 }
 
@@ -171,9 +171,9 @@
 }
 
 .card-empty-cta:hover {
-    border-color: #db4807;
-    background: #fffbf9;
-    box-shadow: 0 8px 24px -6px rgba(219, 72, 7, 0.12);
+    border-color: #c4a587;
+    background: #fbf7f4;
+    box-shadow: 0 8px 24px -6px rgba(196, 165, 135, 0.15);
 }
 
 .empty-cta-icon {

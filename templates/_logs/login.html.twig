@@ -2,13 +2,12 @@
 
 {% block title %}Connexion - QuoiManger{% endblock %}
 
-{% block menu %}{% endblock %}
+{% block bottom_nav %}{% endblock %}
 
 {% block body %}
 {% set loginContent %}
     {% if app.user %}
         <div class="card" style="text-align: center; padding: 2.5rem 2rem;">
-            <div style="font-size: 3rem; margin-bottom: 0.75rem;">👋</div>
             <h1 class="page-title" style="font-size: 1.6rem; margin-bottom: 0.5rem;">Vous êtes déjà connecté</h1>
             <p style="color: var(--text-muted); margin-bottom: 2rem;">
                 Connecté avec le compte <strong>{{ app.user.userIdentifier }}</strong>
@@ -68,24 +67,21 @@
 
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="password" class="form-label">Mot de passe</label>
-                    <div style="position: relative; display: flex; align-items: center;">
+                    <div class="password-input-wrapper">
                         <input type="password"
                                name="_password"
                                id="password"
                                class="form-control"
                                placeholder="••••••••"
                                autocomplete="current-password"
-                               required
-                               style="padding-right: 46px;">
+                               required>
                         <button type="button"
                                 id="toggle-password-btn"
+                                class="toggle-password-btn"
                                 onclick="togglePasswordVisibility('password', this)"
                                 title="Afficher/Masquer le mot de passe"
-                                style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">
-                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
+                                aria-label="Afficher ou masquer le mot de passe">
+                            <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -122,28 +118,7 @@
 {% endset %}
 
 {{ composant('_composants/container', {
-    'style': 'max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'style': 'max-width: 480px; margin: 2rem auto 3rem; padding: 0 1.5rem;',
     'content': loginContent
 }) }}
-
-<script>
-function togglePasswordVisibility(inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const isPassword = input.type === 'password';
-    input.type = isPassword ? 'text' : 'password';
-
-    btn.innerHTML = isPassword
-        ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-            <line x1="2" x2="22" y1="2" y2="22"/>
-           </svg>`
-        : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-            <circle cx="12" cy="12" r="3"/>
-           </svg>`;
-}
-</script>
 {% endblock %}

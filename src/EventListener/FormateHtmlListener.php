@@ -58,6 +58,9 @@ class FormateHtmlListener
         // 1. Traitement des fichiers CSS de l'assets registry
         foreach (array_unique($this->registry->getCss()) as $cssFile) {
             $cssPath = $this->projectDir . "/assets/" . $cssFile;
+            if (!file_exists($cssPath)) {
+                $cssPath = $this->projectDir . "/templates/" . $cssFile;
+            }
 
             if (file_exists($cssPath)) {
                 $css .= file_get_contents($cssPath);
@@ -67,6 +70,9 @@ class FormateHtmlListener
         // 2. Traitement des fichiers JS de l'assets registry
         foreach (array_unique($this->registry->getJs()) as $jsFile) {
             $jsPath = $this->projectDir . "/assets/" . $jsFile;
+            if (!file_exists($jsPath)) {
+                $jsPath = $this->projectDir . "/templates/" . $jsFile;
+            }
 
             if (file_exists($jsPath)) {
                 $js .= file_get_contents($jsPath);

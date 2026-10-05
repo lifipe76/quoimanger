@@ -1,0 +1,59 @@
+{% if app.user %}
+    {% set pendingInvites = pending_family_invitations() %}
+    {% if pendingInvites|length > 0 %}
+        <div class="invitation-banners-wrapper" id="invitation-banners-wrapper">
+            {% for invite in pendingInvites %}
+                <div class="family-invitation-banner">
+                    <div class="family-invitation-banner-content">
+                        <div class="family-invitation-banner-text">                            
+                            <span>
+                                <strong>{{ invite.demandeur.displayName }}</strong> vous invite à rejoindre sa famille 
+                                <strong>« {{ invite.famille.nom }} »</strong> !
+                            </span>
+                        </div>
+                        <div class="family-invitation-banner-actions">
+                            <form method="post" action="{{ path('app_famille_invitation_accepter', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('accept_invitation_' ~ invite.id) }}">
+                                {{ composant('_composants/button', {
+                                    'titre': 'Accepter',
+                                    'type': 'submit',
+                                    'class': 'btn-primary btn-sm'
+                                }) }}
+                            </form>
+                            <form method="post" action="{{ path('app_famille_invitation_refuser', {'id': invite.id}) }}" style="margin: 0; display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('refuse_invitation_' ~ invite.id) }}">
+                                {{ composant('_composants/button', {
+                                    'titre': 'Refuser',
+                                    'type': 'submit',
+                                    'class': 'btn-secondary btn-sm'
+                                }) }}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+            (function() {
+                var banner = document.getElementById('invitation-banners-wrapper');
+                if (!banner) return;
+                var timer;
+                function startDismissTimer() {
+                    timer = setTimeout(function() {
+                        banner.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                        banner.style.opacity = '0';
+                        banner.style.transform = 'translateY(-100%)';
+                        setTimeout(function() {
+                            if (banner && banner.parentNode) {
+                                banner.remove();
+                            }
+                        }, 600);
+                    }, 5000);
+                }
+                banner.addEventListener('mouseenter', function() { clearTimeout(timer); });
+                banner.addEventListener('mouseleave', function() { startDismissTimer(); });
+                startDismissTimer();
+            })();
+        </script>
+    {% endif %}
+{% endif %}

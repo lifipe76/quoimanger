@@ -46,7 +46,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #db4807, #f57328, #f05f14);
+    background: linear-gradient(90deg, #c4a587, #d4bda6, #b59373);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -54,9 +54,9 @@
 .card-recette:hover {
     transform: translateY(-6px) perspective(900px) rotateX(2deg);
     box-shadow:
-        0 20px 30px -10px rgba(219, 72, 7, 0.12),
+        0 20px 30px -10px rgba(196, 165, 135, 0.15),
         0 10px 20px -5px rgba(0, 0, 0, 0.04);
-    border-color: rgba(219, 72, 7, 0.35);
+    border-color: rgba(196, 165, 135, 0.4);
 }
 
 .card-recette:hover::before {
@@ -182,7 +182,7 @@
 
 .card-recette-title a:hover,
 .recipe-title-link:hover {
-    color: var(--primary, #db4807);
+    color: var(--primary, #c4a587);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -218,12 +218,12 @@
 }
 
 .card-recette-btn-complement-add:hover {
-    background: #fff7ed;
-    border-color: var(--primary, #db4807);
+    background: #fbf7f4;
+    border-color: var(--primary, #c4a587);
     border-style: solid;
-    color: var(--primary, #db4807);
+    color: var(--primary, #c4a587);
     transform: scale(1.15);
-    box-shadow: 0 2px 8px var(--primary-glow, rgba(219, 72, 7, 0.25));
+    box-shadow: 0 2px 8px var(--primary-glow, rgba(196, 165, 135, 0.25));
 }
 
 .card-recette-btn-complement-add svg {
@@ -239,7 +239,7 @@
     border: none;
     padding: 0;
     margin: 0;
-    color: var(--primary, #db4807);
+    color: var(--primary, #c4a587);
     font-size: 1.15rem;
     font-weight: 600;
     line-height: inherit;
@@ -256,7 +256,7 @@
 }
 
 .card-recette-complement-text .recipe-title-complement {
-    color: var(--primary, #db4807);
+    color: var(--primary, #c4a587);
     font-size: 1.15rem;
     font-weight: 600;
     line-height: inherit;
@@ -397,13 +397,13 @@
 }
 
 .ingredient-chip:hover {
-    background: #fff7ed;
-    border-color: #ffedd5;
-    color: #c2410c;
+    background: #fbf7f4;
+    border-color: #e6d7c8;
+    color: #8c6d4f;
 }
 
 .ingredient-chip strong {
-    color: #db4807;
+    color: #c4a587;
     font-weight: 700;
 }
 
@@ -462,17 +462,17 @@
 
 .card-btn-date,
 .button.card-btn-date {
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #fed7aa;
+    background: #fbf7f4;
+    color: #8c6d4f;
+    border: 1px solid #e6d7c8;
     box-shadow: none;
 }
 
 .card-btn-date:hover,
 .button.card-btn-date:hover {
-    background: #ffedd5;
-    color: #9a3412;
-    border-color: #fdba74;
+    background: #f5ede4;
+    color: #74573b;
+    border-color: #d8c2ad;
     box-shadow: none;
     transform: none;
 }
@@ -512,7 +512,7 @@
    Responsive Mobile pour Card Recette
    ========================================================================== */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .card-recette {
         padding: 1.15rem 1rem;
         border-radius: 14px;
@@ -547,8 +547,9 @@
     }
 
     .card-recette-rating-row {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
         gap: 0.5rem;
         padding-bottom: 0.6rem;
     }
@@ -557,18 +558,9 @@
         font-size: 1.1rem;
     }
 
+    /* Sur téléphone, ne pas afficher ma note dans la card (uniquement dans l'édition du repas) */
     .card-recette-quick-rate {
-        width: 100%;
-        justify-content: space-between;
-        padding: 0.35rem 0.75rem;
-        box-sizing: border-box;
-    }
-
-    .quick-star-btn {
-        font-size: 1.25rem;
-        padding: 4px 6px;
-        min-width: 32px;
-        min-height: 32px;
+        display: none !important;
     }
 
     .card-recette-footer {

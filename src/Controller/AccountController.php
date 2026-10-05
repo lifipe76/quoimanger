@@ -46,20 +46,91 @@ class AccountController extends AbstractController
             $activeTab = 'profil';
         }
 
-        $sentInvitations = [];
-        if ($user->getFamille()) {
-            $sentInvitations = $invitationRepository->findBy([
-                'famille' => $user->getFamille(),
+        $famille = $user->getFamille();
+        $receivedInvitations = $invitationRepository->findPendingForUser($user);
+        $pendingInvitation = !empty($receivedInvitations) ? $receivedInvitations[0] : null;
+
+        $isPendingMember = false;
+        // Si l'utilisateur a une invitation en attente pour cette famille ou n'a pas encore validé de famille :
+        if ($pendingInvitation) {
+            if (!$famille || $famille->getId() === $pendingInvitation->getFamille()->getId()) {
+                $famille = $pendingInvitation->getFamille();
+                $isPendingMember = true;
+            }
+        }
+
+        $isChef = ($famille && !$isPendingMember) ? $famille->isChef($user) : false;
+
+        // Récupérer toutes les invitations en attente pour cette famille
+        $pendingInvitesForFamille = [];
+        if ($famille) {
+            $pendingInvitesForFamille = $invitationRepository->findBy([
+                'famille' => $famille,
                 'statut' => \App\Entity\FamilleInvitation::STATUT_EN_ATTENTE,
             ]);
+        }
+
+        $pendingEmails = [];
+        $pendingUserIds = [];
+        foreach ($pendingInvitesForFamille as $inv) {
+            $pendingEmails[] = strtolower($inv->getInviteEmail());
+            if ($inv->getInviteUser()) {
+                $pendingUserIds[] = $inv->getInviteUser()->getId();
+            }
+        }
+
+        // Synchroniser automatiquement tout utilisateur ayant une invitation acceptée pour cette famille
+        if ($famille) {
+            $acceptedInvitations = $invitationRepository->findBy([
+                'famille' => $famille,
+                'statut' => \App\Entity\FamilleInvitation::STATUT_ACCEPTEE,
+            ]);
+            $userRepo = $em->getRepository(User::class);
+            $hasSynced = false;
+            foreach ($acceptedInvitations as $accInv) {
+                $accUser = $accInv->getInviteUser();
+                if (!$accUser && $accInv->getInviteEmail()) {
+                    $accUser = $userRepo->findOneBy(['email' => $accInv->getInviteEmail()]);
+                }
+                if ($accUser && $accUser->getFamille()?->getId() !== $famille->getId()) {
+                    $accUser->setFamille($famille);
+                    $accInv->setInviteUser($accUser);
+                    $hasSynced = true;
+                }
+            }
+            if ($hasSynced) {
+                $em->flush();
+                $em->refresh($famille);
+            }
+        }
+
+        // Membres confirmés uniquement (qui ont réellement accepté et ne sont pas en attente)
+        $confirmedMembres = [];
+        if ($famille) {
+            foreach ($famille->getMembres() as $m) {
+                if (in_array($m->getId(), $pendingUserIds, true) || in_array(strtolower($m->getEmail()), $pendingEmails, true)) {
+                    continue;
+                }
+                $confirmedMembres[] = $m;
+            }
+        }
+
+        $sentInvitations = [];
+        if ($famille && $isChef) {
+            $sentInvitations = $pendingInvitesForFamille;
         }
 
         return $this->render('pages/pageComposant.html.twig', [
             'twig' => 'pages/account/profile',
             'form' => $form,
             'user' => $user,
-            'famille' => $user->getFamille(),
+            'famille' => $famille,
+            'confirmedMembres' => $confirmedMembres,
+            'isChef' => $isChef,
+            'isPendingMember' => $isPendingMember,
+            'pendingInvitation' => $pendingInvitation,
             'sentInvitations' => $sentInvitations,
+            'receivedInvitations' => $receivedInvitations,
             'activeTab' => $activeTab,
         ]);
     }

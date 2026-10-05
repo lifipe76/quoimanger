@@ -32,7 +32,10 @@ class AuthAndResetPasswordTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Connexion');
-        $this->assertSelectorNotExists('.nav-header');
+        $this->assertSelectorExists('.nav-header.is-auth-page');
+        $this->assertSelectorNotExists('.nav-back-btn');
+        $this->assertSelectorNotExists('.nav-next-btn');
+        $this->assertSelectorNotExists('.bottom-app-nav');
         $this->assertSelectorExists('input[name="_username"]');
         $this->assertSelectorExists('input[name="_password"]');
         $this->assertSelectorExists('input[name="_csrf_token"]');
@@ -122,7 +125,7 @@ class AuthAndResetPasswordTest extends WebTestCase
         $crawler = $this->client->followRedirect();
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Nouveau mot de passe');
-        $this->assertSelectorTextContains('.nav-brand', '🍽️ QuoiManger');
+        $this->assertSelectorTextContains('.nav-brand', 'QuoiManger');
         $this->assertSelectorExists('input[type="password"]');
         $this->assertSelectorTextContains('button[type="submit"]', 'Enregistrer le mot de passe');
 
@@ -138,5 +141,30 @@ class AuthAndResetPasswordTest extends WebTestCase
         $this->client->followRedirect();
         // Since home requires ROLE_USER and user is not auto-logged in, it redirects to /login
         $this->assertResponseRedirects('http://localhost/login');
+    }
+
+    public function testPasswordToggleButtonsExistOnAuthAndProfilePages(): void
+    {
+        // 1. Sur la page /login
+        $this->client->request('GET', '/login');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.password-input-wrapper input#password[type="password"]');
+        $this->assertSelectorExists('.password-input-wrapper button.toggle-password-btn i.fa-eye');
+
+        // 2. Sur la page /inscription
+        $this->client->request('GET', '/inscription');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.password-input-wrapper input[autocomplete="new-password"]');
+        $this->assertSelectorExists('.password-input-wrapper button.toggle-password-btn i.fa-eye');
+
+        // 3. Sur la page /compte
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $user = $em->getRepository(User::class)->findOneBy(['email' => 'test@test.com']);
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/compte');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.password-input-wrapper input[name="user_profile[newPassword][first]"]');
+        $this->assertSelectorExists('.password-input-wrapper input[name="user_profile[newPassword][second]"]');
+        $this->assertSelectorExists('.password-input-wrapper button.toggle-password-btn i.fa-eye');
     }
 }

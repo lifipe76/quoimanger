@@ -14,8 +14,8 @@
 }
 
 .card-empty-cta:hover {
-    border-color: #f97316;
-    box-shadow: 0 8px 24px -6px rgba(219, 72, 7, 0.12);
+    border-color: #c4a587;
+    box-shadow: 0 8px 24px -6px rgba(196, 165, 135, 0.15);
 }
 
 .cta-top-row {
@@ -24,6 +24,13 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+}
+
+.cta-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
 }
 
 .empty-cta-title {
@@ -78,7 +85,7 @@
 }
 
 .suggestion-title-link:hover {
-    color: var(--primary, #db4807);
+    color: var(--primary, #c4a587);
     text-decoration: underline;
     text-underline-offset: 2px;
 }
@@ -121,11 +128,11 @@
 
 .suggestion-btn:hover,
 .suggestion-btn-plus:hover {
-    background: #fff7ed;
-    color: var(--primary, #db4807);
-    border-color: #fdba74;
+    background: #fbf7f4;
+    color: var(--primary, #c4a587);
+    border-color: #e6d7c8;
     transform: scale(1.1);
-    box-shadow: 0 2px 8px var(--primary-glow, rgba(219, 72, 7, 0.2));
+    box-shadow: 0 2px 8px var(--primary-glow, rgba(196, 165, 135, 0.25));
 }
 
 .suggestion-btn:active,

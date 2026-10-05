@@ -90,6 +90,13 @@ class TimelineAndModalTest extends WebTestCase
         $this->assertSelectorExists('#repas-modal .btn-moment-toggle');
         $this->assertSelectorExists('.badge-rank');
         $this->assertSelectorExists('.badge-eaten-count');
+        $this->assertSelectorExists('#repas-modal .modal-footer-center a.btn-primary');
+        $this->assertSelectorExists('#repas-modal .modal-footer-center a[style*="width: 100%"]');
+
+        // 10b. Tous les popups ont la même classe structurelle modal-dialog
+        $this->assertSelectorExists('#repas-modal .modal-dialog');
+        $this->assertSelectorExists('#edit-meal-modal .modal-dialog');
+        $this->assertSelectorExists('#complement-modal .modal-dialog');
 
         // 11. Day marker circles are removed, and timeline day badge contains day name (Lundi, Mardi...)
         $this->assertSelectorNotExists('.timeline-day-header .day-marker');
@@ -376,7 +383,7 @@ class TimelineAndModalTest extends WebTestCase
         $this->assertStringContainsString('openComplementModal', $content);
 
         // 4. Container & Home Component CSS
-        $this->assertStringContainsString('--primary: #db4807', $content);
+        $this->assertStringContainsString('--primary: #c4a587', $content);
         $this->assertStringContainsString('.timeline-wrapper', $content);
     }
 
@@ -386,7 +393,7 @@ class TimelineAndModalTest extends WebTestCase
         $this->client->request('GET', '/recettes');
         $this->assertResponseIsSuccessful();
         $recettesContent = (string) $this->client->getResponse()->getContent();
-        $this->assertStringContainsString('--primary: #db4807', $recettesContent);
+        $this->assertStringContainsString('--primary: #c4a587', $recettesContent);
         $this->assertStringContainsString('.card-recette', $recettesContent);
         $this->assertStringNotContainsString('addCss', $recettesContent);
 
@@ -394,7 +401,7 @@ class TimelineAndModalTest extends WebTestCase
         $this->client->request('GET', '/ingredients');
         $this->assertResponseIsSuccessful();
         $ingredientsContent = (string) $this->client->getResponse()->getContent();
-        $this->assertStringContainsString('--primary: #db4807', $ingredientsContent);
+        $this->assertStringContainsString('--primary: #c4a587', $ingredientsContent);
         $this->assertStringContainsString('.card-ingredient', $ingredientsContent);
         $this->assertStringNotContainsString('addCss', $ingredientsContent);
     }
@@ -447,5 +454,136 @@ class TimelineAndModalTest extends WebTestCase
         $freshEm->createQuery('DELETE FROM App\Entity\Recette r WHERE r.id = :id')
             ->setParameter('id', $recette->getId())
             ->execute();
+    }
+
+    public function testEditMealRatingOnlyModifiesConnectedUserRating(): void
+    {
+        // 1. Créer une famille avec 2 utilisateurs
+        $suffix = uniqid();
+        $userA = new User();
+        $userA->setEmail("user_a_{$suffix}@test.com");
+        $userA->setFirstname('Alice');
+        $userA->setLastname('Test');
+        $userA->setPassword('dummy');
+
+        $userB = new User();
+        $userB->setEmail("user_b_{$suffix}@test.com");
+        $userB->setFirstname('Bob');
+        $userB->setLastname('Test');
+        $userB->setPassword('dummy');
+
+        $famille = new \App\Entity\Famille();
+        $famille->setNom("Famille Note Test {$suffix}");
+        $famille->setCreateur($userA);
+        $famille->addMembre($userA);
+        $famille->addMembre($userB);
+
+        $recette = new Recette();
+        $recette->setDesignation("Plat Test Notes {$suffix}");
+
+        $realisation = new RecetteRealisation();
+        $realisation->setRecette($recette);
+        $realisation->setRealiseAt(new \DateTimeImmutable('today'));
+        $realisation->setMoment('midi');
+
+        $this->em->persist($userA);
+        $this->em->persist($userB);
+        $this->em->persist($famille);
+        $this->em->persist($recette);
+        $this->em->persist($realisation);
+
+        // Bob a déjà noté 3 étoiles
+        $noteB = new \App\Entity\RealisationNote();
+        $noteB->setRealisation($realisation);
+        $noteB->setUser($userB);
+        $noteB->setNote(3);
+        $this->em->persist($noteB);
+
+        $this->em->flush();
+
+        // 2. Connecter User A et afficher l'accueil
+        $this->client->loginUser($userA);
+        $crawler = $this->client->request('GET', '/');
+        $this->assertResponseIsSuccessful();
+
+        // Dans la modale d'édition :
+        // User A (connecté) doit avoir son input caché et ses boutons étoiles cliquables
+        $this->assertSelectorExists("#edit-meal-modal input#edit-meal-note-{$userA->getId()}");
+        $this->assertSelectorExists("#edit-meal-modal .modal-star-rating[data-user-id=\"{$userA->getId()}\"] .modal-star-btn");
+
+        // User B (autre membre) ne doit PAS avoir d'input de note, et ses étoiles doivent être en affichage seul (.modal-star-display)
+        $this->assertSelectorNotExists("#edit-meal-modal input#edit-meal-note-{$userB->getId()}");
+        $this->assertSelectorExists("#edit-meal-modal .modal-star-rating[data-user-id=\"{$userB->getId()}\"] .modal-star-display");
+        $this->assertSelectorNotExists("#edit-meal-modal .modal-star-rating[data-user-id=\"{$userB->getId()}\"] .modal-star-btn");
+
+        // 3. Soumettre la modification du repas en tentant de modifier la note de User A (à 5) ET la note de User B (à 1)
+        $csrfToken = $this->getCsrfToken('update_realisation_date_' . $realisation->getId());
+
+        $this->client->request('POST', "/realisation/{$realisation->getId()}/update-date", [
+            '_token' => $csrfToken,
+            'realise_at' => (new \DateTimeImmutable('today'))->format('Y-m-d'),
+            'moment' => 'midi',
+            'notes' => [
+                $userA->getId() => 5,
+                $userB->getId() => 1, // Devrait être ignoré par le serveur
+            ],
+        ]);
+
+        $this->assertResponseRedirects('/');
+
+        // 4. Vérifier en base de données :
+        // La note de User A a bien été créée/mise à 5
+        $freshEm = static::getContainer()->get(EntityManagerInterface::class);
+        $freshEm->clear();
+
+        $savedNoteA = $freshEm->getRepository(\App\Entity\RealisationNote::class)->findOneBy([
+            'realisation' => $realisation->getId(),
+            'user' => $userA->getId(),
+        ]);
+        $this->assertNotNull($savedNoteA);
+        $this->assertEquals(5, $savedNoteA->getNote());
+
+        // La note de User B doit être restée à 3 (et non 1 !)
+        $savedNoteB = $freshEm->getRepository(\App\Entity\RealisationNote::class)->findOneBy([
+            'realisation' => $realisation->getId(),
+            'user' => $userB->getId(),
+        ]);
+        $this->assertNotNull($savedNoteB);
+        $this->assertEquals(3, $savedNoteB->getNote());
+
+        // 5. Nettoyage
+        $freshEm->createQuery('DELETE FROM App\Entity\RealisationNote rn WHERE rn.realisation = :r')
+            ->setParameter('r', $realisation->getId())
+            ->execute();
+        $freshEm->createQuery('DELETE FROM App\Entity\RecetteRealisation rr WHERE rr.id = :id')
+            ->setParameter('id', $realisation->getId())
+            ->execute();
+        $freshEm->createQuery('DELETE FROM App\Entity\Recette rc WHERE rc.id = :id')
+            ->setParameter('id', $recette->getId())
+            ->execute();
+        $userAId = $userA->getId();
+        $userBId = $userB->getId();
+        $familleId = $famille->getId();
+        $freshEm->createQuery('UPDATE App\Entity\Famille f SET f.createur = NULL WHERE f.id = :fid')
+            ->setParameter('fid', $familleId)
+            ->execute();
+        $freshEm->createQuery('DELETE FROM App\Entity\User u WHERE u.id IN (:ids)')
+            ->setParameter('ids', [$userAId, $userBId])
+            ->execute();
+        $freshEm->createQuery('DELETE FROM App\Entity\Famille f WHERE f.id = :fid')
+            ->setParameter('fid', $familleId)
+            ->execute();
+    }
+
+    private function getCsrfToken(string $tokenId): string
+    {
+        $request = $this->client->getRequest();
+        $requestStack = static::getContainer()->get('request_stack');
+        $requestStack->push($request);
+        try {
+            return static::getContainer()->get('security.csrf.token_manager')->getToken($tokenId)->getValue();
+        } finally {
+            $requestStack->pop();
+        }
     }
 }

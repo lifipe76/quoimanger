@@ -50,8 +50,14 @@ class FamilleController extends AbstractController
             $famille = new Famille();
             $nomFamille = $currentUser->getFirstname() ? 'Famille ' . $currentUser->getFirstname() : 'Ma famille';
             $famille->setNom($nomFamille);
+            $famille->setCreateur($currentUser);
             $em->persist($famille);
             $currentUser->setFamille($famille);
+        } else {
+            if (!$famille->isChef($currentUser)) {
+                $this->addFlash('danger', 'Seul le chef de famille peut inviter de nouveaux membres.');
+                return $this->redirectToRoute('app_account_profile', ['tab' => 'famille']);
+            }
         }
 
         // Vérifier si la personne est déjà membre de la famille
@@ -197,6 +203,11 @@ class FamilleController extends AbstractController
             return $this->redirectToRoute('app_account_profile', ['tab' => 'famille']);
         }
 
+        if (!$famille->isChef($currentUser)) {
+            $this->addFlash('danger', 'Seul le chef de famille peut renommer la famille.');
+            return $this->redirectToRoute('app_account_profile', ['tab' => 'famille']);
+        }
+
         $token = (string) $request->request->get('_token');
         if (!$this->isCsrfTokenValid('famille_renommer', $token)) {
             $this->addFlash('danger', 'Jeton de sécurité invalide.');
@@ -230,7 +241,15 @@ class FamilleController extends AbstractController
             return $this->redirectToRoute('app_account_profile', ['tab' => 'famille']);
         }
 
+        $isChef = $famille->isChef($currentUser);
         $currentUser->setFamille(null);
+
+        // Si le chef quitte la famille, transférer le rôle de chef à un autre membre si disponible
+        if ($isChef) {
+            $remaining = $famille->getMembres();
+            $nextChef = $remaining->first();
+            $famille->setCreateur($nextChef ?: null);
+        }
 
         // Si la famille n'a plus aucun membre, la nettoyer
         if ($famille->getMembres()->count() === 0) {

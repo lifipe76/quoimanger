@@ -106,3 +106,9 @@ things up in the project instead of relying on memory:
 - Read the installed source and docblocks under `vendor/`.
 - Docs: https://symfony.com/doc/current/ (switch to the version matching
   `composer.json` if it differs).
+
+## UI & Design Preferences
+
+- Pas d'émojis ni d'icônes décoratives dans les titres, sous-titres, bandeaux ou labels de formulaire (pas de 📬, ✉️, ⭐, 👋, etc.).
+- Le logo du header (assiette avec couverts 🍽️) est le logo officiel de l'application : il doit être conservé en gros hors du texte du titre (dans son propre élément `.nav-brand-logo`).
+

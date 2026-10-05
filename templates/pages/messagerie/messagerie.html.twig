@@ -1,0 +1,187 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messagerie familiale - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('pages/messagerie/messagerie.css') }}
+    {{ addCss('popups/repas/_ajout/ajout.css') }}
+    {{ addCss('popups/repas/_proposition/proposition.css') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ addJs('popups/repas/_proposition/proposition.js') }}
+    {{ addJs('pages/messagerie/messagerie.js') }}
+{% endblock %}
+
+{% block body %}
+    {% if not has_famille %}
+        <div class="messagerie-page-container">
+            <div class="no-famille-box">
+                <div class="no-famille-icon">💬</div>
+                <h2 class="no-famille-title">Messagerie familiale</h2>
+                <p class="no-famille-desc">
+                    La messagerie et le système de vote de repas sont partagés entre les membres d'une famille.
+                    Rejoignez ou créez une famille pour commencer à échanger avec vos proches !
+                </p>
+                {{ composant('_composants/button', {
+                    'titre': 'Gérer ma famille',
+                    'href': path('app_account_profile', {'tab': 'famille'}),
+                    'class': 'btn-primary'
+                }) }}
+            </div>
+        </div>
+    {% else %}
+        <div class="messagerie-page-container" data-user-id="{{ app.user.id }}">
+            <div class="chat-card">
+                <!-- En-tête du chat -->
+                <div class="chat-header">
+                    <div class="chat-header-main">
+                        <div class="chat-group-avatar">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="chat-header-info">
+                            <h2 class="chat-header-title">{{ famille.nom }}</h2>
+                            <span class="chat-header-subtitle">
+                                {{ famille.membres|length }} membre{{ famille.membres|length > 1 ? 's' : '' }} :
+                                {{ famille.membres|map(m => m.firstname|default(m.userIdentifier))|join(', ') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="chat-header-actions">
+                        <button type="button" class="btn-chat-notification" id="chatNotificationBtn" title="Activer les notifications du navigateur" aria-label="Activer les notifications">
+                            <i class="fa-solid fa-bell"></i>
+                        </button>
+                        <button type="button" class="btn-chat-proposer" onclick="openPropositionModal()" title="Proposer une idée de repas au vote">
+                            <i class="fa-solid fa-utensils"></i>
+                            <span>Proposer un repas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Zone de messages -->
+                <div class="chat-body" id="chatMessagesContainer">
+                    {% if messages|length == 0 %}
+                        <div class="empty-state" style="margin: auto; text-align: center; color: #94a3b8; padding: 2rem;">
+                            <p>Aucun message pour l'instant dans votre groupe familial.</p>
+                            <p>Dites bonjour ou proposez une idée de repas ci-dessous !</p>
+                        </div>
+                    {% else %}
+                        {% for message in messages %}
+                            {% set is_me = (message.sender and message.sender.id == app.user.id) %}
+                            {% set prop = message.proposition %}
+
+                            <div class="chat-message-row {{ is_me ? 'is-me' : 'is-other' }}" data-id="{{ message.id }}">
+                                {% if not is_me and message.sender %}
+                                    <span class="chat-sender-name">{{ message.sender.displayName }}</span>
+                                {% endif %}
+
+                                <div class="chat-bubble {{ prop ? 'chat-bubble-proposal' : '' }}">
+                                    {% if prop %}
+                                        {# Carte spéciale de proposition de repas #}
+                                        <div class="proposal-card-header">
+                                            <span class="proposal-tag-type">Proposition de repas</span>
+                                            <span class="proposal-tag-moment">{{ prop.moment|upper }}</span>
+                                        </div>
+
+                                        <h4 class="proposal-recipe-title">
+                                            <a href="{{ path('app_recette_edit', {'id': prop.recette.id}) }}" style="color: inherit; text-decoration: none;">
+                                                {{ prop.recette.designation }}
+                                            </a>
+                                        </h4>
+
+                                        <div class="proposal-recipe-date">
+                                            Prévu pour le {{ prop.dateRepas|date('d/m/Y') }}
+                                            {% if prop.proposePar %}
+                                                • Proposé par {{ prop.proposePar.displayName }}
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="proposal-votes-box" id="proposal-votes-{{ prop.id }}">
+                                            {% set votesPour = prop.votesPour %}
+                                            {% set votesContre = prop.votesContre %}
+                                            {% set myVote = prop.userVote(app.user) %}
+
+                                            <div class="proposal-votes-counts">
+                                                <span class="vote-count-pour">
+                                                    Pour ({{ votesPour|length }})
+                                                </span>
+                                                <span class="vote-count-contre">
+                                                    Contre ({{ votesContre|length }})
+                                                </span>
+                                            </div>
+
+                                            {% if votesPour|length > 0 %}
+                                                <div class="proposal-voters-list">
+                                                    Pour : {{ votesPour|map(v => v.user.displayName)|join(', ') }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if prop.isAjouteeAuFil %}
+                                            <div class="proposal-status-banner is-ajoutee">
+                                                Ajouté au fil des repas
+                                            </div>
+                                        {% elseif prop.isValidee %}
+                                            <div class="proposal-status-banner is-validee">
+                                                Validée par la famille !
+                                            </div>
+                                            <form method="post" action="{{ path('app_repas_valider_au_fil', {'id': prop.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('valider_au_fil_' ~ prop.id) }}">
+                                                <button type="submit" class="btn-valider-au-fil">
+                                                    Ajouter au fil des repas
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <div class="proposal-vote-actions">
+                                                <button type="button"
+                                                        class="btn-vote-pour {{ myVote and myVote.choix == 'pour' ? 'active' : '' }}"
+                                                        onclick="voteProposition({{ prop.id }}, 'pour', this)">
+                                                    Valider (Pour)
+                                                </button>
+                                                <button type="button"
+                                                        class="btn-vote-contre {{ myVote and myVote.choix == 'contre' ? 'active' : '' }}"
+                                                        onclick="voteProposition({{ prop.id }}, 'contre', this)">
+                                                    Refuser (Contre)
+                                                </button>
+                                            </div>
+                                        {% endif %}
+
+                                    {% else %}
+                                        {# Message texte ordinaire #}
+                                        <p class="chat-bubble-text">{{ message.content }}</p>
+                                    {% endif %}
+
+                                    <div class="chat-bubble-meta">
+                                        <span class="chat-bubble-time">{{ message.createdAt|date('H:i') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Barre d'envoi en bas -->
+                <div class="chat-footer">
+                    <form id="chatInputForm" class="chat-input-form" method="post" action="{{ path('app_messagerie_send') }}">
+                        <input type="text"
+                               id="chatInputText"
+                               name="content"
+                               class="chat-input-text"
+                               placeholder="Écrivez un message à votre famille..."
+                               autocomplete="off"
+                               required>
+                        <button type="submit" class="chat-send-btn" title="Envoyer le message" aria-label="Envoyer">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {# Modal pour proposer un repas depuis la messagerie #}
+        {{ composant('popups/repas/proposition', _context) }}
+    {% endif %}
+{% endblock %}

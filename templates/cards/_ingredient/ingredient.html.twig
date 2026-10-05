@@ -30,7 +30,7 @@
                 'class': 'card-btn card-btn-edit',
                 'href': path('app_ingredient_edit', {'id': ingredient.id})
             }) }}
-            <form method="post" action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}" onsubmit="return confirm('Supprimer définitivement l\'ingrédient « {{ ingredient.designation|e('js') }} » ?');" style="margin: 0; display: inline;">
+            <form method="post" action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}" data-confirm="Supprimer définitivement l'ingrédient « {{ ingredient.designation }} » ?" data-confirm-title="Supprimer l'ingrédient" style="margin: 0; display: inline;">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete_ingredient_' ~ ingredient.id) }}">
                 {{ composant('_composants/button', {
                     'titre': '🗑️',

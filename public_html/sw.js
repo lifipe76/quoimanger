@@ -77,3 +77,43 @@ self.addEventListener('fetch', (event) => {
             })
     );
 });
+
+// Écoute des notifications push PWA
+self.addEventListener('push', (event) => {
+    let data = { title: 'QuoiManger', body: 'Nouveau message dans votre famille !', icon: '/icons/icon.svg', url: '/messagerie' };
+    if (event.data) {
+        try {
+            data = Object.assign(data, event.data.json());
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: data.icon || '/icons/icon.svg',
+            badge: '/icons/icon-192x192.png',
+            data: { url: data.url || '/messagerie' }
+        })
+    );
+});
+
+// Clic sur la notification PWA : ouvre ou bascule vers la page messagerie
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/messagerie';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url.includes('/messagerie') && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
+        })
+    );
+});

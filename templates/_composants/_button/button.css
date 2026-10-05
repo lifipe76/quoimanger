@@ -36,18 +36,18 @@ button:disabled,
 .btn-primary {
     background: linear-gradient(
         135deg,
-        var(--primary-dark, #b83805),
-        var(--primary, #db4807) 60%,
-        var(--primary-hover, #f05f14)
+        var(--primary-dark, #a68363),
+        var(--primary, #c4a587) 60%,
+        var(--primary-hover, #b59373)
     );
     color: #ffffff;
-    box-shadow: 0 4px 14px var(--primary-glow, rgba(219, 72, 7, 0.25));
+    box-shadow: 0 4px 14px var(--primary-glow, rgba(196, 165, 135, 0.3));
 }
 
 .button.btn-primary:hover,
 .button-primary:hover,
 .btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(219, 72, 7, 0.45);
+    box-shadow: 0 6px 20px rgba(196, 165, 135, 0.45);
     transform: translateY(-2px);
     color: #ffffff;
 }
@@ -98,7 +98,7 @@ button:disabled,
 .btn-cta {
     font-size: 1rem;
     padding: 0.75rem 1.75rem;
-    box-shadow: 0 4px 14px rgba(219, 72, 7, 0.35);
+    box-shadow: 0 4px 14px rgba(196, 165, 135, 0.35);
 }
 
 .buttonSvg {

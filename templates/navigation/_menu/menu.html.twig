@@ -1,0 +1,113 @@
+{% set current_route = app.current_route|default(app.request.attributes.get('_route')) %}
+{% set is_auth_page = (current_route in ['web_login', 'app_register', 'app_register_alias']) %}
+{% set is_account_page = (current_route starts with 'app_account' or current_route starts with 'app_famille') %}
+{% set is_recettes_page = (current_route starts with 'app_recette') %}
+{% set is_ingredients_page = (current_route starts with 'app_ingredient') %}
+{% set is_home_page = (current_route == 'home') %}
+
+{# Configuration de la navigation séquentielle : Recettes -> Ingrédients -> Fil -> Compte #}
+{% set nav_left_url = null %}
+{% set nav_left_title = null %}
+{% set nav_right_url = null %}
+{% set nav_right_title = null %}
+
+{% if not is_auth_page %}
+    {% if is_recettes_page %}
+        {# Recettes : pas vers la gauche, uniquement vers la droite qui va à Ingrédients #}
+        {% set nav_right_url = path('app_ingredients_list') %}
+        {% set nav_right_title = 'Vers Ingrédients' %}
+    {% elseif is_ingredients_page %}
+        {# Ingrédients : gauche vers Recettes et droite vers Fil #}
+        {% set nav_left_url = path('app_recettes_list') %}
+        {% set nav_left_title = 'Vers Recettes' %}
+        {% set nav_right_url = path('home') %}
+        {% set nav_right_title = 'Vers Fil repas' %}
+    {% elseif is_home_page %}
+        {# Fil : gauche vers Ingrédients et droite vers Compte #}
+        {% set nav_left_url = path('app_ingredients_list') %}
+        {% set nav_left_title = 'Vers Ingrédients' %}
+        {% if app.user %}
+            {% set nav_right_url = path('app_account_profile') %}
+            {% set nav_right_title = 'Vers Mon compte' %}
+        {% endif %}
+    {% elseif is_account_page %}
+        {# Mon compte : gauche vers Fil repas #}
+        {% set nav_left_url = path('home') %}
+        {% set nav_left_title = 'Vers Fil repas' %}
+    {% endif %}
+{% endif %}
+
+<header class="nav-header{{ is_account_page ? ' is-account-page' : '' }}{{ is_auth_page ? ' is-auth-page' : '' }}">
+    <div class="nav-brand-wrapper">
+        <div class="nav-header-left">
+            {% if nav_left_url %}
+                <a href="{{ nav_left_url }}" class="nav-back-btn" title="{{ nav_left_title }}" aria-label="{{ nav_left_title }}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+            {% endif %}
+        </div>
+        <a href="{{ path('home') }}" class="nav-brand">
+            <span class="nav-brand-logo" aria-hidden="true">🍽️</span>
+            <span class="nav-brand-text">QuoiManger</span>
+        </a>
+    </div>
+
+    <div class="nav-header-right">
+        {% if not is_auth_page %}
+            {% if nav_right_url and not is_account_page %}
+                <a href="{{ nav_right_url }}" class="nav-next-btn" title="{{ nav_right_title }}" aria-label="{{ nav_right_title }}">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            {% endif %}
+
+            <nav class="nav-links">
+                <a href="{{ path('app_recettes_list') }}" class="nav-link{{ current_route starts with 'app_recette' ? ' active' : '' }}">Recettes</a>
+                <a href="{{ path('app_ingredients_list') }}" class="nav-link{{ current_route starts with 'app_ingredient' ? ' active' : '' }}">Ingrédients</a>
+
+                {% if app.user %}
+                    {% set has_pending_invitation = (pending_family_invitations()|length > 0) %}
+                    <a href="{{ path('app_messagerie') }}" class="nav-icon-btn nav-messagerie-btn{{ current_route starts with 'app_messagerie' ? ' active' : '' }}" title="Messagerie" aria-label="Messagerie">
+                        <i class="fa-solid fa-comments"></i>
+                    </a>
+                    <div class="user-menu-container" id="userMenuContainer">
+                        <a id="avatarMenuImg" href="{{ path('app_account_profile') }}" title="Mon compte" aria-label="Mon compte">
+                            <i class="fa-solid fa-user fa-fw"></i>
+                            {% if has_pending_invitation %}
+                                <span class="nav-alert-badge" title="Invitation en attente">!</span>
+                            {% endif %}
+                        </a>
+                        <div class="popup-menu popup-menu-user" id="userPopupMenu">
+                            <div class="popup-user-header">
+                                <div class="popup-user-name">{{ app.user ? ((app.user.firstname ~ ' ' ~ app.user.lastname)|trim ?: app.user.userIdentifier) : '' }}</div>
+                                <div class="popup-user-role">{{ app.user ? app.user.email : '' }}</div>
+                            </div>
+                            <div class="popup-user-body">
+                                <a href="{{ path('app_messagerie') }}" class="popup-user-item">
+                                    <i class="fa-solid fa-comments fa-fw"></i>
+                                    <span>Messagerie</span>
+                                </a>
+                                <a href="{{ path('app_account_profile') }}" class="popup-user-item">
+                                    <i class="fa-solid fa-user-gear fa-fw"></i>
+                                    <span>Mon compte</span>
+                                </a>
+                                <a href="{{ path('app_account_profile', {'tab': 'famille'}) }}" class="popup-user-item">
+                                    <i class="fa-solid fa-users fa-fw"></i>
+                                    <span>Ma famille</span>
+                                    {% if has_pending_invitation %}
+                                        <span class="tab-alert-badge" title="Invitation en attente">!</span>
+                                    {% endif %}
+                                </a>
+                                <a href="{{ url('web_logout') }}" class="popup-user-item popup-item-logout">
+                                    <i class="fa-solid fa-sign-out-alt fa-fw"></i>
+                                    <span>Se déconnecter</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ path('web_login') }}" class="nav-link{{ current_route == 'web_login' ? ' active' : '' }}">Connexion</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+</header>

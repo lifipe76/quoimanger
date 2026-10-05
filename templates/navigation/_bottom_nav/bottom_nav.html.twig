@@ -1,0 +1,85 @@
+{% set current_route = app.current_route|default(app.request.attributes.get('_route')) %}
+
+{% if current_route not in ['web_login', 'app_register', 'app_register_alias'] %}
+<nav class="bottom-app-nav" aria-label="Navigation mobile">
+    <div class="bottom-app-nav-container">
+        <!-- 1. Recettes -->
+        <a href="{{ path('app_recettes_list') }}"
+           class="bottom-nav-item{{ current_route starts with 'app_recette' ? ' active' : '' }}"
+           title="Mes Recettes">
+            <span class="bottom-nav-icon">
+                <i class="fa-solid fa-utensils"></i>
+            </span>
+            <span class="bottom-nav-label">Recettes</span>
+        </a>
+
+        <!-- 2. Ingrédients -->
+        <a href="{{ path('app_ingredients_list') }}"
+           class="bottom-nav-item{{ current_route starts with 'app_ingredient' ? ' active' : '' }}"
+           title="Mes Ingrédients">
+            <span class="bottom-nav-icon">
+                <i class="fa-solid fa-carrot"></i>
+            </span>
+            <span class="bottom-nav-label">Ingrédients</span>
+        </a>
+
+        <!-- 3. Bouton central (Accueil / Fil repas) -->
+        <div class="bottom-nav-center-action">
+            <a href="{{ path('home') }}"
+               class="bottom-nav-center-btn{{ current_route == 'home' ? ' active' : '' }}"
+               title="Fil repas">
+                <span class="center-btn-icon">
+                    <span class="center-btn-header-icon">🍽️</span>
+                </span>
+            </a>
+        </div>
+
+        <!-- 4. Mon repas (Ajouter le repas du jour) -->
+        {% if current_route == 'home' %}
+            <button type="button"
+                    class="bottom-nav-item bottom-nav-btn-repas"
+                    onclick="if (typeof openRepasModal === 'function') { openRepasModal(); } else { window.location.href = '{{ path('home') }}?open_modal=1'; }"
+                    title="Ajouter un repas">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </span>
+                <span class="bottom-nav-label">Mon repas</span>
+            </button>
+        {% else %}
+            <a href="{{ path('home') }}?open_modal=1"
+               class="bottom-nav-item"
+               title="Ajouter un repas">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </span>
+                <span class="bottom-nav-label">Mon repas</span>
+            </a>
+        {% endif %}
+
+        <!-- 5. Mon compte (pas famille) -->
+        {% if app.user %}
+            {% set has_pending_invitation = (pending_family_invitations()|length > 0) %}
+            <a href="{{ path('app_account_profile') }}"
+               class="bottom-nav-item{{ (current_route starts with 'app_account' or current_route starts with 'app_famille') ? ' active' : '' }}"
+               title="Mon compte">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-user"></i>
+                    {% if has_pending_invitation %}
+                        <span class="nav-alert-badge" title="Invitation en attente">!</span>
+                    {% endif %}
+                </span>
+                <span class="bottom-nav-label">Compte</span>
+            </a>
+        {% else %}
+            <a href="{{ path('web_login') }}"
+               class="bottom-nav-item{{ current_route == 'web_login' ? ' active' : '' }}"
+               title="Se connecter">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-user"></i>
+                </span>
+                <span class="bottom-nav-label">Compte</span>
+            </a>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}

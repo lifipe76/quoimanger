@@ -1,0 +1,38 @@
+<!-- Modal Popup Générique de Confirmation (remplace les alertes/confirm natifs) -->
+{% set confirmContent %}
+    <div class="modal-body confirm-modal-body">
+        <div class="confirm-modal-box">
+            <div class="confirm-modal-icon" id="app-confirm-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-modal-text">
+                <h3 class="confirm-modal-title" id="app-confirm-title">
+                    Confirmation requise
+                </h3>
+                <p class="confirm-modal-message" id="app-confirm-message">
+                    Êtes-vous sûr de vouloir effectuer cette action ?
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer confirm-modal-footer">
+        {{ composant('_composants/button', {
+            'titre': 'Annuler',
+            'type': 'button',
+            'class': 'btn-secondary',
+            'onclick': "closeModal('app-confirm-modal')"
+        }) }}
+        <button type="button" id="app-confirm-btn" class="btn button btn-danger">
+            Confirmer
+        </button>
+    </div>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'app-confirm-modal',
+    'title': 'Confirmation',
+    'content': confirmContent,
+    'onClose': "closeModal('app-confirm-modal')",
+    'onBackdropClick': "handleModalBackdropClick(event, 'app-confirm-modal')"
+}) }}

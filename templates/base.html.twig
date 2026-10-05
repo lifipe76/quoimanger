@@ -7,7 +7,7 @@
 
         <!-- PWA Web App Manifest & Mobile Web App Meta -->
         <link rel="manifest" href="/manifest.json">
-        <meta name="theme-color" content="#db4807">
+        <meta name="theme-color" content="#c4a587">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -30,23 +30,49 @@
                         });
                     });
                 }
+
+                function togglePasswordVisibility(inputId, btn) {
+                    var input = document.getElementById(inputId);
+                    if (!input) return;
+
+                    var isPassword = (input.type === 'password');
+                    input.type = isPassword ? 'text' : 'password';
+
+                    var icon = btn ? (btn.querySelector('i') || (btn.tagName === 'I' ? btn : null)) : null;
+                    if (icon) {
+                        if (isPassword) {
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        } else {
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        }
+                    }
+                    if (btn) {
+                        var label = isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe';
+                        btn.setAttribute('title', label);
+                        btn.setAttribute('aria-label', label);
+                    }
+                }
             </script>
         {% endblock %}
     </head>
-    <body>
+    {% set current_route = app.current_route|default(app.request.attributes.get('_route')) %}
+    <body class="{{ current_route in ['web_login', 'app_register', 'app_register_alias'] ? 'no-bottom-nav' : '' }}{{ current_route starts with 'app_messagerie' ? ' is-messagerie-page' : '' }}">
         {{ composant('_composants/container') }}
 
-        {{ composant('_composants/invitation_banner') }}
-
         {% block menu %}
-            {{ composant('menu') }}
+            {{ composant('navigation/menu') }}
         {% endblock %}
 
         {{ composant('_composants/toast', _context) }}
+        {# {{ composant('popups/confirmation') }} #}
 
         {% block body %}{% endblock %}
 
         <!-- Navigation barre mobile imitation application native -->
-        {{ composant('_composants/bottom_nav') }}
+        {% block bottom_nav %}
+            {{ composant('navigation/bottom_nav') }}
+        {% endblock %}
     </body>
 </html>

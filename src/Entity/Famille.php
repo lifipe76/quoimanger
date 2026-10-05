@@ -29,6 +29,10 @@ class Famille
     #[ORM\OneToMany(mappedBy: 'famille', targetEntity: User::class)]
     private Collection $membres;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createur = null;
+
     /**
      * @var Collection<int, FamilleInvitation>
      */
@@ -108,5 +112,35 @@ class Famille
     {
         $this->invitations->removeElement($invitation);
         return $this;
+    }
+
+    public function getCreateur(): ?User
+    {
+        return $this->createur;
+    }
+
+    public function setCreateur(?User $createur): static
+    {
+        $this->createur = $createur;
+
+        return $this;
+    }
+
+    public function isChef(?User $user): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        if ($this->createur !== null) {
+            return $this->createur === $user || ($this->createur->getId() !== null && $this->createur->getId() === $user->getId());
+        }
+
+        $first = $this->membres->first();
+        if ($first === false || $first === null) {
+            return false;
+        }
+
+        return $first === $user || ($first->getId() !== null && $first->getId() === $user->getId());
     }
 }

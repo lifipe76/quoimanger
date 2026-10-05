@@ -26,12 +26,34 @@ class MenuTest extends WebTestCase
         }
     }
 
-    public function testMenuIsOmittedOnLoginPage(): void
+    public function testMenuOnLoginPageHasHeaderWithoutButtonsAndNoBottomNav(): void
     {
         $this->client->request('GET', '/login');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorNotExists('.nav-header');
+        $this->assertSelectorExists('.nav-header.is-auth-page');
+        $this->assertSelectorExists('.nav-brand');
+        $this->assertSelectorExists('.nav-brand .nav-brand-logo');
+        $this->assertSelectorTextContains('.nav-brand .nav-brand-logo', '🍽️');
+        $this->assertSelectorTextContains('.nav-brand .nav-brand-text', 'QuoiManger');
+        $this->assertSelectorNotExists('.nav-back-btn');
+        $this->assertSelectorNotExists('.nav-next-btn');
+        $this->assertSelectorNotExists('.nav-links a');
+        $this->assertSelectorNotExists('.bottom-app-nav');
+    }
+
+    public function testMenuOnRegisterPageHasHeaderWithoutButtonsAndNoBottomNavAndNoChefIcon(): void
+    {
+        $this->client->request('GET', '/inscription');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.nav-header.is-auth-page');
+        $this->assertSelectorExists('.nav-brand');
+        $this->assertSelectorNotExists('.nav-back-btn');
+        $this->assertSelectorNotExists('.nav-next-btn');
+        $this->assertSelectorNotExists('.nav-links a');
+        $this->assertSelectorNotExists('.bottom-app-nav');
+        $this->assertStringNotContainsString('👨‍🍳', $this->client->getResponse()->getContent());
     }
 
     public function testMenuIsRenderedOnRecettesPageWithActiveRecettesLink(): void
@@ -74,9 +96,10 @@ class MenuTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('.nav-header');
 
-        // Check avatarMenuImg disconnect icon
+        // Check avatarMenuImg account icon
         $this->assertSelectorExists('#avatarMenuImg');
-        $this->assertSelectorExists('#avatarMenuImg i.fa-sign-out-alt');
+        $this->assertSelectorExists('#avatarMenuImg i.fa-user');
+        $this->assertSelectorExists('#avatarMenuImg[href="/compte"]');
 
         // Check popup menu with account and logout items
         $this->assertSelectorExists('.popup-menu-user');
@@ -162,7 +185,7 @@ class MenuTest extends WebTestCase
         // Vérification des métadonnées viewport et PWA
         $this->assertSelectorExists('meta[name="viewport"]');
         $this->assertSelectorExists('link[rel="manifest"][href="/manifest.json"]');
-        $this->assertSelectorExists('meta[name="theme-color"][content="#db4807"]');
+        $this->assertSelectorExists('meta[name="theme-color"][content="#c4a587"]');
         $this->assertSelectorExists('meta[name="apple-mobile-web-app-capable"][content="yes"]');
 
         // 2. Sur la page des recettes
@@ -188,7 +211,7 @@ class MenuTest extends WebTestCase
         $this->assertEquals('QuoiManger - Suivi des repas & Recettes', $manifestData['name']);
         $this->assertEquals('QuoiManger', $manifestData['short_name']);
         $this->assertEquals('standalone', $manifestData['display']);
-        $this->assertEquals('#db4807', $manifestData['theme_color']);
+        $this->assertEquals('#c4a587', $manifestData['theme_color']);
         $this->assertNotEmpty($manifestData['icons']);
 
         // 2. Test du Service Worker
@@ -197,5 +220,21 @@ class MenuTest extends WebTestCase
         $this->assertResponseHeaderSame('content-type', 'application/javascript; charset=utf-8');
         $this->assertResponseHeaderSame('service-worker-allowed', '/');
         $this->assertStringContainsString('CACHE_NAME', $this->client->getResponse()->getContent());
+    }
+
+    public function testNavigationArrowsHiddenOnDesktopInMenuCss(): void
+    {
+        $path = file_exists(__DIR__ . '/../../templates/navigation/_menu/menu.css')
+            ? __DIR__ . '/../../templates/navigation/_menu/menu.css'
+            : __DIR__ . '/../../templates/_menu/menu.css';
+        $cssContent = (string) file_get_contents($path);
+        $this->assertStringContainsString('.nav-header-left,', $cssContent);
+        $this->assertStringContainsString('.nav-back-btn,', $cssContent);
+        $this->assertStringContainsString('.nav-next-btn {', $cssContent);
+        $this->assertStringContainsString('display: none;', $cssContent);
+
+        // Sur mobile (max-width: 768px), elles sont réactivées
+        $this->assertStringContainsString('@media (max-width: 768px)', $cssContent);
+        $this->assertStringContainsString('display: inline-flex;', $cssContent);
     }
 }

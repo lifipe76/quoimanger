@@ -14,12 +14,20 @@
             <div class="card-empty-cta">
                 <div class="cta-top-row">
                     <h3 class="empty-cta-title">Qu'avez-vous mangé aujourd'hui ?</h3>
-                    {{ composant('_composants/button', {
-                        'titre': 'Je rentre mon repas',
-                        'type': 'button',
-                        'class': 'btn-primary btn-cta',
-                        'onclick': 'openRepasModal()'
-                    }) }}
+                    <div class="cta-buttons">
+                        {{ composant('_composants/button', {
+                            'titre': 'Je rentre mon repas',
+                            'type': 'button',
+                            'class': 'btn-primary btn-cta',
+                            'onclick': 'openRepasModal()'
+                        }) }}
+                        {{ composant('_composants/button', {
+                            'titre': 'Je propose',
+                            'type': 'button',
+                            'class': 'btn-secondary btn-cta',
+                            'onclick': 'openPropositionModal()'
+                        }) }}
+                    </div>
                 </div>
 
                 {% if suggestion and suggestion.recette %}
@@ -122,10 +130,12 @@
     'content': homeContent
 }) }}
 
-{{ composant('popup/repas/ajout', _context) }}
+{{ composant('popups/repas/ajout', _context) }}
 
-{{ composant('popup/repas/modif', _context) }}
+{{ composant('popups/repas/modif', _context) }}
 
-{{ composant('popup/repas/accompagnement', _context) }}
+{{ composant('popups/repas/accompagnement', _context) }}
+
+{{ composant('popups/repas/proposition', _context) }}
 
 {% endblock %}

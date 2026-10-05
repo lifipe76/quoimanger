@@ -29,6 +29,20 @@ class HomeController extends AbstractController
         $ranks = $this->calculateRecipeRanks($recettes);
         $suggestion = $suggestionService->getSuggestion($recettes);
 
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
+        $famille = $currentUser?->getFamille();
+        $isChef = $famille ? $famille->isChef($currentUser) : true;
+
+        // Pour les membres non-chefs, afficher les repas de toute la famille (isPourTous)
+        // et ceux où le membre connecté participe, mais masquer ceux réservés à d'autres membres
+        if ($famille && !$isChef) {
+            $timeline = array_values(array_filter(
+                $timeline,
+                fn(RecetteRealisation $r) => $currentUser !== null && $r->hasParticipant($currentUser)
+            ));
+        }
+
         // Regroupement de la timeline par jour (format Y-m-d)
         $timelineByDay = [];
         foreach ($timeline as $item) {
@@ -39,9 +53,7 @@ class HomeController extends AbstractController
         // Par défaut, sélectionner la bulle Soir
         $defaultMoment = 'soir';
 
-        /** @var \App\Entity\User|null $currentUser */
-        $currentUser = $this->getUser();
-        $familleMembres = $currentUser?->getFamille()?->getMembres() ?? [];
+        $familleMembres = $famille?->getMembres() ?? [];
 
         return $this->render('pages/pageComposant.html.twig', [
             'twig' => 'pages/home',
@@ -180,10 +192,16 @@ class HomeController extends AbstractController
             }
 
             if ($request->request->has('notes')) {
+                /** @var \App\Entity\User|null $currentUser */
+                $currentUser = $this->getUser();
                 $notesData = (array) $request->request->all('notes');
                 $noteRepo = $em->getRepository(\App\Entity\RealisationNote::class);
                 foreach ($notesData as $userId => $noteVal) {
                     $uid = (int) $userId;
+                    // L'utilisateur connecté ne peut modifier que sa propre note
+                    if ($currentUser && $uid !== (int) $currentUser->getId()) {
+                        continue;
+                    }
                     $val = (int) $noteVal;
                     $member = $em->getRepository(\App\Entity\User::class)->find($uid);
                     if ($member) {
@@ -273,15 +291,8 @@ class HomeController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        // Utilisateur cible (current user par défaut, ou membre de la même famille)
+        // Utilisateur cible : l'utilisateur connecté uniquement
         $targetUser = $currentUser;
-        $targetUserId = (int) $request->request->get('user_id', 0);
-        if ($targetUserId > 0 && $targetUserId !== $currentUser->getId()) {
-            $otherUser = $userRepository->find($targetUserId);
-            if ($otherUser && $currentUser->getFamille() && $otherUser->getFamille() === $currentUser->getFamille()) {
-                $targetUser = $otherUser;
-            }
-        }
 
         $noteValue = (int) $request->request->get('note', 0);
 

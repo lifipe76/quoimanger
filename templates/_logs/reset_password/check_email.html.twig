@@ -5,9 +5,6 @@
 {% block body %}
 {% set emailContent %}
     <div style="text-align: center; margin-bottom: 2rem;">
-        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: #fff4ed; border-radius: 20px; font-size: 2rem; margin-bottom: 1rem; box-shadow: 0 4px 12px var(--primary-glow);">
-            ✉️
-        </div>
         <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Vérifiez vos emails</h1>
         <p class="page-subtitle">
             Un email de réinitialisation vous a été envoyé
@@ -20,7 +17,6 @@
         </p>
 
         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.25rem; margin: 1.5rem 0; display: flex; align-items: flex-start; gap: 0.75rem;">
-            <span style="font-size: 1.2rem;">⏱️</span>
             <div style="font-size: 0.875rem; color: var(--text-muted);">
                 Ce lien de réinitialisation expirera dans <strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
             </div>

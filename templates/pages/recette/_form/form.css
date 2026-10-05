@@ -18,7 +18,7 @@
 }
 
 .ingredient-row:focus-within {
-    border-color: var(--primary, #db4807);
+    border-color: var(--primary, #c4a587);
 }
 
 .ingredient-row .select-col {

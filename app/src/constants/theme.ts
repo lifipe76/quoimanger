@@ -1,8 +1,8 @@
 export const THEME = {
     colors: {
-        primary: "#db4807",
-        primaryDark: "#b53b06",
-        primaryLight: "#fff2eb",
+        primary: "#c4a587",
+        primaryDark: "#a68363",
+        primaryLight: "#fbf7f4",
         background: "#f8fafc",
         card: "#ffffff",
         text: "#1e293b",

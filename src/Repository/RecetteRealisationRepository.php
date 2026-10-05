@@ -33,6 +33,8 @@ class RecetteRealisationRepository extends ServiceEntityRepository
             ->addSelect('ri')
             ->leftJoin('ri.ingredient', 'i')
             ->addSelect('i')
+            ->leftJoin('rr.participants', 'rr_participants')
+            ->addSelect('rr_participants')
             ->orderBy('rr.realiseAt', 'DESC')
             ->getQuery()
             ->getResult();

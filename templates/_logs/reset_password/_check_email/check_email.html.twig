@@ -1,0 +1,44 @@
+{% extends 'base.logs.html.twig' %}
+
+{% block title %}Vérifiez vos emails - QuoiManger{% endblock %}
+
+{% block body %}
+{% set emailContent %}
+
+    {{ composant('_logs/_composants/zoneEntete',{'titre':'Vérifiez vos emails','explique':'Un email de réinitialisation vous a été envoyé'}) }}
+
+    <div class="card check-email-card">
+        <p class="check-email-text">
+            Si un compte correspond à votre adresse email, un lien sécurisé permettant de réinitialiser votre mot de passe vient d'être expédié.
+        </p>
+
+        <div class="check-email-info-box">
+            <div class="check-email-info-text">
+                Ce lien de réinitialisation expirera dans <strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+            </div>
+        </div>
+
+        <p class="check-email-help-text">
+            Vous ne trouvez pas l'email ? Pensez à vérifier votre dossier de courriers indésirables (spams) ou demandez un nouveau lien ci-dessous.
+        </p>
+
+        <div class="check-email-actions">
+            {{ composant('_composants/button', {
+                'titre': 'Renvoyer une demande',
+                'href': path('app_forgot_password_request'),
+                'class': 'btn-secondary check-email-btn-full'
+            }) }}
+            {{ composant('_composants/button', {
+                'titre': 'Retour à la page de connexion',
+                'href': path('web_login'),
+                'class': 'btn-primary check-email-btn-full'
+            }) }}
+        </div>
+    </div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'class': 'check-email-container',
+    'content': emailContent
+}) }}
+{% endblock %}

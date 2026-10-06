@@ -30,6 +30,13 @@ button:disabled,
     width: fit-content;
 }
 
+.button:hover,
+.btn:hover,
+.button:active,
+.btn:active {
+    transform: none !important;
+}
+
 /* Variantes */
 .button.btn-primary,
 .button-primary,
@@ -48,13 +55,7 @@ button:disabled,
 .button-primary:hover,
 .btn-primary:hover {
     box-shadow: 0 6px 20px rgba(196, 165, 135, 0.45);
-    transform: translateY(-2px);
     color: #ffffff;
-}
-
-.button.btn-primary:active,
-.btn-primary:active {
-    transform: translateY(0);
 }
 
 .button.btn-secondary,

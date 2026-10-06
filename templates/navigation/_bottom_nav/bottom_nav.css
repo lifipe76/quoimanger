@@ -133,7 +133,7 @@
         background: none;
         cursor: pointer;
         padding: 0;
-        margin-top: -24px;
+        margin-top: -29px;
         transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         font-family: inherit;
     }
@@ -162,6 +162,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transform: translateY(-1px);
+        filter: grayscale(100%) contrast(150%) brightness(0.6);
+        transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    .bottom-nav-center-btn.active .center-btn-header-icon {
+        /* Teinte dorée / bronze chaud correspondant à var(--primary, #c4a587) */
+        filter: sepia(1) saturate(2.5) hue-rotate(345deg) brightness(0.85) contrast(1.1);
     }
 
     .bottom-nav-center-btn:hover .center-btn-icon {

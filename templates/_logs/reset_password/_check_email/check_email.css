@@ -1,0 +1,55 @@
+/* ==========================================================================
+   Confirmation d'envoi d'email (Check Email)
+   ========================================================================== */
+
+.check-email-container {
+    width: 100%;
+    max-width: 520px;
+    margin: 3rem auto 5rem;
+    padding: 0 1.5rem;
+}
+
+.check-email-card {
+    padding: 2.5rem 2rem;
+}
+
+.check-email-text {
+    color: #334155;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 0;
+}
+
+.check-email-info-box {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.check-email-info-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.check-email-help-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+.check-email-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn.check-email-btn-full,
+.check-email-btn-full {
+    width: 100%;
+}

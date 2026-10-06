@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Conversation;
 use App\Entity\Message;
-use App\Entity\Recette;
 use App\Entity\RecetteRealisation;
 use App\Entity\RepasProposition;
 use App\Entity\RepasVote;
@@ -13,8 +12,8 @@ use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\RecetteRepository;
 use App\Repository\RepasPropositionRepository;
-use App\Repository\RepasVoteRepository;
 use App\Service\PropositionNotifierService;
+use App\Service\RecipeSuggestionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +30,8 @@ class MessagerieController extends AbstractController
         ConversationRepository $conversationRepository,
         RecetteRepository $recetteRepository,
         \App\Repository\FamilleInvitationRepository $invitationRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RecipeSuggestionService $suggestionService
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
@@ -39,11 +39,12 @@ class MessagerieController extends AbstractController
 
         if (!$famille) {
             return $this->render('pages/pageComposant.html.twig', [
-                'twig' => 'pages/messagerie/messagerie',
+                'twig' => 'pages/messagerie',
                 'has_famille' => false,
                 'conversation' => null,
                 'messages' => [],
                 'recettes' => [],
+                'ranks' => [],
             ]);
         }
 
@@ -81,15 +82,18 @@ class MessagerieController extends AbstractController
         }
 
         $messages = $conversation->getMessages();
-        $recettes = $recetteRepository->findBy([], ['designation' => 'ASC']);
+        $allRecettes = $recetteRepository->findAll();
+        $ranks = $suggestionService->calculateRecipeRanks($allRecettes);
+        $sortedRecettes = $suggestionService->sortRecettesByProbability($allRecettes, new \DateTimeImmutable('today'), $ranks);
 
         return $this->render('pages/pageComposant.html.twig', [
-            'twig' => 'pages/messagerie/messagerie',
+            'twig' => 'pages/messagerie',
             'has_famille' => true,
             'famille' => $famille,
             'conversation' => $conversation,
             'messages' => $messages,
-            'recettes' => $recettes,
+            'recettes' => $sortedRecettes,
+            'ranks' => $ranks,
             'defaultMoment' => $this->getDefaultMoment(),
         ]);
     }
@@ -243,6 +247,69 @@ class MessagerieController extends AbstractController
 
         $this->addFlash('success', sprintf('Proposition pour « %s » envoyée à la famille !', $recette->getDesignation()));
 
+    }
+
+    #[Route('/messagerie/proposition/{id<\d+>}/supprimer', name: 'app_repas_supprimer_proposition', methods: ['POST'])]
+    public function supprimerProposition(
+        int $id,
+        Request $request,
+        RepasPropositionRepository $propositionRepository,
+        MessageRepository $messageRepository,
+        EntityManagerInterface $em
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        $famille = $user->getFamille();
+
+        $proposition = $propositionRepository->find($id);
+        if (!$proposition || !$famille || $proposition->getFamille()?->getId() !== $famille->getId()) {
+            if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+                return new JsonResponse(['error' => 'Proposition introuvable ou accès refusé.'], Response::HTTP_NOT_FOUND);
+            }
+            $this->addFlash('danger', 'Proposition introuvable.');
+            return $this->redirectToRoute('app_messagerie');
+        }
+
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('supprimer_proposition_' . $proposition->getId(), $token)) {
+            if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+                return new JsonResponse(['error' => 'Jeton de sécurité invalide.'], Response::HTTP_FORBIDDEN);
+            }
+            $this->addFlash('danger', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('app_messagerie');
+        }
+
+        // L'auteur ou le créateur/chef de famille a le droit de supprimer
+        $isAuthor = $proposition->getProposePar()?->getId() === $user->getId();
+        $isChef = $famille->getCreateur()?->getId() === $user->getId();
+
+        if (!$isAuthor && !$isChef) {
+            if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+                return new JsonResponse(['error' => 'Vous n\'êtes pas autorisé à supprimer cette proposition.'], Response::HTTP_FORBIDDEN);
+            }
+            $this->addFlash('danger', 'Vous n\'êtes pas autorisé à supprimer cette proposition.');
+            return $this->redirectToRoute('app_messagerie');
+        }
+
+        $nomRecette = $proposition->getRecette()?->getDesignation() ?? 'Proposition';
+
+        // Supprimer également les messages associés à cette proposition
+        $messagesLie = $messageRepository->findBy(['proposition' => $proposition]);
+        foreach ($messagesLie as $msg) {
+            $em->remove($msg);
+        }
+
+        $em->remove($proposition);
+        $em->flush();
+
+        if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+            return new JsonResponse([
+                'success' => true,
+                'deletedId' => $id,
+            ]);
+        }
+
+        $this->addFlash('success', sprintf('La proposition pour « %s » a bien été supprimée.', $nomRecette));
         return $this->redirectToRoute('app_messagerie');
     }
 
@@ -410,7 +477,8 @@ class MessagerieController extends AbstractController
             $prop = $msg->getProposition();
             $propData = null;
             if ($prop) {
-                $myVote = $prop->getUserVote($user);
+                $isAuthor = $prop->getProposePar()?->getId() === $user->getId();
+                $isChef = $famille->getCreateur()?->getId() === $user->getId();
                 $propData = [
                     'id' => $prop->getId(),
                     'recetteId' => $prop->getRecette()?->getId(),
@@ -419,11 +487,13 @@ class MessagerieController extends AbstractController
                     'moment' => $prop->getMoment(),
                     'status' => $prop->getStatus(),
                     'proposePar' => $prop->getProposePar()?->getDisplayName(),
-                    'votesPour' => array_map(fn ($v) => $v->getUser()?->getDisplayName(), $prop->getVotesPour()),
-                    'votesContre' => array_map(fn ($v) => $v->getUser()?->getDisplayName(), $prop->getVotesContre()),
+                    'votesPour' => array_map(fn($v) => $v->getUser()?->getDisplayName(), $prop->getVotesPour()),
+                    'votesContre' => array_map(fn($v) => $v->getUser()?->getDisplayName(), $prop->getVotesContre()),
                     'myVote' => $myVote?->getChoix(),
                     'isValidee' => $prop->isValidee(),
                     'isAjouteeAuFil' => $prop->isAjouteeAuFil(),
+                    'canDelete' => ($isAuthor || $isChef),
+                    'csrfToken' => $this->container->get('security.csrf.token_manager')->getToken('supprimer_proposition_' . $prop->getId())->getValue(),
                 ];
             }
 

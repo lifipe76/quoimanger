@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted("ROLE_ADMIN")]
-class RegistrationController extends AbstractController
+class zOldRegistrationController extends AbstractController
 {
     use TargetPathTrait;
 

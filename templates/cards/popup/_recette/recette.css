@@ -1,0 +1,126 @@
+/* ==========================================================================
+   Composant Card Popup Recette (utilisé dans les modales ajout, proposition...)
+   ========================================================================== */
+
+.modal-recipe-item {
+    width: 100%;
+    text-align: left;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.modal-recipe-item:hover {
+    background: #fbf7f4;
+    border-color: #c4a587;
+    box-shadow: 0 4px 12px rgba(196, 165, 135, 0.15);
+}
+
+.recipe-item-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.recipe-item-name {
+    display: block;
+    width: 100%;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.35rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal-recipe-item:hover .recipe-item-name {
+    color: #c4a587;
+}
+
+.recipe-item-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+
+/* Badges de classement & réalisations (gris neutre) */
+.badge-rank,
+.badge-eaten-count,
+.badge-last-cooked,
+.badge-never-cooked {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+    white-space: nowrap;
+}
+
+.recipe-item-ingredients {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: block;
+}
+
+.recipe-item-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.recipe-item-action {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #c4a587;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.2s ease;
+}
+
+.modal-recipe-item:hover .recipe-item-action {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+@media (max-width: 600px) {
+    .modal-recipe-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.85rem 1rem;
+    }
+
+    .recipe-item-meta {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .recipe-item-action {
+        opacity: 1;
+        transform: none;
+        align-self: flex-end;
+    }
+}

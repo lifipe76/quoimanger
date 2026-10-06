@@ -1,0 +1,16 @@
+{# Composant barre de recherche pour popups/modales #}
+{% set id = id|default('popup-search-input') %}
+{% set placeholder = placeholder|default('Rechercher une recette...') %}
+{% set oninput = oninput|default('') %}
+{% set target = target|default('') %}
+
+<div class="modal-search-field">
+    <span class="search-icon" aria-hidden="true">🔍</span>
+    <input type="text"
+           id="{{ id }}"
+           class="form-control modal-search-input"
+           placeholder="{{ placeholder }}"
+           autocomplete="off"
+           {% if oninput %}oninput="{{ oninput }}"{% endif %}
+           {% if target %}data-search-target="{{ target }}" oninput="if(typeof filterPopupList==='function'){filterPopupList(this.value, '{{ target }}');} {{ oninput }}"{% endif %}>
+</div>

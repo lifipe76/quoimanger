@@ -1,43 +1,37 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.logs.html.twig' %}
 
 {% block title %}Créer un compte - QuoiManger{% endblock %}
 
-{% block bottom_nav %}{% endblock %}
-
 {% block body %}
 {% set registerContent %}
-    <div class="card">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Créer un compte</h1>
-            <p class="page-subtitle">
-                Rejoignez QuoiManger pour gérer vos recettes et partager vos repas en famille
-            </p>
-        </div>
+    <div class="card register-card">
+
+        {{ composant('_logs/_composants/zoneEntete',{'titre':'Créer un compte'}) }}
 
         {{ form_start(registrationForm) }}
             {{ form_errors(registrationForm) }}
 
             <div class="name-fields-grid">
-                <div class="form-group" style="margin-bottom: 0;">
-                    {{ form_label(registrationForm.firstname, null, {'label_attr': {'class': 'form-label'}}) }}
+                <div class="form-group name-field-group">
+                    {{ form_label(registrationForm.firstname, null, {'label_attr': {'class': 'form-label'} }) }}
                     {{ form_widget(registrationForm.firstname) }}
-                    {{ form_errors(registrationForm.firstname, {'attr': {'class': 'form-error'}}) }}
+                    {{ form_errors(registrationForm.firstname, {'attr': {'class': 'form-error'} }) }}
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    {{ form_label(registrationForm.lastname, null, {'label_attr': {'class': 'form-label'}}) }}
+                <div class="form-group name-field-group">
+                    {{ form_label(registrationForm.lastname, null, {'label_attr': {'class': 'form-label'} }) }}
                     {{ form_widget(registrationForm.lastname) }}
-                    {{ form_errors(registrationForm.lastname, {'attr': {'class': 'form-error'}}) }}
+                    {{ form_errors(registrationForm.lastname, {'attr': {'class': 'form-error'} }) }}
                 </div>
             </div>
 
             <div class="form-group">
-                {{ form_label(registrationForm.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(registrationForm.email, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(registrationForm.email) }}
-                {{ form_errors(registrationForm.email, {'attr': {'class': 'form-error'}}) }}
+                {{ form_errors(registrationForm.email, {'attr': {'class': 'form-error'} }) }}
             </div>
 
             <div class="form-group">
-                {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(registrationForm.plainPassword.first, null, {'label_attr': {'class': 'form-label'} }) }}
                 <div class="password-input-wrapper">
                     {{ form_widget(registrationForm.plainPassword.first) }}
                     <button type="button"
@@ -48,11 +42,11 @@
                         <i class="fa-solid fa-eye"></i>
                     </button>
                 </div>
-                {{ form_errors(registrationForm.plainPassword.first, {'attr': {'class': 'form-error'}}) }}
+                {{ form_errors(registrationForm.plainPassword.first, {'attr': {'class': 'form-error'} }) }}
             </div>
 
             <div class="form-group">
-                {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(registrationForm.plainPassword.second, null, {'label_attr': {'class': 'form-label'} }) }}
                 <div class="password-input-wrapper">
                     {{ form_widget(registrationForm.plainPassword.second) }}
                     <button type="button"
@@ -63,20 +57,19 @@
                         <i class="fa-solid fa-eye"></i>
                     </button>
                 </div>
-                {{ form_errors(registrationForm.plainPassword.second, {'attr': {'class': 'form-error'}}) }}
+                {{ form_errors(registrationForm.plainPassword.second, {'attr': {'class': 'form-error'} }) }}
             </div>
 
             {{ composant('_composants/button', {
                 'titre': 'Créer mon compte',
                 'type': 'submit',
-                'class': 'btn-primary',
-                'style': 'width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 1rem;'
+                'class': 'btn-primary register-btn-submit'
             }) }}
         {{ form_end(registrationForm) }}
 
-        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+        <div class="register-footer">
             Vous avez déjà un compte ?
-            <a href="{{ path('web_login') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+            <a href="{{ path('web_login') }}" class="register-login-link">
                 Se connecter
             </a>
         </div>
@@ -84,7 +77,7 @@
 {% endset %}
 
 {{ composant('_composants/container', {
-    'style': 'max-width: 500px; margin: 2rem auto 3rem; padding: 0 1.5rem;',
+    'class': 'register-container',
     'content': registerContent
 }) }}
 {% endblock %}

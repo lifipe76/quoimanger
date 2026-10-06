@@ -34,27 +34,15 @@
             </a>
         </div>
 
-        <!-- 4. Mon repas (Ajouter le repas du jour) -->
-        {% if current_route == 'home' %}
-            <button type="button"
-                    class="bottom-nav-item bottom-nav-btn-repas"
-                    onclick="if (typeof openRepasModal === 'function') { openRepasModal(); } else { window.location.href = '{{ path('home') }}?open_modal=1'; }"
-                    title="Ajouter un repas">
-                <span class="bottom-nav-icon">
-                    <i class="fa-solid fa-plus"></i>
-                </span>
-                <span class="bottom-nav-label">Mon repas</span>
-            </button>
-        {% else %}
-            <a href="{{ path('home') }}?open_modal=1"
-               class="bottom-nav-item"
-               title="Ajouter un repas">
-                <span class="bottom-nav-icon">
-                    <i class="fa-solid fa-plus"></i>
-                </span>
-                <span class="bottom-nav-label">Mon repas</span>
-            </a>
-        {% endif %}
+        <!-- 4. Messagerie -->
+        <a href="{{ path('app_messagerie') }}"
+           class="bottom-nav-item{{ current_route starts with 'app_messagerie' ? ' active' : '' }}"
+           title="Messagerie">
+            <span class="bottom-nav-icon">
+                <i class="fa-solid fa-comments"></i>
+            </span>
+            <span class="bottom-nav-label">Messagerie</span>
+        </a>
 
         <!-- 5. Mon compte (pas famille) -->
         {% if app.user %}

@@ -15,11 +15,36 @@ function closeRepasModal() {
 }
 
 function selectRepasMoment(moment) {
-    document.querySelectorAll(".btn-moment-toggle").forEach(function (btn) {
+    document.querySelectorAll("#repas-modal .btn-moment-toggle").forEach(function (btn) {
         btn.classList.toggle("active", btn.dataset.moment === moment);
     });
-    document.querySelectorAll(".input-form-moment").forEach(function (input) {
+    document.querySelectorAll("#repas-modal .input-form-moment").forEach(function (input) {
         input.value = moment;
+    });
+}
+
+function selectRepasDate(dateStr, btnElement) {
+    var dateInput = document.getElementById("repas-date-input");
+    if (dateInput) {
+        dateInput.value = dateStr;
+    }
+    document.querySelectorAll("#repas-modal .input-form-date").forEach(function (input) {
+        input.value = dateStr;
+    });
+    document.querySelectorAll("#repas-modal .btn-date-quick").forEach(function (btn) {
+        btn.classList.remove("active");
+    });
+    if (btnElement) {
+        btnElement.classList.add("active");
+    }
+}
+
+function onRepasDateInputChange(val) {
+    document.querySelectorAll("#repas-modal .input-form-date").forEach(function (input) {
+        input.value = val;
+    });
+    document.querySelectorAll("#repas-modal .btn-date-quick").forEach(function (btn) {
+        btn.classList.remove("active");
     });
 }
 

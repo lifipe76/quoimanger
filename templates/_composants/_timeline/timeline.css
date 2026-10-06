@@ -12,12 +12,27 @@
 .timeline-wrapper::before {
     content: "";
     position: absolute;
-    top: 2rem;
+    top: 5rem;
     bottom: 2rem;
     left: 17px;
     width: 3px;
     background: linear-gradient(180deg, #c4a587 0%, #cbd5e1 30%, #e2e8f0 100%);
     border-radius: 3px;
+}
+
+/* Coude arrondi de la timeline qui tourne vers la carte CTA "Qu'avez-vous mangé" */
+.timeline-item-cta::before {
+    content: "";
+    position: absolute;
+    left: -31px;
+    top: 3.5rem;
+    width: 31px;
+    height: 1.6rem;
+    border-top: 3px solid #c4a587;
+    border-left: 3px solid #c4a587;
+    border-top-left-radius: 20px;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .timeline-item {
@@ -52,41 +67,6 @@
 .timeline-item:hover .marker-dot {
     transform: scale(1.3);
     box-shadow: 0 0 0 6px rgba(196, 165, 135, 0.4);
-}
-
-.cta-marker {
-    top: 2rem;
-}
-
-.marker-icon {
-    font-size: 1.25rem;
-    position: relative;
-    z-index: 2;
-}
-
-.marker-pulse {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    background: #fbf7f4;
-    border: 2px solid #c4a587;
-    border-radius: 50%;
-    animation: pulseGlow 2s infinite;
-}
-
-@keyframes pulseGlow {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(196, 165, 135, 0.5);
-    }
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(196, 165, 135, 0);
-    }
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(196, 165, 135, 0);
-    }
 }
 
 .timeline-badge-time {
@@ -208,6 +188,15 @@
 
     .timeline-wrapper::before {
         left: 2px;
+        top: 3.25rem;
+    }
+
+    .timeline-item-cta::before {
+        left: -11.6px;
+        top: 2.25rem;
+        width: 12px;
+        height: 1.2rem;
+        border-top-left-radius: 12px;
     }
 
     .timeline-marker {
@@ -219,19 +208,6 @@
     .marker-dot {
         width: 10px;
         height: 10px;
-    }
-
-    .marker-pulse {
-        width: 18px;
-        height: 18px;
-    }
-
-    .marker-icon {
-        font-size: 0.9rem;
-    }
-
-    .cta-marker {
-        top: 1.1rem;
     }
 
     .timeline-day-group {

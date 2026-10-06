@@ -21,6 +21,7 @@ class WebLoginController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
+
         return $this->render('pages/pageComposant.html.twig', [
             'twig' => '_logs/login',
             'last_username' => $lastUsername,

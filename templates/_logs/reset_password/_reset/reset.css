@@ -1,0 +1,53 @@
+/* ==========================================================================
+   Réinitialisation de mot de passe (Reset)
+   ========================================================================== */
+
+.reset-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 3rem auto 5rem;
+    padding: 0 1.5rem;
+}
+
+.reset-alert {
+    margin-bottom: 1.5rem;
+}
+
+.reset-card {
+    /* Hérite du style .card */
+}
+
+.reset-password-help {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+}
+
+.form-group.reset-form-group-confirm {
+    margin-top: 1.25rem;
+}
+
+.btn.reset-btn-submit,
+.reset-btn-submit {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.reset-footer {
+    text-align: center;
+    margin-top: 1.75rem;
+}
+
+.reset-login-link {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.reset-login-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}

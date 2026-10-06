@@ -1,0 +1,39 @@
+{% set action_label = action_label|default('Valider →') %}
+{% set rank = (ranks is defined and ranks[recette.id] is defined) ? ranks[recette.id] : null %}
+
+<button type="submit" class="modal-recipe-item">
+    <div class="recipe-item-main">
+        <span class="recipe-item-name">{{ recette.designation }}</span>
+        <div class="recipe-item-badges">
+            {% if rank %}
+                <span class="badge-rank" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} plat le plus mangé">
+                    {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                </span>
+            {% else %}
+                <span class="badge-rank badge-rank-none" title="Non classé">-</span>
+            {% endif %}
+            <span class="badge-eaten-count">
+                {{ recette.realisations|length > 0 ? ('Mangé ' ~ recette.realisations|length ~ ' fois') : 'Jamais mangé' }}
+            </span>
+        </div>
+        <span class="recipe-item-ingredients">
+            {{ recette.recetteIngredients|length }} ingrédient(s)
+            {% if recette.recetteIngredients|length > 0 %}
+                • ({{ recette.recetteIngredients|map(ri => ri.ingredient.designation)|slice(0, 3)|join(', ') }}{% if recette.recetteIngredients|length > 3 %}...{% endif %})
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="recipe-item-meta">
+        {% if recette.lastRealiseAt %}
+            <span class="badge-last-cooked" title="Dernière dégustation">
+                {{ recette.lastRealiseLabel }}
+            </span>
+        {% else %}
+            <span class="badge-never-cooked">
+                ✦ Jamais réalisée
+            </span>
+        {% endif %}
+        <span class="recipe-item-action">{{ action_label }}</span>
+    </div>
+</button>

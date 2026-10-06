@@ -33,6 +33,7 @@
             </script>
         {% endblock %}
     </head>
+
     {% set current_route = app.current_route|default(app.request.attributes.get('_route')) %}
     <body class="{{ current_route in ['web_login', 'app_register', 'app_register_alias'] ? 'no-bottom-nav' : '' }}{{ current_route starts with 'app_messagerie' ? ' is-messagerie-page' : '' }}">
         {{ composant('_composants/container') }}

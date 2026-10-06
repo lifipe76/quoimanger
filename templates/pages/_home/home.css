@@ -131,13 +131,7 @@
     background: #fbf7f4;
     color: var(--primary, #c4a587);
     border-color: #e6d7c8;
-    transform: scale(1.1);
     box-shadow: 0 2px 8px var(--primary-glow, rgba(196, 165, 135, 0.25));
-}
-
-.suggestion-btn:active,
-.suggestion-btn-plus:active {
-    transform: scale(0.95);
 }
 
 @media (max-width: 600px) {

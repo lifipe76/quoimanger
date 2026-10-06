@@ -62,7 +62,8 @@ class UserRegistrationController extends AbstractController
             }
         }
 
-        return $this->render('_logs/register.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => '_logs/register',
             'registrationForm' => $form,
         ]);
     }

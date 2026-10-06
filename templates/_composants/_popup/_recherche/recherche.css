@@ -1,0 +1,45 @@
+/* ==========================================================================
+   Composant Barre de Recherche pour Popups / Modales
+   ========================================================================== */
+
+.modal-search-field {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.modal-search-field .search-icon {
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.modal-search-field .modal-search-input,
+.modal-search-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 2.25rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #1e293b;
+    transition: all 0.2s ease;
+}
+
+.modal-search-field .modal-search-input:focus,
+.modal-search-field input:focus {
+    outline: none;
+    border-color: #c4a587;
+    box-shadow: 0 0 0 3px rgba(196, 165, 135, 0.25);
+    background: #ffffff;
+}

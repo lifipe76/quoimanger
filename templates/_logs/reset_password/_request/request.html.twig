@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.logs.html.twig' %}
 
 {% block title %}Mot de passe oublié - QuoiManger{% endblock %}
 
@@ -7,19 +7,14 @@
 {% block body %}
 {% set requestContent %}
     {% for flash_error in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-danger request-alert">
             {{ flash_error }}
         </div>
     {% endfor %}
 
-    <div class="card">
+    <div class="card request-card">
 
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <h1 class="page-title" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Mot de passe oublié</h1>
-            <p class="page-subtitle">
-                Entrez votre adresse email pour recevoir un lien de réinitialisation sécurisé
-            </p>
-        </div>
+        {{ composant('_logs/_composants/zoneEntete',{'titre':'Mot de passe oublié','explique':'Entrez votre adresse email pour recevoir un lien de réinitialisation sécurisé'}) }}
 
         {{ form_start(requestForm) }}
             <div class="form-group">
@@ -37,8 +32,7 @@
             {{ composant('_composants/button', {
                 'titre': 'Envoyer le lien de réinitialisation',
                 'type': 'submit',
-                'class': 'btn-primary',
-                'style': 'width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 0.5rem;'
+                'class': 'btn-primary request-btn-submit'
             }) }}
         {{ form_end(requestForm) }}
 
@@ -46,7 +40,7 @@
 {% endset %}
 
 {{ composant('_composants/container', {
-    'style': 'max-width: 480px; margin: 3rem auto 5rem; padding: 0 1.5rem;',
+    'class': 'request-container',
     'content': requestContent
 }) }}
 {% endblock %}

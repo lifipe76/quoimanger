@@ -1,57 +1,91 @@
-/* Barre supérieure de recherche + moments sur la même ligne */
-.modal-top-bar {
+/* Ligne de sélection de la date et des moments sur la même ligne (identique à propose) */
+#repas-modal .modal-date-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     padding-right: 3.5rem; /* Évite tout chevauchement avec la croix de fermeture */
-    background: #f8fafc;
+    background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
+    flex-wrap: wrap;
 }
 
-.modal-search-field {
-    position: relative;
-    flex: 1 1 auto;
+#repas-modal .modal-date-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
 }
 
-.modal-search-field .search-icon {
-    position: absolute;
-    left: 0.85rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    pointer-events: none;
-    font-size: 0.95rem;
+#repas-modal .modal-date-row label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
 }
 
-.modal-search-field input {
-    width: 100%;
-    box-sizing: border-box;
-    padding-left: 2.25rem;
-    padding-right: 0.75rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-radius: 10px;
+#repas-modal .modal-date-input {
+    padding: 0.4rem 0.75rem;
     border: 1.5px solid #cbd5e1;
-    background: #ffffff;
-    font-size: 0.95rem;
-    font-family: inherit;
+    border-radius: 8px;
+    font-size: 0.9rem;
     color: #1e293b;
+    background: #f8fafc;
+    font-family: inherit;
     transition: all 0.2s ease;
 }
 
-.modal-search-field input:focus {
+#repas-modal .modal-date-input:focus {
     outline: none;
     border-color: #c4a587;
-    box-shadow: 0 0 0 3px rgba(196, 165, 135, 0.25);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(196, 165, 135, 0.2);
 }
 
-.modal-top-bar .moment-toggle-group {
+#repas-modal .modal-date-quick-btns {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+
+#repas-modal .btn-date-quick {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+#repas-modal .btn-date-quick:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+#repas-modal .btn-date-quick.active {
+    background: #475569;
+    border-color: #475569;
+    color: #ffffff;
+}
+
+#repas-modal .moment-toggle-group {
     display: inline-flex;
     gap: 0.35rem;
     flex-shrink: 0;
+}
+
+/* Barre de recherche dessous */
+#repas-modal .modal-top-bar {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 /* Bulles Matin Midi Soir en gris comme sur le fil */
@@ -91,97 +125,6 @@
     margin: 0 0 0.5rem 0;
 }
 
-.modal-recipe-item {
-    width: 100%;
-    text-align: left;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.modal-recipe-item:hover {
-    background: #fbf7f4;
-    border-color: #c4a587;
-    box-shadow: 0 4px 12px rgba(196, 165, 135, 0.15);
-}
-
-.recipe-item-main {
-    flex: 1 1 auto;
-}
-
-.recipe-item-name {
-    display: block;
-    width: 100%;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 0.35rem;
-}
-
-.modal-recipe-item:hover .recipe-item-name {
-    color: #c4a587;
-}
-
-.recipe-item-badges {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.35rem;
-}
-
-/* Bulles et badges en gris comme sur le fil */
-.badge-rank,
-.badge-eaten-count,
-.badge-last-cooked,
-.badge-never-cooked {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.2rem 0.55rem;
-    border-radius: 9999px;
-    letter-spacing: 0.02em;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-    background: #f8fafc !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-    white-space: nowrap;
-}
-
-.recipe-item-ingredients {
-    font-size: 0.8rem;
-    color: #64748b;
-}
-
-.recipe-item-meta {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.35rem;
-}
-
-.recipe-item-action {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #c4a587;
-    opacity: 0;
-    transform: translateX(-6px);
-    transition: all 0.2s ease;
-}
-
-.modal-recipe-item:hover .recipe-item-action {
-    opacity: 1;
-    transform: translateX(0);
-}
-
 .modal-footer-center {
     display: flex;
     justify-content: center !important;
@@ -199,20 +142,32 @@
 }
 
 @media (max-width: 600px) {
-    .modal-top-bar {
+    #repas-modal .modal-date-row {
+        padding: 0.65rem 1rem;
         flex-direction: column;
         align-items: stretch;
         gap: 0.65rem;
-        padding: 0.85rem 1rem;
-        padding-right: 3.5rem; /* Évite tout chevauchement avec la croix de fermeture */
     }
 
-    .modal-top-bar .moment-toggle-group {
+    #repas-modal .modal-date-left {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #repas-modal .modal-date-row label {
+        display: none;
+    }
+
+    #repas-modal .modal-top-bar {
+        padding: 0.65rem 1rem;
+    }
+
+    #repas-modal .moment-toggle-group {
         display: flex;
         width: 100%;
     }
 
-    .btn-moment-toggle {
+    #repas-modal .btn-moment-toggle {
         flex: 1;
         text-align: center;
         padding: 0.45rem 0.5rem;
@@ -221,24 +176,7 @@
     .modal-recipes-list {
         padding: 0.65rem 1rem;
         max-height: 55vh;
-    }
-
-    .modal-recipe-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.85rem 1rem;
-    }
-
-    .recipe-item-meta {
-        align-items: flex-start;
-        flex-wrap: wrap;
-    }
-
-    .recipe-item-action {
-        opacity: 1;
-        transform: none;
-        align-self: flex-end;
+        background-color: var(--bg-page, #f8fafc);
     }
 
     #repas-modal .modal-footer {

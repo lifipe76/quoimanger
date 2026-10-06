@@ -123,8 +123,19 @@
 
         var html = '<div class="proposal-card-header">' +
             '<span class="proposal-tag-type">Proposition de repas</span>' +
-            '<span class="proposal-tag-moment">' + (prop.moment || "").toUpperCase() + '</span>' +
-            '</div>' +
+            '<div class="proposal-header-right">' +
+            '<span class="proposal-tag-moment">' + (prop.moment || "").toUpperCase() + '</span>';
+
+        if (prop.canDelete) {
+            html += '<form method="post" action="/messagerie/proposition/' + prop.id + '/supprimer" class="form-delete-proposal" data-confirm="Voulez-vous vraiment supprimer cette proposition de repas ?" data-confirm-title="Supprimer la proposition" data-confirm-btn="Supprimer">' +
+                '<input type="hidden" name="_token" value="' + (prop.csrfToken || "") + '">' +
+                '<button type="submit" class="btn-delete-proposal" title="Supprimer la proposition" aria-label="Supprimer la proposition">' +
+                '<i class="fa-solid fa-trash-can"></i>' +
+                '</button>' +
+                '</form>';
+        }
+
+        html += '</div></div>' +
             '<h4 class="proposal-recipe-title">' + (prop.recetteNom || "") + '</h4>' +
             '<div class="proposal-recipe-date">Prévu pour le ' + (prop.dateRepas || "") + ' • par ' + (prop.proposePar || "") + '</div>';
 

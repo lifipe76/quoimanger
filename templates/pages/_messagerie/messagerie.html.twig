@@ -3,6 +3,7 @@
 {% block title %}Messagerie - QuoiManger{% endblock %}
 
 {% block body %}
+{% set messagerieContent %}
     {% if not has_famille %}
         <div class="messagerie-page-container">
             <div class="no-famille-box">
@@ -21,34 +22,31 @@
         </div>
     {% else %}
         <div class="messagerie-page-container" data-user-id="{{ app.user.id }}">
-            <div class="chat-card">
-                <!-- En-tête du chat -->
-                <div class="chat-header">
-                    <div class="chat-header-main">
-                        <div class="chat-group-avatar">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div class="chat-header-info">
-                            <h2 class="chat-header-title">{{ famille.nom }}</h2>
-                            <span class="chat-header-subtitle">
-                                {{ famille.membres|length }} membre{{ famille.membres|length > 1 ? 's' : '' }} :
-                                {{ famille.membres|map(m => m.firstname|default(m.userIdentifier))|join(', ') }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="chat-header-actions">
-                        <button type="button" class="btn-chat-notification" id="chatNotificationBtn" title="Activer les notifications du navigateur" aria-label="Activer les notifications">
-                            <i class="fa-solid fa-bell"></i>
-                        </button>
-                        <button type="button" class="btn-chat-proposer" onclick="openPropositionModal()" title="Proposer une idée de repas au vote">
-                            <i class="fa-solid fa-utensils"></i>
-                            <span>Proposer</span>
-                        </button>
-                    </div>
+            <!-- En-tête de page comme Ingrédients : sans border, sans icône, titre famille en gros, membres dessous, bouton proposer à droite -->
+            <div class="page-header messagerie-header">
+                <div>
+                    <h1 class="page-title">{{ famille.nom }}</h1>
+                    <p class="page-subtitle">
+                        {{ famille.membres|length }} membre{{ famille.membres|length > 1 ? 's' : '' }} :
+                        {{ famille.membres|map(m => m.firstname|default(m.userIdentifier))|join(', ') }}
+                    </p>
                 </div>
+                <div class="messagerie-header-actions">
+                    <button type="button" class="btn-chat-notification" id="chatNotificationBtn" title="Activer les notifications du navigateur" aria-label="Activer les notifications">
+                        <i class="fa-solid fa-bell"></i>
+                    </button>
+                    {{ composant('_composants/button', {
+                        'titre': '+ Proposer',
+                        'type': 'button',
+                        'class': 'btn-primary',
+                        'onclick': 'openPropositionModal()'
+                    }) }}
+                </div>
+            </div>
 
-                <!-- Zone de messages -->
+            <!-- Zone de chat directement sur le fond sans encadrement -->
+            <div class="chat-wrapper">
+                <!-- Zone de messages scrollable sur le fond -->
                 <div class="chat-body" id="chatMessagesContainer">
                     {% if messages|length == 0 %}
                         <div class="empty-state" style="margin: auto; text-align: center; color: #94a3b8; padding: 2rem;">
@@ -70,7 +68,23 @@
                                         {# Carte spéciale de proposition de repas #}
                                         <div class="proposal-card-header">
                                             <span class="proposal-tag-type">Proposition de repas</span>
-                                            <span class="proposal-tag-moment">{{ prop.moment|upper }}</span>
+                                            <div class="proposal-header-right">
+                                                <span class="proposal-tag-moment">{{ prop.moment|upper }}</span>
+                                                {% set can_delete_prop = (prop.proposePar and prop.proposePar.id == app.user.id) or (famille.createur and famille.createur.id == app.user.id) %}
+                                                {% if can_delete_prop %}
+                                                    <form method="post"
+                                                          action="{{ path('app_repas_supprimer_proposition', {'id': prop.id}) }}"
+                                                          class="form-delete-proposal"
+                                                          data-confirm="Voulez-vous vraiment supprimer cette proposition de repas ?"
+                                                          data-confirm-title="Supprimer la proposition"
+                                                          data-confirm-btn="Supprimer">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('supprimer_proposition_' ~ prop.id) }}">
+                                                        <button type="submit" class="btn-delete-proposal" title="Supprimer la proposition" aria-label="Supprimer la proposition">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
                                         </div>
 
                                         <h4 class="proposal-recipe-title">
@@ -167,8 +181,17 @@
                 </div>
             </div>
         </div>
-
-        {# Modal pour proposer un repas depuis la messagerie #}
-        {{ composant('popups/repas/proposition', _context) }}
     {% endif %}
+{% endset %}
+
+{{ composant('_composants/container', {
+    'class': 'container-messagerie',
+    'content': messagerieContent
+}) }}
+
+{% if has_famille %}
+    {# Modal pour proposer un repas depuis la messagerie #}
+    {{ composant('popups/repas/proposition', _context) }}
+    {{ composant('popups/confirmation') }}
+{% endif %}
 {% endblock %}

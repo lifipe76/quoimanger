@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Page Inscription / Register
+   ========================================================================== */
+
+.register-container {
+    width: 100%;
+    max-width: 600px !important;
+    margin: 2rem auto 3rem;
+    padding: 0 1.5rem;
+}
+
+@media (min-width: 600px) {
+    .register-container {
+        min-width: 600px;
+    }
+}
+
+.register-card {
+    /* Hérite du style .card */
+}
+
+.form-group.name-field-group {
+    margin-bottom: 0;
+}
+
+.btn.register-btn-submit,
+.register-btn-submit {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.register-login-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.register-login-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}

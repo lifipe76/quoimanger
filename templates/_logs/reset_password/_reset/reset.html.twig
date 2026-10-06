@@ -1,0 +1,86 @@
+{% extends 'base.logs.html.twig' %}
+
+{% block title %}Réinitialiser votre mot de passe - QuoiManger{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ addCss('controllers/toggle_password.css') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ addJs('controllers/toggle_password_controller.js') }}
+{% endblock %}
+
+{% block body %}
+{% do addCss('controllers/toggle_password.css') %}
+{% do addJs('controllers/toggle_password_controller.js') %}
+{% set resetContent %}
+
+    {{ composant('_logs/_composants/zoneEntete',{'titre':'Nouveau mot de passe','explique':'Définissez un nouveau mot de passe pour sécuriser votre compte'}) }}
+
+    {% for flash_error in app.flashes('reset_password_error') %}
+        <div class="alert alert-danger reset-alert">
+            {{ flash_error }}
+        </div>
+    {% endfor %}
+
+    <div class="card reset-card">
+        {{ form_start(resetForm) }}
+            {{ form_errors(resetForm) }}
+
+            <div class="toggle-password-wrapper form-group">
+                <label for="{{ resetForm.plainPassword.first.vars.id }}" class="form-label">
+                    Nouveau mot de passe
+                </label>
+                <div class="champPasswordToggle">
+                    {{ form_widget(resetForm.plainPassword.first, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Au moins 8 caractères...',
+                            'data-controller': 'toggle-password'
+                        }
+                    }) }}
+                </div>
+                {{ form_errors(resetForm.plainPassword.first, {'attr': {'class': 'form-error'} }) }}
+                <div class="reset-password-help">
+                    Minimum 8 caractères, avec au moins une lettre et un chiffre.
+                </div>
+            </div>
+
+            <div class="toggle-password-wrapper form-group reset-form-group-confirm">
+                <label for="{{ resetForm.plainPassword.second.vars.id }}" class="form-label">
+                    Confirmez le nouveau mot de passe
+                </label>
+                <div class="champPasswordToggle">
+                    {{ form_widget(resetForm.plainPassword.second, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Répétez votre mot de passe...',
+                            'data-controller': 'toggle-password'
+                        }
+                    }) }}
+                </div>
+                {{ form_errors(resetForm.plainPassword.second, {'attr': {'class': 'form-error'} }) }}
+            </div>
+
+            {{ composant('_composants/button', {
+                'titre': 'Enregistrer le mot de passe',
+                'type': 'submit',
+                'class': 'btn-primary reset-btn-submit'
+            }) }}
+        {{ form_end(resetForm) }}
+    </div>
+
+    <div class="reset-footer">
+        <a href="{{ path('web_login') }}" class="reset-login-link">
+            ← Retour à la connexion
+        </a>
+    </div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'class': 'reset-container',
+    'content': resetContent
+}) }}
+{% endblock %}

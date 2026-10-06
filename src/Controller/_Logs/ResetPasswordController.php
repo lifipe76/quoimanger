@@ -8,11 +8,9 @@ use App\Form\ChangePasswordFormType;
 use App\Form\ResetPasswordRequestFormType;
 use App\Service\MailerSyncService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Translation\LocaleSwitcher;
@@ -31,9 +29,6 @@ class ResetPasswordController extends AbstractController
         private ResetPasswordHelperInterface $resetPasswordHelper,
         private EntityManagerInterface $entityManager,
         private LoginServices $loginServices,
-        private TranslatorInterface $translator,
-        private MailerSyncService $mailerSyncService,
-        private LocaleSwitcher $localeSwitcher,
     ) {}
 
     /**
@@ -64,7 +59,8 @@ class ResetPasswordController extends AbstractController
             return $this->redirectToRoute('app_check_email');
         }
 
-        return $this->render('_logs/reset_password/request.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => '_logs/reset_password/request',
             'requestForm' => $form,
         ]);
     }
@@ -81,7 +77,8 @@ class ResetPasswordController extends AbstractController
             $resetToken = $this->resetPasswordHelper->generateFakeResetToken();
         }
 
-        return $this->render('_logs/reset_password/check_email.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => '_logs/reset_password/check_email',
             'resetToken' => $resetToken,
         ]);
     }
@@ -163,7 +160,8 @@ class ResetPasswordController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        return $this->render('_logs/reset_password/reset.html.twig', [
+        return $this->render('pages/pageComposant.html.twig', [
+            'twig' => '_logs/reset_password/reset',
             'resetForm' => $form,
         ]);
     }

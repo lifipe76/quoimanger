@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <!-- Barre de recherche dessous -->
+    <!-- Barre de recherche et 4 filtres sur la même ligne -->
     <div class="modal-top-bar">
         {{ composant('_composants/_popup/recherche', {
             'id': 'recipe-filter-input',
@@ -51,12 +51,24 @@
             'target': '.modal-recipe-form',
             'oninput': 'filterRecipesList(this.value)'
         }) }}
+        <div class="modal-sort-pills">
+            <button type="button" class="sort-pill active" data-sort="recent" onclick="sortModalRecipes('recent', this, 'modal-recipes-container')">Plus récente</button>
+            <button type="button" class="sort-pill" data-sort="oldest" onclick="sortModalRecipes('oldest', this, 'modal-recipes-container')">Plus vieille</button>
+            <button type="button" class="sort-pill" data-sort="note" onclick="sortModalRecipes('note', this, 'modal-recipes-container')">Note</button>
+            <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalRecipes('alpha', this, 'modal-recipes-container')">Nom</button>
+        </div>
     </div>
 
     <div class="modal-recipes-list" id="modal-recipes-container">
         {% if recettes|length > 0 %}
             {% for r in recettes %}
-                <form method="post" action="{{ path('app_realisation_add') }}" class="modal-recipe-form" data-name="{{ r.designation|lower }}">
+                <form method="post" action="{{ path('app_realisation_add') }}"
+                      class="modal-recipe-form"
+                      data-name="{{ r.designation|lower }}"
+                      data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
+                      data-note="{{ r.averageNote|default(0) }}"
+                      data-count="{{ r.notesCount|default(0) }}"
+                      data-id="{{ r.id }}">
                     <input type="hidden" name="recette_id" value="{{ r.id }}">
                     <input type="hidden" name="moment" class="input-form-moment" value="{{ defaultMoment|default('soir') }}">
                     <input type="hidden" name="date" class="input-form-date" value="{{ 'now'|date('Y-m-d') }}">

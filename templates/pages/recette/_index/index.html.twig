@@ -4,22 +4,43 @@
 
 {% block body %}
 {% set indexContent %}
-    <div class="page-header">
-        <div>
+    <div class="page-header recettes-header">
+        <div class="recettes-header-title-wrap">
             <h1 class="page-title">Mes Recettes</h1>
             <p class="page-subtitle">{{ recettes|length }} recette{{ recettes|length > 1 ? 's' : '' }} au menu</p>
         </div>
-        {{ composant('_composants/button', {
-            'titre': '+ Ajouter une recette',
-            'href': path('app_recette_create'),
-            'class': 'btn-primary'
-        }) }}
+        <a href="{{ path('app_recette_create') }}" class="btn-add-recette" title="Ajouter une recette">
+            <span class="btn-text-full">+ Ajouter une recette</span>
+            <span class="btn-text-mobile">+</span>
+        </a>
+    </div>
+
+    <div class="recettes-toolbar">
+        <span class="recettes-toolbar-label">Trier par :</span>
+        <div class="recettes-sort-pills">
+            <a href="{{ path('app_recettes_list', {'sort': 'recent'}) }}"
+               class="sort-pill {{ currentSort in ['recent', 'date'] ? 'active' : '' }}">
+                Plus récente
+            </a>
+            <a href="{{ path('app_recettes_list', {'sort': 'oldest'}) }}"
+               class="sort-pill {{ currentSort == 'oldest' ? 'active' : '' }}">
+                Plus vieille
+            </a>
+            <a href="{{ path('app_recettes_list', {'sort': 'note'}) }}"
+               class="sort-pill {{ currentSort == 'note' ? 'active' : '' }}">
+                Note
+            </a>
+            <a href="{{ path('app_recettes_list', {'sort': 'alpha'}) }}"
+               class="sort-pill {{ currentSort == 'alpha' ? 'active' : '' }}">
+                Nom
+            </a>
+        </div>
     </div>
 
     {% if recettes|length > 0 %}
         <div class="cards-grid">
             {% for recette in recettes %}
-                {{ composant('cards/recette', { 'recette': recette, 'index': loop.index0 }) }}
+                {{ composant('cards/recette', { 'recette': recette, 'index': loop.index0, 'ranks': ranks|default({}) }) }}
             {% endfor %}
         </div>
     {% else %}

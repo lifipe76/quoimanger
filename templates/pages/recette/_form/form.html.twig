@@ -3,6 +3,19 @@
 {% block title %}{{ isNew ? 'Nouvelle recette' : 'Modifier la recette' }} - QuoiManger{% endblock %}
 
 {% block body %}
+{% if not isNew %}
+    {{ composant('popups/confirmation') }}
+    <form id="delete-recette-form"
+          method="post"
+          action="{{ path('app_recette_delete', {'id': recette.id}) }}"
+          data-confirm="Êtes-vous sûr de vouloir supprimer définitivement la recette « {{ recette.designation }} » ?"
+          data-confirm-title="Supprimer la recette"
+          data-confirm-btn="Supprimer"
+          style="display: none;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_recette_' ~ recette.id) }}">
+    </form>
+{% endif %}
+
 {% set formContent %}
     <div class="page-header">
         <h1 class="page-title">{{ isNew ? 'Créer une recette' : 'Modifier la recette' }}</h1>
@@ -13,7 +26,60 @@
         }) }}
     </div>
 
-    <div class="card">
+    <div class="card recette-form-card">
+        {% if not isNew %}
+            {% set nbRealisations = recette.realisations|length %}
+            {% set daysSince = recette.daysSinceLastRealisation %}
+            <div class="recette-meta-banner">
+                <div class="recette-meta-left">
+                    <span class="recette-meta-badge badge-realisations" title="Nombre de fois où cette recette a été cuisinée">
+                        Réalisée {{ nbRealisations }} fois
+                    </span>
+                    {% if daysSince is not null %}
+                        <span class="recette-meta-badge badge-days-ago" title="Dernière réalisation : {{ recette.lastRealiseAt ? recette.lastRealiseAt|date('d/m/Y') : '' }}">
+                            {% if daysSince == 0 %}
+                                Aujourd'hui
+                            {% elseif daysSince == 1 %}
+                                Hier
+                            {% else %}
+                                Il y a {{ daysSince }} jours
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <span class="recette-meta-badge badge-a-faire">
+                            À réaliser
+                        </span>
+                    {% endif %}
+                    {% if recette.createdAt %}
+                        <span class="recette-meta-badge badge-created-at">
+                            Ajoutée le {{ recette.createdAt|date('d/m/Y') }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="recette-meta-right">
+                    <div class="recette-meta-stars" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount }} notation{{ recette.notesCount > 1 ? 's' : '' }})">
+                        {% set avgNote = recette.averageNote|default(0) %}
+                        <span class="stars-display">
+                            {% for i in 1..5 %}
+                                {% if avgNote >= i %}
+                                    <span class="star star-filled">★</span>
+                                {% elseif avgNote >= (i - 0.5) %}
+                                    <span class="star star-half" style="position: relative; display: inline-block; color: #cbd5e1;"><span style="position: absolute; overflow: hidden; width: 50%; color: #f59e0b;">★</span>★</span>
+                                {% else %}
+                                    <span class="star star-empty">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="rating-count">({{ recette.notesCount }})</span>
+                        {% if recette.averageNote %}
+                            <span class="rating-avg-value">{{ recette.averageNote }} / 5</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         {{ form_start(form, {'attr': {'id': 'recette-form'} }) }}
             <div class="form-group">
                 {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
@@ -22,19 +88,11 @@
             </div>
 
             <div class="ingredients-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 1.2rem; color: #1e293b;">Ingrédients & Quantités</h3>
-                        <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.875rem;">
-                            Associez des ingrédients à la recette et spécifiez leurs quantités.
-                        </p>
-                    </div>
-                    {{ composant('_composants/button', {
-                        'id': 'add-ingredient-btn',
-                        'titre': '+ Ajouter un ingrédient',
-                        'type': 'button',
-                        'class': 'btn-secondary btn-sm'
-                    }) }}
+                <div class="ingredients-section-header" style="margin-bottom: 1rem;">
+                    <h3 style="margin: 0; font-size: 1.2rem; color: #1e293b;">Ingrédients & Quantités</h3>
+                    <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.875rem;">
+                        Associez des ingrédients à la recette et spécifiez leurs quantités.
+                    </p>
                 </div>
 
                 {% if not hasIngredients %}
@@ -67,28 +125,50 @@
                 </div>
 
                 <p id="no-ingredients-msg" style="color: var(--text-muted); font-style: italic; font-size: 0.9rem; {% if form.recetteIngredients|length > 0 %}display: none;{% endif %}">
-                    Aucun ingrédient associé pour le moment. Cliquez sur « + Ajouter un ingrédient » ci-dessus.
+                    Aucun ingrédient associé pour le moment. Cliquez sur « + Ajouter un ingrédient » ci-dessous.
                 </p>
+
+                <div class="add-ingredient-action-wrapper" style="margin-top: 1rem;">
+                    {{ composant('_composants/button', {
+                        'id': 'add-ingredient-btn',
+                        'titre': '+ Ajouter un ingrédient',
+                        'type': 'button',
+                        'class': 'btn-secondary btn-sm'
+                    }) }}
+                </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                {{ composant('_composants/button', {
-                    'titre': 'Annuler',
-                    'href': path('app_recettes_list'),
-                    'class': 'btn-secondary'
-                }) }}
-                {{ composant('_composants/button', {
-                    'titre': isNew ? 'Créer la recette' : 'Enregistrer la recette',
-                    'type': 'submit',
-                    'class': 'btn-primary'
-                }) }}
+            <div class="form-actions-bar">
+                <div class="form-actions-left">
+                    {% if not isNew %}
+                        <button type="submit"
+                                form="delete-recette-form"
+                                class="btn btn-danger"
+                                title="Supprimer définitivement cette recette">
+                            Supprimer la recette
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="form-actions-right">
+                    {{ composant('_composants/button', {
+                        'titre': 'Annuler',
+                        'href': path('app_recettes_list'),
+                        'class': 'btn-secondary'
+                    }) }}
+                    {{ composant('_composants/button', {
+                        'titre': isNew ? 'Créer la recette' : 'Enregistrer la recette',
+                        'type': 'submit',
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
             </div>
         {{ form_end(form) }}
     </div>
 {% endset %}
 
 {{ composant('_composants/container', {
-    'content': formContent
+    'content': formContent,
+    'class': 'recette-form-container'
 }) }}
 
 {% endblock %}

@@ -178,12 +178,12 @@
 }
 
 /* ==========================================================================
-   Boutons Suivant / Précédent (Navigation séquentielle)
+   Boutons Suivant / Précédent (Navigation séquentielle) - Mobile uniquement
    ========================================================================== */
 
 .nav-back-btn,
 .nav-next-btn {
-    display: inline-flex;
+    display: none !important;
     align-items: center;
     justify-content: center;
     width: 32px;
@@ -474,7 +474,7 @@ i.fa-fw {
 
     .nav-back-btn,
     .nav-next-btn {
-        display: inline-flex;
+        display: inline-flex !important;
         width: 30px;
         height: 30px;
         font-size: 0.85rem;

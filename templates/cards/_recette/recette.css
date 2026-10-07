@@ -158,6 +158,21 @@
     border-radius: 6px;
 }
 
+.card-recette-rank {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+}
+
+.card-btn-pencil {
+    text-decoration: none;
+}
+
 .card-recette-title {
     font-size: 1.25rem;
     font-weight: 700;

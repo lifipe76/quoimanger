@@ -168,8 +168,8 @@
     }
 
     .bottom-nav-center-btn.active .center-btn-header-icon {
-        /* Teinte dorée / bronze chaud correspondant à var(--primary, #c4a587) */
-        filter: sepia(1) saturate(2.5) hue-rotate(345deg) brightness(0.85) contrast(1.1);
+        /* Couleur exacte #c4a587 (RGB: 196, 165, 135) */
+        filter: brightness(0) saturate(100%) invert(76%) sepia(16%) saturate(620%) hue-rotate(348deg) brightness(89%) contrast(82%);
     }
 
     .bottom-nav-center-btn:hover .center-btn-icon {

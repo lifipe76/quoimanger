@@ -17,13 +17,58 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class RecetteController extends AbstractController
 {
     #[Route('/recettes', name: 'app_recettes_list', methods: ['GET'])]
-    public function index(RecetteRepository $recetteRepository): Response
-    {
-        $recettes = $recetteRepository->findBy([], ['id' => 'DESC']);
+    public function index(
+        RecetteRepository $recetteRepository,
+        \App\Service\RecipeSuggestionService $suggestionService,
+        Request $request
+    ): Response {
+        $sort = $request->query->get('sort', 'recent'); // 'recent', 'oldest', 'note', 'alpha', 'id'
+        if ($sort === 'date') {
+            $sort = 'recent';
+        }
+        $allRecettes = $recetteRepository->findAll();
+        $ranks = $suggestionService->calculateRecipeRanks($allRecettes);
+
+        usort($allRecettes, function (Recette $a, Recette $b) use ($sort) {
+            if ($sort === 'recent') {
+                $dateA = $a->getLastRealiseAt();
+                $dateB = $b->getLastRealiseAt();
+                if ($dateA == $dateB) {
+                    return ($b->getId() ?? 0) <=> ($a->getId() ?? 0);
+                }
+                if ($dateA === null) return 1;
+                if ($dateB === null) return -1;
+                return $dateB <=> $dateA;
+            } elseif ($sort === 'oldest') {
+                $dateA = $a->getLastRealiseAt();
+                $dateB = $b->getLastRealiseAt();
+                if ($dateA == $dateB) {
+                    return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+                }
+                if ($dateA === null) return 1;
+                if ($dateB === null) return -1;
+                return $dateA <=> $dateB;
+            } elseif ($sort === 'note') {
+                $noteA = $a->getAverageNote();
+                $noteB = $b->getAverageNote();
+                if ($noteA == $noteB) {
+                    return $b->getNotesCount() <=> $a->getNotesCount();
+                }
+                if ($noteA === null) return 1;
+                if ($noteB === null) return -1;
+                return $noteB <=> $noteA;
+            } elseif ($sort === 'alpha') {
+                return strcmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+            } else { // 'id' ou par défaut
+                return ($b->getId() ?? 0) <=> ($a->getId() ?? 0);
+            }
+        });
 
         return $this->render('pages/pageComposant.html.twig', [
             'twig' => 'pages/recette/index',
-            'recettes' => $recettes,
+            'recettes' => $allRecettes,
+            'ranks' => $ranks,
+            'currentSort' => $sort,
         ]);
     }
 

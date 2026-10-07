@@ -1,0 +1,184 @@
+/* ==========================================================================
+   Page Mes Recettes (_index)
+   ========================================================================== */
+
+.recettes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.recettes-header-title-wrap {
+    flex: 1;
+}
+
+/* Bouton Ajouter une recette entouré comme le crayon d'édition sur les cards */
+.btn-add-recette {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-add-recette:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: #1e293b;
+    transform: translateY(-1px);
+}
+
+.btn-add-recette .btn-text-full {
+    display: inline;
+}
+
+.btn-add-recette .btn-text-mobile {
+    display: none;
+}
+
+/* Barre de classement / tri */
+.recettes-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    padding: 0.5rem 0;
+}
+
+.recettes-toolbar-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.recettes-sort-pills {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sort-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sort-pill:hover:not(.active) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.sort-pill.active {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border-color: var(--primary, #c4a587);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.3);
+}
+
+/* Mode téléphone / responsive */
+@media (max-width: 768px) {
+    .page-header.recettes-header {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+        margin-bottom: 1rem !important;
+        gap: 0.75rem !important;
+    }
+
+    .page-header.recettes-header .recettes-header-title-wrap {
+        width: auto !important;
+        flex: 1 !important;
+    }
+
+    .page-header.recettes-header .page-title {
+        font-size: 1.45rem;
+        line-height: 1.2;
+    }
+
+    .page-header.recettes-header .page-subtitle {
+        font-size: 0.825rem;
+        margin-top: 0.15rem;
+    }
+
+    /* Le + entouré comme le crayon d'édition sur les cards */
+    .page-header.recettes-header .btn-add-recette {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
+        border-radius: 8px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease;
+    }
+
+    .page-header.recettes-header .btn-add-recette:hover,
+    .page-header.recettes-header .btn-add-recette:active {
+        background: #fff7ed !important;
+        border-color: #fdba74 !important;
+        color: #1e293b !important;
+        transform: scale(1.08);
+    }
+
+    .btn-add-recette .btn-text-full {
+        display: none !important;
+    }
+
+    .btn-add-recette .btn-text-mobile {
+        display: inline !important;
+    }
+
+    .recettes-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .recettes-sort-pills {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        gap: 0.4rem;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sort-pill {
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.7rem;
+    }
+}

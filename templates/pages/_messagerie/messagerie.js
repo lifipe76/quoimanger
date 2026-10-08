@@ -1,5 +1,9 @@
 (function () {
     var chatContainer = document.getElementById("chatMessagesContainer");
+    if (!chatContainer) {
+        return;
+    }
+
     var chatForm = document.getElementById("chatInputForm");
     var chatInput = document.getElementById("chatInputText");
     var notifBtn = document.getElementById("chatNotificationBtn");
@@ -20,21 +24,66 @@
     // Scroll initial au bas de la conversation
     scrollToBottom();
 
-    // Gestion de la permission des notifications PWA / Browser
+    // Gestion de la cloche des notifications du navigateur
     if (notifBtn) {
-        if (!("Notification" in window) || Notification.permission === "granted") {
-            notifBtn.style.display = "none";
+        function updateNotifBtnState() {
+            if (!("Notification" in window)) {
+                notifBtn.classList.add("is-unsupported");
+                notifBtn.title = "Notifications non supportées sur ce navigateur";
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                notifBtn.classList.add("is-active");
+                notifBtn.classList.remove("is-denied");
+                notifBtn.title = "Notifications activées (cliquez pour tester)";
+            } else if (Notification.permission === "denied") {
+                notifBtn.classList.add("is-denied");
+                notifBtn.classList.remove("is-active");
+                notifBtn.title = "Notifications bloquées dans les paramètres de votre navigateur";
+            } else {
+                notifBtn.classList.remove("is-active", "is-denied");
+                notifBtn.title = "Activer les notifications du navigateur";
+            }
         }
 
+        updateNotifBtnState();
+
         notifBtn.addEventListener("click", function () {
-            if ("Notification" in window) {
+            if (!("Notification" in window)) {
+                if (typeof window.showToast === "function") {
+                    window.showToast("Votre navigateur ne supporte pas les notifications.", "error");
+                }
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                try {
+                    new Notification("QuoiManger", {
+                        body: "Les notifications de messagerie sont bien actives !",
+                        icon: "/icons/icon.svg",
+                    });
+                } catch (e) {}
+                if (typeof window.showToast === "function") {
+                    window.showToast("Notifications de messagerie actives !", "success");
+                }
+            } else if (Notification.permission === "denied") {
+                if (typeof window.showToast === "function") {
+                    window.showToast("Les notifications sont bloquées dans les paramètres du navigateur.", "error");
+                }
+            } else {
                 Notification.requestPermission().then(function (permission) {
+                    updateNotifBtnState();
                     if (permission === "granted") {
-                        notifBtn.style.display = "none";
-                        new Notification("QuoiManger", {
-                            body: "Notifications de messagerie activées !",
-                            icon: "/icons/icon.svg",
-                        });
+                        try {
+                            new Notification("QuoiManger", {
+                                body: "Notifications de messagerie activées !",
+                                icon: "/icons/icon.svg",
+                            });
+                        } catch (e) {}
+                        if (typeof window.showToast === "function") {
+                            window.showToast("Notifications de messagerie activées !", "success");
+                        }
                     }
                 });
             }
@@ -171,8 +220,31 @@
         return html;
     }
 
-    // Polling régulier temps réel toutes les 3 secondes
+    // Polling régulier temps réel si l'utilisateur est sur la page
+    var pollTimer = null;
+    var isPageUnloading = false;
+
+    window.addEventListener("beforeunload", function () {
+        isPageUnloading = true;
+        if (pollTimer) {
+            clearTimeout(pollTimer);
+            pollTimer = null;
+        }
+    });
+
+    function scheduleNextPoll() {
+        if (isPageUnloading || !document.getElementById("chatMessagesContainer")) {
+            return;
+        }
+        var delay = document.hidden ? 10000 : 4000;
+        pollTimer = setTimeout(pollNewMessages, delay);
+    }
+
     function pollNewMessages() {
+        if (isPageUnloading || !document.getElementById("chatMessagesContainer")) {
+            return;
+        }
+
         fetch("/messagerie/api/messages?since_id=" + lastMessageId, {
             headers: { Accept: "application/json" },
         })
@@ -205,11 +277,11 @@
                 // Silencieux
             })
             .finally(function () {
-                setTimeout(pollNewMessages, 3000);
+                scheduleNextPoll();
             });
     }
 
-    setTimeout(pollNewMessages, 3000);
+    scheduleNextPoll();
 
     // Fonction globale pour voter en AJAX
     window.voteProposition = function (propId, choix, btnElement) {

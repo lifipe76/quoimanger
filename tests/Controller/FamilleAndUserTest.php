@@ -724,6 +724,26 @@ class FamilleAndUserTest extends WebTestCase
             ->execute();
     }
 
+    public function testEmailEnvoiFallbackAndOverride(): void
+    {
+        $user = new User();
+        $user->setEmail('principal@example.com');
+
+        // Sans emailEnvoi renseigné, l'email d'envoi est l'adresse principale
+        $this->assertNull($user->getEmailEnvoi());
+        $this->assertSame('principal@example.com', $user->getEmailForMailer());
+
+        // Avec emailEnvoi vide ou avec espaces, toujours l'adresse principale
+        $user->setEmailEnvoi('   ');
+        $this->assertNull($user->getEmailEnvoi());
+        $this->assertSame('principal@example.com', $user->getEmailForMailer());
+
+        // Avec emailEnvoi renseigné, c'est cette adresse qui est utilisée
+        $user->setEmailEnvoi('autre_destination@example.com');
+        $this->assertSame('autre_destination@example.com', $user->getEmailEnvoi());
+        $this->assertSame('autre_destination@example.com', $user->getEmailForMailer());
+    }
+
     private function getCsrfToken(string $tokenId): string
     {
         $request = $this->client->getRequest();

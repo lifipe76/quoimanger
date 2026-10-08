@@ -53,8 +53,8 @@ class MessagerieAndVoteTest extends WebTestCase
         $this->client->request('GET', '/');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.nav-messagerie-btn');
-        $this->assertSelectorExists('.nav-messagerie-btn[href="/messagerie"]');
+        $this->assertSelectorExists('.nav-messagerie-link');
+        $this->assertSelectorExists('.nav-messagerie-link[href="/messagerie"]');
     }
 
     public function testHomePageHasJeProposeButton(): void
@@ -81,8 +81,8 @@ class MessagerieAndVoteTest extends WebTestCase
         $this->client->request('GET', '/messagerie');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('.chat-card');
-        $this->assertSelectorTextContains('.chat-header-title', 'Famille Test');
+        $this->assertSelectorExists('.chat-wrapper');
+        $this->assertSelectorTextContains('.page-title', 'Famille Test');
         $this->assertStringContainsString('.messagerie-page-container', $this->client->getResponse()->getContent());
         $this->assertSelectorExists('#chatInputForm');
         $this->assertSelectorExists('#chatMessagesContainer');

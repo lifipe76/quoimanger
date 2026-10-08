@@ -52,6 +52,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    private ?string $emailEnvoi = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['user'])]
     #[SerializedName('prenom')]
     private ?string $firstname = null;
@@ -80,10 +83,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
+    public function getEmailEnvoi(): ?string
+    {
+        return $this->emailEnvoi;
+    }
+
+    public function setEmailEnvoi(?string $emailEnvoi): static
+    {
+        $this->emailEnvoi = $emailEnvoi !== null && trim($emailEnvoi) !== '' ? trim($emailEnvoi) : null;
+
+        return $this;
+    }
+
     public function getEmailForMailer(): ?string
     {
-        if (($_ENV['DEVLOCAL'] ?? false) || ($_ENV['LIFIPE'] ?? false)) {
-            return 'julien.dupont76@gmail.com';
+        if ($this->emailEnvoi !== null && trim($this->emailEnvoi) !== '') {
+            return trim($this->emailEnvoi);
         }
 
         return $this->email;

@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_USER')]
@@ -242,11 +243,25 @@ class MessagerieController extends AbstractController
 
         $em->flush();
 
-        // Notifier les autres membres par email
-        $notifierService->notifyFamille($proposition);
-
         $this->addFlash('success', sprintf('Proposition pour « %s » envoyée à la famille !', $recette->getDesignation()));
 
+        // Libérer le verrou de session immédiatement pour ne pas bloquer les requêtes suivantes
+        if ($request->hasSession() && $request->getSession()->isStarted()) {
+            $request->getSession()->save();
+        }
+
+        // Notifier les autres membres par email (ne bloquera plus la session PHP)
+        $notifierService->notifyFamille($proposition);
+
+        if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
+            return new JsonResponse([
+                'success' => true,
+                'message' => sprintf('Proposition pour « %s » envoyée à la famille !', $recette->getDesignation()),
+                'redirect' => $this->generateUrl('app_messagerie'),
+            ]);
+        }
+
+        return $this->redirectToRoute('app_messagerie');
     }
 
     #[Route('/messagerie/proposition/{id<\d+>}/supprimer', name: 'app_repas_supprimer_proposition', methods: ['POST'])]
@@ -454,7 +469,8 @@ class MessagerieController extends AbstractController
     public function apiMessages(
         Request $request,
         ConversationRepository $conversationRepository,
-        MessageRepository $messageRepository
+        MessageRepository $messageRepository,
+        CsrfTokenManagerInterface $csrfTokenManager
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -479,6 +495,7 @@ class MessagerieController extends AbstractController
             if ($prop) {
                 $isAuthor = $prop->getProposePar()?->getId() === $user->getId();
                 $isChef = $famille->getCreateur()?->getId() === $user->getId();
+                $myVote = $prop->getUserVote($user);
                 $propData = [
                     'id' => $prop->getId(),
                     'recetteId' => $prop->getRecette()?->getId(),
@@ -493,7 +510,7 @@ class MessagerieController extends AbstractController
                     'isValidee' => $prop->isValidee(),
                     'isAjouteeAuFil' => $prop->isAjouteeAuFil(),
                     'canDelete' => ($isAuthor || $isChef),
-                    'csrfToken' => $this->container->get('security.csrf.token_manager')->getToken('supprimer_proposition_' . $prop->getId())->getValue(),
+                    'csrfToken' => $csrfTokenManager->getToken('supprimer_proposition_' . $prop->getId())->getValue(),
                 ];
             }
 
@@ -507,6 +524,10 @@ class MessagerieController extends AbstractController
                 'createdAtDate' => $msg->getCreatedAt()->format('d/m/Y'),
                 'proposition' => $propData,
             ];
+        }
+
+        if ($request->hasSession() && $request->getSession()->isStarted()) {
+            $request->getSession()->save();
         }
 
         return new JsonResponse([

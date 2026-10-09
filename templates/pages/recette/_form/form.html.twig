@@ -80,11 +80,88 @@
             </div>
         {% endif %}
 
-        {{ form_start(form, {'attr': {'id': 'recette-form'} }) }}
+        {{ form_start(form, {'multipart': true, 'attr': {'id': 'recette-form', 'enctype': 'multipart/form-data'} }) }}
             <div class="form-group">
                 {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(form.designation) }}
                 {{ form_errors(form.designation, {'attr': {'class': 'form-error'} }) }}
+            </div>
+
+            <div class="form-group recette-photo-section">
+                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 0.6rem; color: #1e293b;">
+                    Photo de la recette
+                </label>
+                <input type="file"
+                       id="recette-photo-input"
+                       name="photo"
+                       accept="image/*"
+                       capture="environment"
+                       style="display: none;"
+                       onchange="onRecettePhotoSelected(this)">
+                <input type="file"
+                       id="recette-photo-gallery-input"
+                       accept="image/*"
+                       style="display: none;"
+                       onchange="onRecettePhotoSelected(this)">
+                <input type="hidden"
+                       name="delete_photo"
+                       id="recette-delete-photo-input"
+                       value="0">
+
+                <!-- Photo existante -->
+                <div id="recette-current-photo" style="{% if not recette.photo %}display: none;{% endif %}">
+                    <div class="recette-photo-card">
+                        <img id="recette-current-photo-img"
+                             src="{{ recette.photo ? recette.photoUrl : '' }}"
+                             alt="Photo de {{ recette.designation }}"
+                             class="recette-photo-thumb">
+                        <div class="recette-photo-details">
+                            <div class="recette-photo-actions-row">
+                                <button type="button" class="btn-apn" onclick="triggerRecettePhotoInput()" title="Reprendre une photo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                        <circle cx="12" cy="13" r="3"/>
+                                    </svg>
+                                    <span>Changer la photo</span>
+                                </button>
+                                <button type="button" class="btn-delete-photo-action" onclick="removeRecetteExistingPhoto()">
+                                    Supprimer la photo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aperçu nouvelle photo sélectionnée -->
+                <div id="recette-new-photo-preview" style="display: none;">
+                    <div class="recette-photo-card">
+                        <img id="recette-new-photo-img" src="" alt="Nouvelle photo" class="recette-photo-thumb">
+                        <div class="recette-photo-details">
+                            <span class="badge-new-photo">Nouvelle photo prête</span>
+                            <div class="recette-photo-actions-row">
+                                <button type="button" class="btn-photo-remove" onclick="cancelRecetteNewPhoto()">
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pas de photo -->
+                <div id="recette-no-photo" style="{% if recette.photo %}display: none;{% endif %}">
+                    <div class="recette-photo-empty-actions">
+                        <button type="button" class="btn-apn" onclick="triggerRecettePhotoInput()" title="Prendre une photo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                <circle cx="12" cy="13" r="3"/>
+                            </svg>
+                            <span>Prendre une photo</span>
+                        </button>
+                        <button type="button" class="btn-apn-secondary" onclick="triggerRecetteGalleryInput()" title="Choisir un fichier">
+                            <span>Choisir un fichier</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="ingredients-section">

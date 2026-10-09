@@ -139,6 +139,137 @@
     flex-wrap: wrap;
 }
 
+/* Section Photo de la Recette */
+.recette-photo-section {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.recette-photo-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.85rem 1rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+}
+
+.recette-photo-thumb {
+    width: 88px;
+    height: 88px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #cbd5e1;
+    background: #e2e8f0;
+}
+
+.recette-photo-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.recette-photo-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.recette-photo-empty-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-apn {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    padding: 0.45rem 0.95rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-apn svg {
+    color: var(--primary, #c4a587);
+    flex-shrink: 0;
+}
+
+.btn-apn:hover {
+    background: #f8fafc;
+    border-color: var(--primary, #c4a587);
+    color: #0f172a;
+}
+
+.btn-apn-secondary {
+    background: transparent;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    padding: 0.45rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-apn-secondary:hover {
+    background: #ffffff;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+.badge-new-photo {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #15803d;
+}
+
+.btn-delete-photo-action {
+    background: transparent;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-photo-action:hover {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-photo-remove {
+    background: transparent;
+    border: none;
+    color: #dc2626;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: underline;
+}
+
+.btn-photo-remove:hover {
+    color: #b91c1c;
+}
+
 .form-actions-left {
     display: flex;
     align-items: center;

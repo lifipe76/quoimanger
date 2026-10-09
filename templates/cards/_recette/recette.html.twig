@@ -1,171 +1,174 @@
 {% set activeRealisation = realisation|default(null) %}
 {% set dateAffichage = activeRealisation ? activeRealisation.realiseAt : recette.lastRealiseAt %}
+{% set cardPhotoUrl = (activeRealisation and activeRealisation.photo) ? activeRealisation.photoUrl : (recette.photo ? recette.photoUrl : null) %}
 
-<div class="card-recette" style="--card-index: {{ index|default(0) }};">
-    <div class="card-recette-header">
-        <div class="card-recette-header-left">
-            {% if activeRealisation %}
-                <span class="card-recette-status realisee-bubble" title="Intervalle depuis la précédente dégustation de ce plat">
-                    {{ activeRealisation.intervalLabel }}
-                </span>
-                {% if activeRealisation.moment %}
-                    <span class="card-recette-moment moment-{{ activeRealisation.moment }}">
-                        {{ activeRealisation.momentLabel }}
-                    </span>
-                {% endif %}
-                {% if activeRealisation.participants is defined and activeRealisation.participants|length > 0 %}
-                    <span class="card-recette-status card-recette-participants-bubble" title="Pris par : {% for p in activeRealisation.participants %}{{ p.displayName }}{% if not loop.last %}, {% endif %}{% endfor %}">
-                        {% for p in activeRealisation.participants %}{{ p.firstname|default(p.displayName) }}{% if not loop.last %}, {% endif %}{% endfor %}
-                    </span>
-                {% endif %}
-            {% elseif dateAffichage %}
-                {% set nbRealisations = recette.realisations|length %}
-                {% set daysSince = recette.daysSinceLastRealisation %}
-                <span class="card-recette-status realisee" title="Nombre de réalisations">
-                    Réalisée {{ nbRealisations }} fois
-                </span>
-                {% if daysSince is not null %}
-                    <span class="card-recette-status status-days-ago" title="Dernière réalisation : {{ dateAffichage|date('d/m/Y') }}">
-                        {% if daysSince == 0 %}
-                            Aujourd'hui
-                        {% elseif daysSince == 1 %}
-                            Hier
-                        {% else %}
-                            Il y a {{ daysSince }} jours
-                        {% endif %}
-                    </span>
-                {% endif %}
-            {% else %}
-                <span class="card-recette-status a-faire">
-                    À réaliser
-                </span>
-            {% endif %}
+<div class="card-recette {{ cardPhotoUrl ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
+    {% if cardPhotoUrl %}
+        <div class="card-recette-photo-wrap">
+            <div class="card-recette-bg-photo" style="background-image: url('{{ cardPhotoUrl }}');" aria-hidden="true"></div>
         </div>
+    {% endif %}
 
-        <div class="card-recette-header-right">
-            {% set rank = (ranks is defined and ranks[recette.id] is defined) ? ranks[recette.id] : null %}
-            {% if rank %}
-                <span class="card-recette-rank badge-rank" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} plat le plus mangé">
-                    {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
-                </span>
-            {% else %}
-                <span class="card-recette-id">#{{ recette.id }}</span>
-            {% endif %}
-
-            {% if activeRealisation %}
-                {% set participantIds = [] %}
-                {% if activeRealisation.participants is defined %}
-                    {% for p in activeRealisation.participants %}
-                        {% set participantIds = participantIds|merge([p.id]) %}
-                    {% endfor %}
-                {% endif %}
-                {% set notesMap = {} %}
-                {% if activeRealisation.notes is defined %}
-                    {% for n in activeRealisation.notes %}
-                        {% if n.user %}
-                            {% set notesMap = notesMap|merge({ (n.user.id): n.note }) %}
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-                <button type="button"
-                        class="card-btn-pencil"
-                        title="Modifier ce repas"
-                        onclick="openEditMealModal(
-                            '{{ path('app_realisation_update_date', {'id': activeRealisation.id}) }}',
-                            '{{ activeRealisation.realiseAt|date('Y-m-d') }}',
-                            '{{ activeRealisation.moment }}',
-                            '{{ recette.designation|e('js') }}',
-                            '{{ csrf_token('update_realisation_date_' ~ activeRealisation.id) }}',
-                            '{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}',
-                            '{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}',
-                            '{{ activeRealisation.complement|e('js') }}',
-                            {{ participantIds|json_encode }},
-                            {{ notesMap|json_encode }}
-                        )">
-                    ✏️
-                </button>
-            {% else %}
-                <a href="{{ path('app_recette_edit', {'id': recette.id}) }}"
-                   class="card-btn-pencil"
-                   title="Modifier la recette « {{ recette.designation }} »">
-                    ✏️
-                </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <h3 class="card-recette-title">
-        <a href="{{ path('app_recette_edit', {'id': recette.id}) }}" class="recipe-title-link">
-            {{ recette.designation }}
-        </a>
-        {% if activeRealisation %}
-            {% if activeRealisation.complement %}
-                <button type="button"
-                        class="card-recette-btn-complement card-recette-complement-text"
-                        title="Modifier l'accompagnement (actuel : {{ activeRealisation.complement }})"
-                        onclick="openComplementModal(
-                            '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
-                            '{{ activeRealisation.complement|e('js') }}',
-                            '{{ recette.designation|e('js') }}',
-                            '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
-                        )">
-                    <span class="recipe-title-complement">{{ activeRealisation.complement starts with '(' ? activeRealisation.complement : '(' ~ activeRealisation.complement ~ ')' }}</span>
-                </button>
-            {% else %}
-                <button type="button"
-                        class="card-recette-btn-complement card-recette-btn-complement-add"
-                        title="Ajouter un accompagnement (ex: riz, salade...)"
-                        onclick="openComplementModal(
-                            '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
-                            '',
-                            '{{ recette.designation|e('js') }}',
-                            '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
-                        )">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-            {% endif %}
-        {% endif %}
-    </h3>
-
-    <!-- Ligne de note moyenne : 5 étoiles classiques + nombre de notations -->
-    <div class="card-recette-rating-row">
-        <div class="card-recette-stars-group" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount }} notation{{ recette.notesCount > 1 ? 's' : '' }})">
-            {% set avgNote = recette.averageNote|default(0) %}
-            <span class="stars-display">
-                {% for i in 1..5 %}
-                    {% if avgNote >= i %}
-                        <span class="star star-filled">★</span>
-                    {% elseif avgNote >= (i - 0.5) %}
-                        <span class="star star-half" style="position: relative; display: inline-block; color: #cbd5e1;"><span style="position: absolute; overflow: hidden; width: 50%; color: #f59e0b;">★</span>★</span>
-                    {% else %}
-                        <span class="star star-empty">☆</span>
+        <div class="card-recette-header">
+            <div class="card-recette-header-left">
+                {% if activeRealisation %}
+                    <span class="card-recette-status realisee-bubble" title="Intervalle depuis la précédente dégustation de ce plat">
+                        {{ activeRealisation.intervalLabel }}
+                    </span>
+                    {% if activeRealisation.moment %}
+                        <span class="card-recette-moment moment-{{ activeRealisation.moment }}">
+                            {{ activeRealisation.momentLabel }}
+                        </span>
                     {% endif %}
-                {% endfor %}
-            </span>
-            <span class="rating-count">({{ recette.notesCount }})</span>
-            {% if recette.averageNote %}
-                <span class="rating-avg-value">{{ recette.averageNote }}</span>
-            {% endif %}
+                    {% if activeRealisation.participants is defined and activeRealisation.participants|length > 0 %}
+                        <span class="card-recette-status card-recette-participants-bubble" title="Pris par : {% for p in activeRealisation.participants %}{{ p.displayName }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                            {% for p in activeRealisation.participants %}{{ p.firstname|default(p.displayName) }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        </span>
+                    {% endif %}
+                {% elseif dateAffichage %}
+                    {% set nbRealisations = recette.realisations|length %}
+                    {% set daysSince = recette.daysSinceLastRealisation %}
+                    <span class="card-recette-status realisee" title="Nombre de réalisations">
+                        Réalisée {{ nbRealisations }} fois
+                    </span>
+                    {% if daysSince is not null %}
+                        <span class="card-recette-status status-days-ago" title="Dernière réalisation : {{ dateAffichage|date('d/m/Y') }}">
+                            {% if daysSince == 0 %}
+                                Aujourd'hui
+                            {% elseif daysSince == 1 %}
+                                Hier
+                            {% else %}
+                                Il y a {{ daysSince }} jours
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="card-recette-status a-faire">
+                        À réaliser
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="card-recette-header-right">
+                <div class="card-recette-stars-group" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount|default(0) }} notation{{ (recette.notesCount|default(0)) > 1 ? 's' : '' }})">
+                    <span class="stars-display">
+                        {% if recette.averageNote %}
+                            <span class="star star-filled">★</span>
+                        {% else %}
+                            <span class="star star-empty">☆</span>
+                        {% endif %}
+                    </span>
+                    <span class="rating-avg-value" style="{{ recette.averageNote ? '' : 'display: none;' }}">{{ recette.averageNote|default('') }}</span>
+                    <span class="rating-count">({{ recette.notesCount|default(0) }})</span>
+                </div>
+
+                {% set rank = (ranks is defined and ranks[recette.id] is defined) ? ranks[recette.id] : null %}
+                {% if rank %}
+                    <span class="card-recette-rank" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} plat le plus mangé">
+                        {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                    </span>
+                {% else %}
+                    <span class="card-recette-id">#{{ recette.id }}</span>
+                {% endif %}
+
+                {% if activeRealisation %}
+                    {% set participantIds = [] %}
+                    {% if activeRealisation.participants is defined %}
+                        {% for p in activeRealisation.participants %}
+                            {% set participantIds = participantIds|merge([p.id]) %}
+                        {% endfor %}
+                    {% endif %}
+                    {% set notesMap = {} %}
+                    {% if activeRealisation.notes is defined %}
+                        {% for n in activeRealisation.notes %}
+                            {% if n.user %}
+                                {% set notesMap = notesMap|merge({ (n.user.id): n.note }) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <button type="button"
+                            class="card-btn-pencil card-btn-apn-trigger"
+                            title="{{ activeRealisation.photo ? 'Modifier la photo' : 'Prendre une photo' }}"
+                            onclick="openEditMealModal(
+                                '{{ path('app_realisation_update_date', {'id': activeRealisation.id}) }}',
+                                '{{ activeRealisation.realiseAt|date('Y-m-d') }}',
+                                '{{ activeRealisation.moment }}',
+                                '{{ recette.designation|e('js') }}',
+                                '{{ csrf_token('update_realisation_date_' ~ activeRealisation.id) }}',
+                                '{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}',
+                                '{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}',
+                                '{{ activeRealisation.complement|e('js') }}',
+                                {{ participantIds|json_encode }},
+                                {{ notesMap|json_encode }},
+                                '{{ activeRealisation.photoUrl|default('')|e('js') }}'
+                            )">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="card-btn-pencil"
+                            title="Modifier ce repas"
+                            onclick="openEditMealModal(
+                                '{{ path('app_realisation_update_date', {'id': activeRealisation.id}) }}',
+                                '{{ activeRealisation.realiseAt|date('Y-m-d') }}',
+                                '{{ activeRealisation.moment }}',
+                                '{{ recette.designation|e('js') }}',
+                                '{{ csrf_token('update_realisation_date_' ~ activeRealisation.id) }}',
+                                '{{ path('app_realisation_delete', {'id': activeRealisation.id}) }}',
+                                '{{ csrf_token('delete_realisation_' ~ activeRealisation.id) }}',
+                                '{{ activeRealisation.complement|e('js') }}',
+                                {{ participantIds|json_encode }},
+                                {{ notesMap|json_encode }},
+                                '{{ activeRealisation.photoUrl|default('')|e('js') }}'
+                            )">
+                        ✏️
+                    </button>
+                {% else %}
+                    <a href="{{ path('app_recette_edit', {'id': recette.id}) }}"
+                       class="card-btn-pencil"
+                       title="Modifier la recette « {{ recette.designation }} »">
+                        ✏️
+                    </a>
+                {% endif %}
+            </div>
         </div>
 
-        {% if activeRealisation and app.user %}
-            {% set userNote = activeRealisation.noteForUser(app.user) %}
-            <div class="card-recette-quick-rate">
-                <span class="quick-rate-label">Ma note :</span>
-                <div class="quick-stars-wrapper" data-realisation-id="{{ activeRealisation.id }}" data-csrf="{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}">
-                    {% for star in 1..5 %}
+        <div class="card-recette-title-row">
+            <h3 class="card-recette-title">
+                <a href="{{ path('app_recette_edit', {'id': recette.id}) }}" class="recipe-title-link">
+                    {{ recette.designation }}
+                </a>
+                {% if activeRealisation %}
+                    {% if activeRealisation.complement %}
                         <button type="button"
-                                class="quick-star-btn {{ userNote and userNote >= star ? 'active' : '' }}"
-                                data-star="{{ star }}"
-                                title="Noter {{ star }} étoile{{ star > 1 ? 's' : '' }}"
-                                onclick="rateRealisation({{ activeRealisation.id }}, {{ star }}, '{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}')">
-                            ★
+                                class="card-recette-btn-complement card-recette-complement-text"
+                                title="Modifier l'accompagnement (actuel : {{ activeRealisation.complement }})"
+                                onclick="openComplementModal(
+                                    '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
+                                    '{{ activeRealisation.complement|e('js') }}',
+                                    '{{ recette.designation|e('js') }}',
+                                    '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
+                                )">
+                            <span class="recipe-title-complement">{{ activeRealisation.complement starts with '(' ? activeRealisation.complement : '(' ~ activeRealisation.complement ~ ')' }}</span>
                         </button>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-    </div>
+                    {% else %}
+                        <button type="button"
+                                class="card-recette-btn-complement card-recette-btn-complement-add"
+                                title="Ajouter un accompagnement (ex: riz, salade...)"
+                                onclick="openComplementModal(
+                                    '{{ path('app_realisation_update_complement', {'id': activeRealisation.id}) }}',
+                                    '',
+                                    '{{ recette.designation|e('js') }}',
+                                    '{{ csrf_token('update_realisation_complement_' ~ activeRealisation.id) }}'
+                                )">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </h3>
+        </div>
 
     {% set displayIngredients = showIngredients is defined ? showIngredients : (activeRealisation is null) %}
     {% if displayIngredients %}

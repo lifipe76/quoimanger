@@ -30,28 +30,36 @@ function rateRealisation(realisationId, star, token) {
             if (card) {
                 var countEl = card.querySelector('.rating-count');
                 if (countEl) {
-                    countEl.textContent = '(' + data.recipeCount + ')';
+                    countEl.textContent = '(' + (data.recipeCount || 0) + ')';
                 }
 
                 var scoreEl = card.querySelector('.rating-avg-value');
                 if (scoreEl) {
-                    scoreEl.textContent = data.recipeAverage ? data.recipeAverage : '';
+                    if (data.recipeAverage) {
+                        scoreEl.textContent = data.recipeAverage;
+                        scoreEl.style.display = '';
+                    } else {
+                        scoreEl.textContent = '';
+                        scoreEl.style.display = 'none';
+                    }
                 }
 
                 var starsContainer = card.querySelector('.stars-display');
                 if (starsContainer) {
-                    var avg = data.recipeAverage || 0;
-                    var html = '';
-                    for (var i = 1; i <= 5; i++) {
-                        if (avg >= i) {
-                            html += '<span class="star star-filled">★</span>';
-                        } else if (avg >= (i - 0.5)) {
-                            html += '<span class="star star-half" style="position: relative; display: inline-block; color: #cbd5e1;"><span style="position: absolute; overflow: hidden; width: 50%; color: #f59e0b;">★</span>★</span>';
-                        } else {
-                            html += '<span class="star star-empty">☆</span>';
-                        }
+                    if (data.recipeAverage) {
+                        starsContainer.innerHTML = '<span class="star star-filled">★</span>';
+                    } else {
+                        starsContainer.innerHTML = '<span class="star star-empty">☆</span>';
                     }
-                    starsContainer.innerHTML = html;
+                }
+
+                var group = card.querySelector('.card-recette-stars-group');
+                if (group) {
+                    var count = data.recipeCount || 0;
+                    var titleText = data.recipeAverage
+                        ? 'Note moyenne : ' + data.recipeAverage + ' / 5 (' + count + ' notation' + (count > 1 ? 's' : '') + ')'
+                        : 'Aucune note pour l\'instant (0 notation)';
+                    group.setAttribute('title', titleText);
                 }
             }
         }

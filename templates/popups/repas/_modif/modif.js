@@ -1,3 +1,8 @@
+/* ==========================================================================
+   Popup "Modifier le repas" - JavaScript spécifique
+   (Les sections Date, Photo, Personnes et Note sont gérées par leurs composants)
+   ========================================================================== */
+
 function openEditMealModal(
     updateUrl,
     currentIsoDate,
@@ -8,7 +13,8 @@ function openEditMealModal(
     deleteToken,
     currentComplement,
     participantIds,
-    notesMap
+    notesMap,
+    currentPhotoUrl
 ) {
     var modal = document.getElementById("edit-meal-modal");
     var updateForm = document.getElementById("edit-meal-form");
@@ -21,7 +27,14 @@ function openEditMealModal(
 
     if (modal && updateForm && dateInput) {
         updateForm.action = updateUrl;
-        dateInput.value = currentIsoDate ? currentIsoDate.split("T")[0] : "";
+        var cleanDate = currentIsoDate ? currentIsoDate.split("T")[0] : "";
+        dateInput.value = cleanDate;
+
+        // Synchronisation des boutons rapides Aujourd'hui / Hier
+        if (typeof syncEditMealQuickDateButtons === "function") {
+            syncEditMealQuickDateButtons(cleanDate);
+        }
+
         if (complementInput) {
             complementInput.value = currentComplement || "";
         }
@@ -30,11 +43,62 @@ function openEditMealModal(
             recipeNameEl.textContent = recipeTitle;
         }
 
-        selectEditMoment(currentMoment || "soir");
+        if (typeof selectEditMoment === "function") {
+            selectEditMoment(currentMoment || "soir");
+        }
 
         if (deleteForm && deleteUrl && deleteTokenInput) {
             deleteForm.action = deleteUrl;
             deleteTokenInput.value = deleteToken;
+        }
+
+        // Réinitialisation de la section photo
+        var photoInput = document.getElementById("edit-meal-photo-input");
+        if (photoInput) {
+            photoInput.value = "";
+        }
+        var photoGalleryInput = document.getElementById("edit-meal-photo-gallery-input");
+        if (photoGalleryInput) {
+            photoGalleryInput.value = "";
+        }
+        var deletePhotoInput = document.getElementById("edit-meal-delete-photo-input");
+        if (deletePhotoInput) {
+            deletePhotoInput.value = "0";
+        }
+
+        var currentPhotoBox = document.getElementById("edit-meal-current-photo");
+        var currentPhotoImg = document.getElementById("edit-meal-current-photo-img");
+        var newPhotoPreviewBox = document.getElementById("edit-meal-new-photo-preview");
+        var newPhotoImg = document.getElementById("edit-meal-new-photo-img");
+        var noPhotoBox = document.getElementById("edit-meal-no-photo");
+
+        if (newPhotoImg) {
+            newPhotoImg.src = "";
+        }
+        if (newPhotoPreviewBox) {
+            newPhotoPreviewBox.style.display = "none";
+        }
+
+        if (currentPhotoUrl && currentPhotoUrl.trim() !== "") {
+            if (currentPhotoImg) {
+                currentPhotoImg.src = currentPhotoUrl;
+            }
+            if (currentPhotoBox) {
+                currentPhotoBox.style.display = "flex";
+            }
+            if (noPhotoBox) {
+                noPhotoBox.style.display = "none";
+            }
+        } else {
+            if (currentPhotoImg) {
+                currentPhotoImg.src = "";
+            }
+            if (currentPhotoBox) {
+                currentPhotoBox.style.display = "none";
+            }
+            if (noPhotoBox) {
+                noPhotoBox.style.display = "flex";
+            }
         }
 
         // Initialisation des cases à cocher des participants
@@ -51,11 +115,19 @@ function openEditMealModal(
             }
         }
 
-        document.querySelectorAll("#edit-meal-participants-container .participant-checkbox").forEach(function (cb) {
-            cb.checked = parsedParticipantIds.includes(parseInt(cb.value, 10));
+        var participantCheckboxes = document.querySelectorAll("#edit-meal-participants-container .participant-checkbox");
+        participantCheckboxes.forEach(function (chk) {
+            var val = parseInt(chk.value, 10);
+            var isChecked = parsedParticipantIds.includes(val);
+            chk.checked = isChecked;
+            var label = chk.closest(".participant-toggle-label");
+            if (label) {
+                label.style.borderColor = isChecked ? "var(--primary, #c4a587)" : "#cbd5e1";
+                label.style.background = isChecked ? "#fdf8f4" : "#f8fafc";
+            }
         });
 
-        // Initialisation des notes des membres de la famille
+        // Initialisation des notes
         var parsedNotes = {};
         if (notesMap) {
             if (typeof notesMap === "string") {
@@ -69,23 +141,27 @@ function openEditMealModal(
             }
         }
 
-        document.querySelectorAll(".modal-star-rating").forEach(function (container) {
-            var uid = container.dataset.userId;
-            var noteVal = parsedNotes[uid] ? parseInt(parsedNotes[uid], 10) : 0;
-            var input = document.getElementById("edit-meal-note-" + uid);
+        document.querySelectorAll("#edit-meal-ratings-container .modal-star-rating").forEach(function (container) {
+            var userId = container.dataset.userId;
+            var userNote = parsedNotes[userId] || 0;
+
+            var input = document.getElementById("edit-meal-note-" + userId);
             if (input) {
-                input.value = noteVal;
+                input.value = userNote;
             }
-            container.querySelectorAll(".modal-star-btn, .modal-star-display").forEach(function (el) {
-                var s = parseInt(el.dataset.star, 10);
-                el.style.color = (s <= noteVal) ? "#f59e0b" : "#cbd5e1";
+
+            container.querySelectorAll(".modal-star-btn").forEach(function (btn) {
+                var s = parseInt(btn.dataset.star, 10);
+                btn.style.color = (s <= userNote) ? "#f59e0b" : "#cbd5e1";
+            });
+
+            container.querySelectorAll(".modal-star-display").forEach(function (span) {
+                var s = parseInt(span.dataset.star, 10);
+                span.style.color = (s <= userNote) ? "#f59e0b" : "#cbd5e1";
             });
         });
 
         openModal("edit-meal-modal");
-        setTimeout(function () {
-            dateInput.focus();
-        }, 100);
     }
 }
 
@@ -95,16 +171,6 @@ function closeEditMealModal() {
 
 function handleEditMealBackdropClick(event) {
     handleModalBackdropClick(event, "edit-meal-modal");
-}
-
-function selectEditMoment(moment) {
-    var input = document.getElementById("edit-meal-moment-input");
-    if (input) {
-        input.value = moment;
-    }
-    document.querySelectorAll(".btn-edit-moment-toggle").forEach(function (btn) {
-        btn.classList.toggle("active", btn.dataset.moment === moment);
-    });
 }
 
 function submitDeleteMeal() {
@@ -123,22 +189,5 @@ function submitDeleteMeal() {
         });
     } else {
         form.submit();
-    }
-}
-
-function setModalMemberStar(userId, star) {
-    var input = document.getElementById("edit-meal-note-" + userId);
-    if (!input) return;
-
-    var currentVal = parseInt(input.value, 10) || 0;
-    var newVal = (currentVal === star) ? 0 : star;
-    input.value = newVal;
-
-    var container = document.querySelector('.modal-star-rating[data-user-id="' + userId + '"]');
-    if (container) {
-        container.querySelectorAll(".modal-star-btn").forEach(function (btn) {
-            var s = parseInt(btn.dataset.star, 10);
-            btn.style.color = (s <= newVal) ? "#f59e0b" : "#cbd5e1";
-        });
     }
 }

@@ -1,0 +1,25 @@
+{# Composant Section Personnes / Participants pour Popups (Ajouter, Modifier) #}
+{% set pfx = id_prefix|default('edit-meal') %}
+
+{% if familleMembres is defined and familleMembres|length > 0 %}
+    <div class="form-group mb-3 modal-participants-section" id="{{ pfx }}-participants-section">
+        <input type="hidden" name="has_participants_field" value="1">
+        <label class="modal-section-label">
+            {{ title|default('Qui a pris ce repas ?') }}
+        </label>
+        <div class="modal-participants-container" id="{{ pfx }}-participants-container">
+            {% for membre in familleMembres %}
+                <label class="participant-toggle-label">
+                    <input type="checkbox"
+                           name="participants[]"
+                           value="{{ membre.id }}"
+                           class="participant-checkbox">
+                    <span>{{ membre.displayName }}</span>
+                </label>
+            {% endfor %}
+        </div>
+        <p class="modal-section-hint">
+            {{ hint|default('Laissez vide pour indiquer que toute la famille a pris le repas.') }}
+        </p>
+    </div>
+{% endif %}

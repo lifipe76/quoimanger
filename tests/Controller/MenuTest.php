@@ -126,6 +126,9 @@ class MenuTest extends WebTestCase
         $this->assertSelectorExists('.account-tabs');
         $this->assertSelectorExists('.account-tab-btn[data-tab="profil"].active');
         $this->assertSelectorExists('.account-tab-btn[data-tab="famille"]');
+        $this->assertSelectorExists('.account-tabs #account-tab-logout.account-tab-logout-btn');
+        $this->assertSelectorExists('#account-tab-logout svg');
+        $this->assertSelectorExists('#app-confirm-modal');
         $this->assertSelectorExists('#tab-profil.active');
         $this->assertSelectorExists('input[name="user_profile[firstname]"]');
         $this->assertSelectorExists('input[name="user_profile[lastname]"]');

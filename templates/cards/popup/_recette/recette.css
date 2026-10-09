@@ -24,6 +24,16 @@
     box-shadow: 0 4px 12px rgba(196, 165, 135, 0.15);
 }
 
+.modal-recipe-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #cbd5e1;
+    background: #e2e8f0;
+}
+
 .recipe-item-main {
     flex: 1 1 auto;
     min-width: 0;
@@ -53,22 +63,22 @@
     flex-wrap: wrap;
 }
 
-/* Badges de classement & réalisations (gris neutre) */
-.badge-rank,
-.badge-eaten-count,
-.badge-last-cooked,
-.badge-never-cooked {
+/* Badges de classement & réalisations (gris neutre) dans la popup */
+.modal-recipe-item .badge-rank,
+.modal-recipe-item .badge-eaten-count,
+.modal-recipe-item .badge-last-cooked,
+.modal-recipe-item .badge-never-cooked {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.2rem 0.55rem;
-    border-radius: 9999px;
+    border-radius: 8px;
     letter-spacing: 0.02em;
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    background: #f8fafc !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
     white-space: nowrap;
 }
 

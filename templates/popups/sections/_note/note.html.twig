@@ -1,0 +1,54 @@
+{# Composant Section Note pour Popups (Ajouter, Modifier) #}
+{% set pfx = id_prefix|default('edit-meal') %}
+
+<div class="form-group mb-2 modal-ratings-section" id="{{ pfx }}-ratings-section">
+    <label class="modal-section-label">
+        {{ title|default('Noter ce repas') }}
+    </label>
+    {% if familleMembres is defined and familleMembres|length > 0 %}
+        <div class="modal-ratings-container" id="{{ pfx }}-ratings-container">
+            {% for membre in familleMembres %}
+                <div class="member-rating-row">
+                    <div class="member-rating-info">
+                        <span class="member-rating-name">{{ membre.displayName }}</span>
+                        {% if app.user and membre.id == app.user.id %}
+                            <span class="member-rating-badge-you">(Vous)</span>
+                        {% endif %}
+                    </div>
+                    <div class="modal-star-rating" data-user-id="{{ membre.id }}">
+                        {% if app.user and membre.id == app.user.id %}
+                            <input type="hidden" name="notes[{{ membre.id }}]" id="{{ pfx }}-note-{{ membre.id }}" value="0">
+                            {% for star in 1..5 %}
+                                <button type="button"
+                                        class="modal-star-btn"
+                                        data-star="{{ star }}"
+                                        onclick="setModalMemberStar({{ membre.id }}, {{ star }}, '{{ pfx }}')"
+                                        title="Attribuer {{ star }} étoile(s)">★</button>
+                            {% endfor %}
+                        {% else %}
+                            {% for star in 1..5 %}
+                                <span class="modal-star-display" data-star="{{ star }}">★</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elseif app.user %}
+        <div class="modal-ratings-container" id="{{ pfx }}-ratings-container">
+            <div class="member-rating-row">
+                <span class="member-rating-name">Votre note</span>
+                <div class="modal-star-rating" data-user-id="{{ app.user.id }}">
+                    <input type="hidden" name="notes[{{ app.user.id }}]" id="{{ pfx }}-note-{{ app.user.id }}" value="0">
+                    {% for star in 1..5 %}
+                        <button type="button"
+                                class="modal-star-btn"
+                                data-star="{{ star }}"
+                                onclick="setModalMemberStar({{ app.user.id }}, {{ star }}, '{{ pfx }}')"
+                                title="Attribuer {{ star }} étoile(s)">★</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>

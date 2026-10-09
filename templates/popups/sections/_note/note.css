@@ -1,0 +1,81 @@
+/* ==========================================================================
+   Composant Section Note pour Popups
+   ========================================================================== */
+
+.modal-ratings-section {
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.modal-ratings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.member-rating-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+}
+
+.member-rating-info {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.member-rating-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.member-rating-badge-you {
+    font-size: 0.75rem;
+    color: var(--primary, #c4a587);
+    font-weight: 600;
+}
+
+.modal-star-rating {
+    display: inline-flex;
+    align-items: center;
+}
+
+.modal-star-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.modal-star-btn:hover {
+    transform: scale(1.15);
+}
+
+.modal-star-display {
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    padding: 0 2px;
+    line-height: 1;
+    user-select: none;
+    display: inline-block;
+}
+
+@media (max-width: 640px) {
+    .modal-ratings-section {
+        padding: 0 1rem;
+    }
+}

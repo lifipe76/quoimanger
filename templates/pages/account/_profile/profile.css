@@ -42,6 +42,30 @@
     background: rgba(196, 165, 135, 0.12);
 }
 
+.account-tab-logout-btn {
+    margin-left: auto;
+    padding: 0.85rem 1.25rem;
+    color: var(--text-muted, #64748b);
+}
+
+.account-tab-logout-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border-bottom-color: #ef4444;
+}
+
+.account-tab-logout-btn .tab-logout-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    stroke: currentColor;
+    transition: transform 0.2s ease;
+}
+
+.account-tab-logout-btn:hover .tab-logout-icon {
+    transform: translateX(2px);
+}
+
 .account-tab-btn .tab-badge {
     display: inline-flex;
     align-items: center;
@@ -503,6 +527,12 @@
         justify-content: center;
         padding: 0.75rem 0.5rem;
         font-size: 0.9rem;
+    }
+
+    .account-tab-btn.account-tab-logout-btn {
+        margin-left: auto;
+        flex: 0 0 auto;
+        padding: 0.75rem 0.9rem;
     }
 
     .profile-card,

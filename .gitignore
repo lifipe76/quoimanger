@@ -9,6 +9,10 @@
 /var/
 /vendor/
 /public_old/
+/public_html/photos/repas/*
+!/public_html/photos/repas/.gitkeep
+/public_html/photos/recettes/*
+!/public_html/photos/recettes/.gitkeep
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###

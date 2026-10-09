@@ -5,8 +5,12 @@
 :root {
     --nav-pill-bg: rgba(255, 255, 255, 0.78);
     --nav-pill-border: rgba(226, 232, 240, 0.85);
-    --nav-pill-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
-    --nav-pill-shadow-hover: 0 14px 34px -8px rgba(196, 165, 135, 0.2), 0 6px 16px -2px rgba(15, 23, 42, 0.06);
+    --nav-pill-shadow:
+        0 10px 30px -10px rgba(15, 23, 42, 0.08),
+        0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    --nav-pill-shadow-hover:
+        0 14px 34px -8px rgba(196, 165, 135, 0.2),
+        0 6px 16px -2px rgba(15, 23, 42, 0.06);
 }
 
 /* Le header agit comme conteneur transparent qui flotte au-dessus du contenu */
@@ -48,7 +52,6 @@
 
 /* Bulle Gauche : Logo, Titre & Liens Recettes / Ingrédients */
 .nav-pill-left {
-    gap: 1rem;
     padding-left: 0.75rem;
     padding-right: 1.1rem;
 }
@@ -409,7 +412,8 @@ i.fa-fw {
     }
 
     .nav-pill {
-        padding: 0.35rem 0.65rem;
+        /* padding: 0.35rem 0.65rem; */
+        display: none !important;
     }
 
     .nav-pill-left {
@@ -440,7 +444,7 @@ i.fa-fw {
 
     /* En mode téléphone, ne pas afficher l'icône assiette dans la gélule de gauche, juste QuoiManger */
     .nav-brand-logo {
-        display: none !important;
+        /* display: none !important; */
     }
 
     /* En mode téléphone, ne pas afficher la gélule en haut à droite (sauf sur la page Mon compte) */

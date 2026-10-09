@@ -74,3 +74,21 @@ function togglePasswordVisibility(inputId, btn) {
     }
 }
 
+function confirmAccountLogout(logoutUrl) {
+    if (typeof openConfirmPopup === "function") {
+        openConfirmPopup({
+            title: "Déconnexion",
+            message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+            confirmText: "Se déconnecter",
+            confirmClass: "btn-danger",
+            onConfirm: function () {
+                window.location.href = logoutUrl;
+            }
+        });
+    } else if (confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+        window.location.href = logoutUrl;
+    }
+}
+
+window.confirmAccountLogout = confirmAccountLogout;
+

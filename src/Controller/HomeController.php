@@ -6,8 +6,10 @@ use App\Entity\Recette;
 use App\Entity\RecetteRealisation;
 use App\Repository\RecetteRealisationRepository;
 use App\Repository\RecetteRepository;
+use App\Service\RepasPhotoService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,7 +73,8 @@ class HomeController extends AbstractController
     public function addRealisation(
         Request $request,
         RecetteRepository $recetteRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RepasPhotoService $photoService
     ): Response {
         $data = json_decode($request->getContent(), true) ?? [];
         $recetteId = (int) ($request->request->get('recette_id') ?? $data['recette_id'] ?? 0);
@@ -116,6 +119,46 @@ class HomeController extends AbstractController
             $realisation->setMoment('soir');
         }
 
+        $photoFile = $request->files->get('photo');
+        if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
+            try {
+                $photoFilename = $photoService->upload($photoFile);
+                $realisation->setPhoto($photoFilename);
+            } catch (\Exception $e) {
+                $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
+            }
+        }
+
+        if ($request->request->has('has_participants_field')) {
+            $participantIds = (array) $request->request->all('participants');
+            if (!empty($participantIds)) {
+                $participants = $em->getRepository(\App\Entity\User::class)->findBy(['id' => $participantIds]);
+                foreach ($participants as $p) {
+                    $realisation->addParticipant($p);
+                }
+            }
+        }
+
+        if ($request->request->has('notes')) {
+            /** @var \App\Entity\User|null $currentUser */
+            $currentUser = $this->getUser();
+            $notesData = (array) $request->request->all('notes');
+            foreach ($notesData as $userId => $noteVal) {
+                $uid = (int) $userId;
+                if ($currentUser && $uid !== (int) $currentUser->getId()) {
+                    continue;
+                }
+                $val = (int) $noteVal;
+                if ($val >= 1 && $val <= 5 && $currentUser) {
+                    $note = new \App\Entity\RealisationNote();
+                    $note->setRealisation($realisation);
+                    $note->setUser($currentUser);
+                    $note->setNote($val);
+                    $em->persist($note);
+                }
+            }
+        }
+
         $em->persist($realisation);
         $em->flush();
 
@@ -126,6 +169,8 @@ class HomeController extends AbstractController
                 'recette' => $recette->getDesignation(),
                 'moment' => $realisation->getMoment(),
                 'realiseAt' => $realisation->getRealiseAt()?->format('d/m/Y'),
+                'photo' => $realisation->getPhoto(),
+                'photoUrl' => $realisation->getPhotoUrl(),
             ]);
         }
 
@@ -138,9 +183,13 @@ class HomeController extends AbstractController
     public function deleteRealisation(
         RecetteRealisation $realisation,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RepasPhotoService $photoService
     ): Response {
         if ($this->isCsrfTokenValid('delete_realisation_' . $realisation->getId(), (string) $request->request->get('_token'))) {
+            if ($realisation->getPhoto()) {
+                $photoService->delete($realisation->getPhoto());
+            }
             $em->remove($realisation);
             $em->flush();
             $this->addFlash('success', 'Repas retiré de la timeline.');
@@ -153,7 +202,8 @@ class HomeController extends AbstractController
     public function updateRealisationDate(
         RecetteRealisation $realisation,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        RepasPhotoService $photoService
     ): Response {
         $token = (string) $request->request->get('_token');
         if (!$this->isCsrfTokenValid('update_realisation_date_' . $realisation->getId(), $token)) {
@@ -178,6 +228,26 @@ class HomeController extends AbstractController
             if ($request->request->has('complement')) {
                 $complement = $request->request->get('complement');
                 $realisation->setComplement($complement !== null ? (string) $complement : null);
+            }
+
+            if ($request->request->get('delete_photo') === '1') {
+                if ($realisation->getPhoto()) {
+                    $photoService->delete($realisation->getPhoto());
+                    $realisation->setPhoto(null);
+                }
+            }
+
+            $photoFile = $request->files->get('photo');
+            if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
+                try {
+                    if ($realisation->getPhoto()) {
+                        $photoService->delete($realisation->getPhoto());
+                    }
+                    $photoFilename = $photoService->upload($photoFile);
+                    $realisation->setPhoto($photoFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
+                }
             }
 
             if ($request->request->has('has_participants_field')) {

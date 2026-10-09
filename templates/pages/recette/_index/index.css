@@ -54,12 +54,64 @@
     padding: 0.5rem 0;
 }
 
+.recettes-toolbar-sort-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
 .recettes-toolbar-label {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-muted, #64748b);
     text-transform: uppercase;
     letter-spacing: 0.03em;
+}
+
+.sort-order-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    margin: 0;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px !important;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    line-height: 1;
+}
+
+.sort-order-btn:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: var(--primary, #c4a587);
+    transform: translateY(-1px);
+}
+
+.sort-order-btn .sort-order-icon {
+    font-size: 0.95rem;
+    color: currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.sort-order-btn svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+    stroke: currentColor;
 }
 
 .recettes-sort-pills {
@@ -162,8 +214,31 @@
     .recettes-toolbar {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.4rem;
+        gap: 0.5rem;
         margin-bottom: 1.25rem;
+    }
+
+    .recettes-toolbar-sort-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .sort-order-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        min-height: 30px !important;
+        padding: 0 !important;
+    }
+
+    .sort-order-btn .sort-order-icon {
+        font-size: 0.85rem;
+    }
+
+    .sort-order-btn svg {
+        width: 14px;
+        height: 14px;
     }
 
     .recettes-sort-pills {
@@ -174,6 +249,14 @@
         gap: 0.4rem;
         padding-bottom: 4px;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .recettes-sort-pills::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
 
     .sort-pill {

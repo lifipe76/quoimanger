@@ -48,6 +48,10 @@ class Recette
     #[Groups(['recette:read', 'recette:write', 'realisation:read'])]
     private ?string $designation = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['recette:read', 'recette:write'])]
+    private ?string $photo = null;
+
     /**
      * @var Collection<int, RecetteRealisation>
      */
@@ -85,6 +89,35 @@ class Recette
         $this->designation = $designation;
 
         return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): static
+    {
+        $this->photo = $photo !== null ? trim($photo) : null;
+        if ($this->photo === '') {
+            $this->photo = null;
+        }
+
+        return $this;
+    }
+
+    #[Groups(['recette:read'])]
+    public function getPhotoUrl(): ?string
+    {
+        if ($this->photo === null || $this->photo === '') {
+            return null;
+        }
+
+        if (str_starts_with($this->photo, 'http://') || str_starts_with($this->photo, 'https://')) {
+            return $this->photo;
+        }
+
+        return '/photos/recettes/' . $this->photo;
     }
 
     /**

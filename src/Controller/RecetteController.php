@@ -6,8 +6,10 @@ use App\Entity\Recette;
 use App\Form\RecetteType;
 use App\Repository\IngredientRepository;
 use App\Repository\RecetteRepository;
+use App\Service\RecettePhotoService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,45 +24,71 @@ class RecetteController extends AbstractController
         \App\Service\RecipeSuggestionService $suggestionService,
         Request $request
     ): Response {
-        $sort = $request->query->get('sort', 'recent'); // 'recent', 'oldest', 'note', 'alpha', 'id'
-        if ($sort === 'date') {
-            $sort = 'recent';
+        $sort = $request->query->get('sort', 'date'); // 'date', 'note', 'rank', 'alpha', 'id'
+        if ($sort === 'recent') {
+            $sort = 'date';
+            $defaultOrder = 'desc';
+        } elseif ($sort === 'oldest') {
+            $sort = 'date';
+            $defaultOrder = 'asc';
+        } else {
+            $defaultOrder = match ($sort) {
+                'alpha', 'rank' => 'asc',
+                default => 'desc', // 'date', 'note'
+            };
         }
+
+        $order = strtolower($request->query->get('order', ''));
+        if (!in_array($order, ['asc', 'desc'], true)) {
+            $order = $defaultOrder;
+        }
+
         $allRecettes = $recetteRepository->findAll();
         $ranks = $suggestionService->calculateRecipeRanks($allRecettes);
 
-        usort($allRecettes, function (Recette $a, Recette $b) use ($sort) {
-            if ($sort === 'recent') {
+        usort($allRecettes, function (Recette $a, Recette $b) use ($sort, $order, $ranks) {
+            $isAsc = ($order === 'asc');
+
+            if ($sort === 'rank') {
+                $rankA = $ranks[$a->getId()] ?? null;
+                $rankB = $ranks[$b->getId()] ?? null;
+                if ($rankA === $rankB) {
+                    return $isAsc
+                        ? (($a->getId() ?? 0) <=> ($b->getId() ?? 0))
+                        : (($b->getId() ?? 0) <=> ($a->getId() ?? 0));
+                }
+                if ($rankA === null) return 1;
+                if ($rankB === null) return -1;
+                return $isAsc ? ($rankA <=> $rankB) : ($rankB <=> $rankA);
+            } elseif ($sort === 'date') {
                 $dateA = $a->getLastRealiseAt();
                 $dateB = $b->getLastRealiseAt();
                 if ($dateA == $dateB) {
-                    return ($b->getId() ?? 0) <=> ($a->getId() ?? 0);
+                    return $isAsc
+                        ? (($a->getId() ?? 0) <=> ($b->getId() ?? 0))
+                        : (($b->getId() ?? 0) <=> ($a->getId() ?? 0));
                 }
                 if ($dateA === null) return 1;
                 if ($dateB === null) return -1;
-                return $dateB <=> $dateA;
-            } elseif ($sort === 'oldest') {
-                $dateA = $a->getLastRealiseAt();
-                $dateB = $b->getLastRealiseAt();
-                if ($dateA == $dateB) {
-                    return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
-                }
-                if ($dateA === null) return 1;
-                if ($dateB === null) return -1;
-                return $dateA <=> $dateB;
+                return $isAsc ? ($dateA <=> $dateB) : ($dateB <=> $dateA);
             } elseif ($sort === 'note') {
                 $noteA = $a->getAverageNote();
                 $noteB = $b->getAverageNote();
                 if ($noteA == $noteB) {
-                    return $b->getNotesCount() <=> $a->getNotesCount();
+                    return $isAsc
+                        ? ($a->getNotesCount() <=> $b->getNotesCount())
+                        : ($b->getNotesCount() <=> $a->getNotesCount());
                 }
                 if ($noteA === null) return 1;
                 if ($noteB === null) return -1;
-                return $noteB <=> $noteA;
+                return $isAsc ? ($noteA <=> $noteB) : ($noteB <=> $noteA);
             } elseif ($sort === 'alpha') {
-                return strcmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                return $isAsc ? $cmp : -$cmp;
             } else { // 'id' ou par défaut
-                return ($b->getId() ?? 0) <=> ($a->getId() ?? 0);
+                return $isAsc
+                    ? (($a->getId() ?? 0) <=> ($b->getId() ?? 0))
+                    : (($b->getId() ?? 0) <=> ($a->getId() ?? 0));
             }
         });
 
@@ -69,13 +97,19 @@ class RecetteController extends AbstractController
             'recettes' => $allRecettes,
             'ranks' => $ranks,
             'currentSort' => $sort,
+            'currentOrder' => $order,
         ]);
     }
 
     #[Route('/recette', name: 'app_recette_create', methods: ['GET', 'POST'])]
     #[Route('/recette/{id<\d+>}', name: 'app_recette_edit', methods: ['GET', 'POST'])]
-    public function edit(?Recette $recette, Request $request, EntityManagerInterface $em, IngredientRepository $ingredientRepository): Response
-    {
+    public function edit(
+        ?Recette $recette,
+        Request $request,
+        EntityManagerInterface $em,
+        IngredientRepository $ingredientRepository,
+        RecettePhotoService $recettePhotoService
+    ): Response {
         $isNew = false;
         if (!$recette) {
             $recette = new Recette();
@@ -91,6 +125,26 @@ class RecetteController extends AbstractController
                     $recette->removeRecetteIngredient($recetteIngredient);
                 } else {
                     $recetteIngredient->setRecette($recette);
+                }
+            }
+
+            if ($request->request->get('delete_photo') === '1') {
+                if ($recette->getPhoto()) {
+                    $recettePhotoService->delete($recette->getPhoto());
+                    $recette->setPhoto(null);
+                }
+            }
+
+            $photoFile = $request->files->get('photo');
+            if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
+                try {
+                    if ($recette->getPhoto()) {
+                        $recettePhotoService->delete($recette->getPhoto());
+                    }
+                    $filename = $recettePhotoService->upload($photoFile);
+                    $recette->setPhoto($filename);
+                } catch (\Exception $e) {
+                    $this->addFlash('warning', 'La photo n\'a pas pu être enregistrée : ' . $e->getMessage());
                 }
             }
 
@@ -112,9 +166,16 @@ class RecetteController extends AbstractController
     }
 
     #[Route('/recette/{id<\d+>}/delete', name: 'app_recette_delete', methods: ['POST'])]
-    public function delete(Recette $recette, Request $request, EntityManagerInterface $em): Response
-    {
+    public function delete(
+        Recette $recette,
+        Request $request,
+        EntityManagerInterface $em,
+        RecettePhotoService $recettePhotoService
+    ): Response {
         if ($this->isCsrfTokenValid('delete_recette_' . $recette->getId(), (string) $request->request->get('_token'))) {
+            if ($recette->getPhoto()) {
+                $recettePhotoService->delete($recette->getPhoto());
+            }
             $em->remove($recette);
             $em->flush();
             $this->addFlash('success', 'Recette supprimée.');

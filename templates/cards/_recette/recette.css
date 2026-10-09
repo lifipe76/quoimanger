@@ -18,13 +18,15 @@
 }
 
 .card-recette {
+    --card-pad-y: 0.75rem;
+    --card-pad-x: 0.85rem;
     background: #ffffff;
     border-radius: 16px;
     border: 1px solid rgba(226, 232, 240, 0.9);
-    padding: 1.5rem;
+    padding: var(--card-pad-y) var(--card-pad-x);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     position: relative;
     overflow: hidden;
     box-shadow:
@@ -67,30 +69,33 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.85rem;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
 }
 
 .card-recette-header-left {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
 }
 
 .card-recette-header-right {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
 }
 
 .card-recette-moment {
-    font-size: 0.725rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    padding: 0.25rem 0.6rem;
-    border-radius: 9999px;
+    padding: 0.18rem 0.45rem;
+    border-radius: 8px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
     background: #f8fafc;
     color: #475569;
     border: 1px solid #e2e8f0;
@@ -108,9 +113,9 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 0.25rem 0.45rem;
+    padding: 0.18rem 0.35rem;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     line-height: 1;
     color: #475569;
     display: inline-flex;
@@ -125,13 +130,61 @@
     transform: scale(1.1);
 }
 
+.card-btn-apn-trigger {
+    color: #855b32;
+}
+
+.card-btn-apn-trigger:hover {
+    background: #fdfaf6;
+    border-color: #c4a587;
+    color: #613e1e;
+}
+
+/* Photo en haut de la card avec les deux coins supérieurs arrondis */
+.card-recette-photo-wrap {
+    margin: calc(-1 * var(--card-pad-y)) calc(-1 * var(--card-pad-x)) 0.75rem calc(-1 * var(--card-pad-x));
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    flex-shrink: 0;
+    display: block;
+}
+
+.card-recette-bg-photo,
+.card-recette-hero-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-recette:hover .card-recette-bg-photo,
+.card-recette:hover .card-recette-hero-bg {
+    transform: scale(1.05);
+}
+
+.card-recette-header,
+.card-recette-title-row,
+.card-recette-body {
+    position: relative;
+    z-index: 1;
+}
+
 .card-recette-status {
-    font-size: 0.75rem;
+    font-size: 0.725rem;
     font-weight: 600;
-    padding: 0.25rem 0.65rem;
-    border-radius: 9999px;
+    padding: 0.18rem 0.5rem;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
+    line-height: 1;
     gap: 0.35rem;
     background: #f8fafc;
     color: #475569;
@@ -149,40 +202,55 @@
     font-weight: 600;
 }
 
+.card-recette-rank,
 .card-recette-id {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    background: #f1f5f9;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-}
-
-.card-recette-rank {
-    font-size: 0.75rem;
+    font-size: 0.725rem;
     font-weight: 700;
     color: #475569;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    padding: 0.2rem 0.55rem;
-    border-radius: 9999px;
+    padding: 0.18rem 0.45rem;
+    border-radius: 8px;
     letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .card-btn-pencil {
     text-decoration: none;
 }
 
+/* Ligne et titre du repas (sans bulle de fond) */
+.card-recette-title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.55rem;
+}
+
 .card-recette-title {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 1rem 0;
+    margin: 0;
     line-height: 1.35;
     display: inline-flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.45rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.card-recette-title:hover {
+    background: transparent;
+    border: none;
 }
 
 .card-recette-title a,
@@ -279,103 +347,61 @@
     align-items: center;
 }
 
-/* Ligne de notation et étoiles */
-.card-recette-rating-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 0.95rem;
-    padding-bottom: 0.65rem;
-    border-bottom: 1px solid #f1f5f9;
-}
-
+/* Badge de note moyenne dans l'en-tête (avant le rang) */
+.card-recette-header-right .card-recette-stars-group,
 .card-recette-stars-group {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 1.15rem;
-    line-height: 1;
-}
-
-.stars-display {
-    display: inline-flex;
-    align-items: center;
-    letter-spacing: 1px;
-}
-
-.star-filled {
-    color: #f59e0b;
-}
-
-.star-empty {
-    color: #cbd5e1;
-}
-
-.rating-count {
-    font-size: 0.85rem;
+    font-size: 0.725rem;
     font-weight: 700;
-    color: #64748b;
-    margin-left: 0.25rem;
-}
-
-.rating-avg-value {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #d97706;
-    margin-left: 0.25rem;
-}
-
-/* Notation rapide par l'utilisateur */
-.card-recette-quick-rate {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
+    color: #475569;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 9999px;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.8rem;
-    color: #475569;
+    padding: 0.18rem 0.45rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    line-height: 1;
 }
 
-.quick-rate-label {
-    font-weight: 600;
-    font-size: 0.775rem;
-}
-
-.quick-stars-wrapper {
+.card-recette-stars-group .stars-display {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-}
-
-.quick-star-btn {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font-size: 1.05rem;
     line-height: 1;
-    color: #cbd5e1;
-    transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.quick-star-btn:hover,
-.quick-star-btn.hover-active,
-.quick-star-btn.active {
+.card-recette-stars-group .star {
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.card-recette-stars-group .star-filled {
     color: #f59e0b;
 }
 
-.quick-star-btn:hover {
-    transform: scale(1.25);
+.card-recette-stars-group .star-empty {
+    color: #cbd5e1;
 }
 
+.card-recette-stars-group .rating-avg-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.card-recette-stars-group .rating-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    line-height: 1;
+}
+
+/* Coller les ingrédients tout en bas de la card (avec ou sans photo) */
 .card-recette-body {
-    flex: 1 1 auto;
-    margin-bottom: 1.25rem;
+    flex: 0 0 auto;
+    margin-top: auto;
+    margin-bottom: 0;
 }
 
 .card-recette-ingredients-title {
@@ -529,7 +555,9 @@
 
 @media (max-width: 768px) {
     .card-recette {
-        padding: 1.15rem 1rem;
+        --card-pad-y: 0.75rem;
+        --card-pad-x: 0.85rem;
+        padding: var(--card-pad-y) var(--card-pad-x);
         border-radius: 14px;
         transform: none !important;
         animation: none;

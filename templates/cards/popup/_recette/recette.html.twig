@@ -2,6 +2,9 @@
 {% set rank = (ranks is defined and ranks[recette.id] is defined) ? ranks[recette.id] : null %}
 
 <button type="submit" class="modal-recipe-item">
+    {% if recette.photo %}
+        <img src="{{ recette.photoUrl }}" alt="" class="modal-recipe-thumb" loading="lazy">
+    {% endif %}
     <div class="recipe-item-main">
         <span class="recipe-item-name">{{ recette.designation }}</span>
         <div class="recipe-item-badges">

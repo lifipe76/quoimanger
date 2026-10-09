@@ -61,6 +61,10 @@ class RecetteRealisation
     #[Groups(['realisation:read', 'realisation:write', 'recette:read'])]
     private ?string $complement = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['realisation:read', 'realisation:write', 'recette:read'])]
+    private ?string $photo = null;
+
     /**
      * @var Collection<int, User>
      */
@@ -162,6 +166,34 @@ class RecetteRealisation
         }
 
         return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): static
+    {
+        $this->photo = $photo !== null ? trim($photo) : null;
+        if ($this->photo === '') {
+            $this->photo = null;
+        }
+
+        return $this;
+    }
+
+    public function getPhotoUrl(): ?string
+    {
+        if ($this->photo === null || $this->photo === '') {
+            return null;
+        }
+
+        if (str_starts_with($this->photo, 'http://') || str_starts_with($this->photo, 'https://')) {
+            return $this->photo;
+        }
+
+        return '/photos/repas/' . $this->photo;
     }
 
     /**

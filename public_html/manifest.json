@@ -1,61 +1,61 @@
 {
-  "name": "QuoiManger - Suivi des repas & Recettes",
-  "short_name": "QuoiManger",
-  "description": "Planifiez et suivez facilement les repas de votre famille avec notation et recettes.",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#f8fafc",
-  "theme_color": "#c4a587",
-  "lang": "fr-FR",
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-maskable-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Timeline Repas",
-      "short_name": "Timeline",
-      "description": "Voir la chronologie des repas",
-      "url": "/",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Mes Recettes",
-      "short_name": "Recettes",
-      "description": "Catalogue de recettes",
-      "url": "/recettes",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Ajouter une recette",
-      "short_name": "Ajouter",
-      "description": "Créer une nouvelle recette",
-      "url": "/recette/creer",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    }
-  ]
+    "name": "QuoiManger - Suivi des repas & Recettes",
+    "short_name": "QuoiManger",
+    "description": "Planifiez et suivez facilement les repas de votre famille avec notation et recettes.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#f8fafc",
+    "theme_color": "#f8fafc",
+    "lang": "fr-FR",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Timeline Repas",
+            "short_name": "Timeline",
+            "description": "Voir la chronologie des repas",
+            "url": "/",
+            "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Mes Recettes",
+            "short_name": "Recettes",
+            "description": "Catalogue de recettes",
+            "url": "/recettes",
+            "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Ajouter une recette",
+            "short_name": "Ajouter",
+            "description": "Créer une nouvelle recette",
+            "url": "/recette/creer",
+            "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+        }
+    ]
 }

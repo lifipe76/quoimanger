@@ -6,58 +6,48 @@
         <p class="modal-proposition-subtitle">Choisissez une recette et un moment pour l'ajouter à vos repas.</p>
     </div>
 
-    <!-- Choix de la date et moment sur la même ligne (identique au popup propose) -->
-    <div class="modal-date-row">
-        <div class="modal-date-left">
-            <label for="repas-date-input">Date :</label>
-            <input type="date"
-                   id="repas-date-input"
-                   class="modal-date-input"
-                   value="{{ 'now'|date('Y-m-d') }}"
-                   onchange="onRepasDateInputChange(this.value)">
-            <div class="modal-date-quick-btns">
-                <button type="button" class="btn-date-quick active" onclick="selectRepasDate('{{ 'now'|date('Y-m-d') }}', this)">Aujourd'hui</button>
-                <button type="button" class="btn-date-quick" onclick="selectRepasDate('{{ '-1 day'|date('Y-m-d') }}', this)">Hier</button>
-            </div>
-        </div>
+    <!-- Choix de la date et moment sur la même ligne (composant réutilisable) -->
+    {{ composant('popups/sections/date', {
+        'id_prefix': 'repas',
+        'input_name': 'date',
+        'on_date_change': 'onRepasDateInputChange(this.value)',
+        'on_quick_click': 'selectRepasDate',
+        'on_moment_click': 'selectRepasMoment'
+    }) }}
 
-        <div class="moment-toggle-group">
-            <button type="button"
-                    class="btn-moment-toggle {{ defaultMoment|default('soir') == 'matin' ? 'active' : '' }}"
-                    data-moment="matin"
-                    onclick="selectRepasMoment('matin')">
-                Matin
-            </button>
-            <button type="button"
-                    class="btn-moment-toggle {{ defaultMoment|default('soir') == 'midi' ? 'active' : '' }}"
-                    data-moment="midi"
-                    onclick="selectRepasMoment('midi')">
-                Midi
-            </button>
-            <button type="button"
-                    class="btn-moment-toggle {{ defaultMoment|default('soir') == 'soir' ? 'active' : '' }}"
-                    data-moment="soir"
-                    onclick="selectRepasMoment('soir')">
-                Soir
-            </button>
-        </div>
-    </div>
-
-    <!-- Barre de recherche et 4 filtres sur la même ligne -->
+    <!-- Barre de recherche (loupe extensible) et 5 filtres de tri (dont Rang) -->
     <div class="modal-top-bar">
         {{ composant('_composants/_popup/recherche', {
             'id': 'recipe-filter-input',
-            'placeholder': 'Rechercher une recette...',
+            'placeholder': 'Rechercher...',
             'target': '.modal-recipe-form',
             'oninput': 'filterRecipesList(this.value)'
         }) }}
+        <button type="button"
+                class="modal-sort-order-btn"
+                data-order="desc"
+                title="Tri décroissant (cliquer pour inverser)"
+                aria-label="Sens du tri"
+                onclick="toggleModalSortOrder(this, 'modal-recipes-container')">
+            <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
+        </button>
         <div class="modal-sort-pills">
-            <button type="button" class="sort-pill active" data-sort="recent" onclick="sortModalRecipes('recent', this, 'modal-recipes-container')">Plus récente</button>
-            <button type="button" class="sort-pill" data-sort="oldest" onclick="sortModalRecipes('oldest', this, 'modal-recipes-container')">Plus vieille</button>
+            <button type="button" class="sort-pill active" data-sort="date" onclick="sortModalRecipes('date', this, 'modal-recipes-container')">Date</button>
             <button type="button" class="sort-pill" data-sort="note" onclick="sortModalRecipes('note', this, 'modal-recipes-container')">Note</button>
+            <button type="button" class="sort-pill" data-sort="rank" onclick="sortModalRecipes('rank', this, 'modal-recipes-container')">Rang</button>
             <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalRecipes('alpha', this, 'modal-recipes-container')">Nom</button>
         </div>
     </div>
+
+    <!-- Prise de photo du repas (bouton APN, composant réutilisable) -->
+    {{ composant('popups/sections/photo', {
+        'id_prefix': 'repas',
+        'has_delete_input': false,
+        'on_trigger_camera': 'triggerRepasPhotoInput()',
+        'on_trigger_gallery': 'triggerRepasGalleryInput()',
+        'on_photo_change': 'onRepasPhotoSelected(this)',
+        'on_remove_new': 'removeRepasPhoto()'
+    }) }}
 
     <div class="modal-recipes-list" id="modal-recipes-container">
         {% if recettes|length > 0 %}
@@ -68,6 +58,7 @@
                       data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
                       data-note="{{ r.averageNote|default(0) }}"
                       data-count="{{ r.notesCount|default(0) }}"
+                      data-rank="{{ (ranks is defined and ranks[r.id] is defined and ranks[r.id] is not null) ? ranks[r.id] : 999999 }}"
                       data-id="{{ r.id }}">
                     <input type="hidden" name="recette_id" value="{{ r.id }}">
                     <input type="hidden" name="moment" class="input-form-moment" value="{{ defaultMoment|default('soir') }}">

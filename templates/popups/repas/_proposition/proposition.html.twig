@@ -46,14 +46,22 @@
     <div class="modal-top-bar">
         {{ composant('_composants/_popup/recherche', {
             'id': 'proposition-recipe-filter-input',
-            'placeholder': 'Rechercher une recette...',
+            'placeholder': 'Rechercher...',
             'target': '.modal-prop-recipe-form',
             'oninput': 'filterPropositionRecipesList(this.value)'
         }) }}
+        <button type="button"
+                class="modal-sort-order-btn"
+                data-order="desc"
+                title="Tri décroissant (cliquer pour inverser)"
+                aria-label="Sens du tri"
+                onclick="toggleModalSortOrder(this, 'modal-proposition-recipes-container')">
+            <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
+        </button>
         <div class="modal-sort-pills">
-            <button type="button" class="sort-pill active" data-sort="recent" onclick="sortModalRecipes('recent', this, 'modal-proposition-recipes-container')">Plus récente</button>
-            <button type="button" class="sort-pill" data-sort="oldest" onclick="sortModalRecipes('oldest', this, 'modal-proposition-recipes-container')">Plus vieille</button>
+            <button type="button" class="sort-pill active" data-sort="date" onclick="sortModalRecipes('date', this, 'modal-proposition-recipes-container')">Date</button>
             <button type="button" class="sort-pill" data-sort="note" onclick="sortModalRecipes('note', this, 'modal-proposition-recipes-container')">Note</button>
+            <button type="button" class="sort-pill" data-sort="rank" onclick="sortModalRecipes('rank', this, 'modal-proposition-recipes-container')">Rang</button>
             <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalRecipes('alpha', this, 'modal-proposition-recipes-container')">Nom</button>
         </div>
     </div>
@@ -67,6 +75,7 @@
                       data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
                       data-note="{{ r.averageNote|default(0) }}"
                       data-count="{{ r.notesCount|default(0) }}"
+                      data-rank="{{ (ranks is defined and ranks[r.id] is defined and ranks[r.id] is not null) ? ranks[r.id] : 999999 }}"
                       data-id="{{ r.id }}">
                     <input type="hidden" name="recette_id" value="{{ r.id }}">
                     <input type="hidden" name="moment" class="input-form-moment input-prop-form-moment" value="{{ defaultMoment|default('soir') }}">

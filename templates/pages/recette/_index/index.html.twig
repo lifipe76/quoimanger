@@ -16,19 +16,32 @@
     </div>
 
     <div class="recettes-toolbar">
-        <span class="recettes-toolbar-label">Trier par :</span>
-        <div class="recettes-sort-pills">
-            <a href="{{ path('app_recettes_list', {'sort': 'recent'}) }}"
-               class="sort-pill {{ currentSort in ['recent', 'date'] ? 'active' : '' }}">
-                Plus récente
+        <div class="recettes-toolbar-sort-wrap">
+            <span class="recettes-toolbar-label">Trier :</span>
+            {% set nextOrder = (currentOrder|default('desc') == 'asc') ? 'desc' : 'asc' %}
+            <a href="{{ path('app_recettes_list', {'sort': currentSort|default('date'), 'order': nextOrder}) }}"
+               class="sort-order-btn"
+               title="{{ currentOrder|default('desc') == 'asc' ? 'Tri croissant (cliquer pour trier par ordre décroissant)' : 'Tri décroissant (cliquer pour trier par ordre croissant)' }}"
+               aria-label="{{ currentOrder|default('desc') == 'asc' ? 'Tri croissant (cliquer pour trier par ordre décroissant)' : 'Tri décroissant (cliquer pour trier par ordre croissant)' }}">
+                {% if currentOrder|default('desc') == 'asc' %}
+                    <i class="fa-solid fa-arrow-up sort-order-icon" aria-hidden="true"></i>
+                {% else %}
+                    <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
+                {% endif %}
             </a>
-            <a href="{{ path('app_recettes_list', {'sort': 'oldest'}) }}"
-               class="sort-pill {{ currentSort == 'oldest' ? 'active' : '' }}">
-                Plus vieille
+        </div>
+        <div class="recettes-sort-pills">
+            <a href="{{ path('app_recettes_list', {'sort': 'date'}) }}"
+               class="sort-pill {{ currentSort in ['date', 'recent', 'oldest'] ? 'active' : '' }}">
+                Date
             </a>
             <a href="{{ path('app_recettes_list', {'sort': 'note'}) }}"
                class="sort-pill {{ currentSort == 'note' ? 'active' : '' }}">
                 Note
+            </a>
+            <a href="{{ path('app_recettes_list', {'sort': 'rank'}) }}"
+               class="sort-pill {{ currentSort == 'rank' ? 'active' : '' }}">
+                Rang
             </a>
             <a href="{{ path('app_recettes_list', {'sort': 'alpha'}) }}"
                class="sort-pill {{ currentSort == 'alpha' ? 'active' : '' }}">

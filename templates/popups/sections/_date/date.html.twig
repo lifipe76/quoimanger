@@ -1,0 +1,50 @@
+{# Composant Section Date pour Popups (Ajouter, Modifier, etc.) #}
+{% set pfx = id_prefix|default('repas') %}
+{% set inputName = input_name|default('date') %}
+{% set curDate = current_date|default('now'|date('Y-m-d')) %}
+{% set curMom = current_moment|default('soir') %}
+
+<div class="modal-date-row" id="{{ pfx }}-date-section">
+    <div class="modal-date-left">
+        <label for="{{ pfx }}-date-input">Date :</label>
+        <input type="date"
+               id="{{ pfx }}-date-input"
+               name="{{ inputName }}"
+               class="modal-date-input"
+               value="{{ curDate }}"
+               {% if on_date_change is defined and on_date_change %}onchange="{{ on_date_change }}"{% endif %}>
+        <div class="modal-date-quick-btns">
+            <button type="button"
+                    class="btn-date-quick active"
+                    onclick="{{ on_quick_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'Date') }}('{{ 'now'|date('Y-m-d') }}', this)">
+                Aujourd'hui
+            </button>
+            <button type="button"
+                    class="btn-date-quick"
+                    onclick="{{ on_quick_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'Date') }}('{{ '-1 day'|date('Y-m-d') }}', this)">
+                Hier
+            </button>
+        </div>
+    </div>
+
+    <div class="moment-toggle-group">
+        <button type="button"
+                class="btn-moment-toggle {{ curMom == 'matin' ? 'active' : '' }}"
+                data-moment="matin"
+                onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('matin')">
+            Matin
+        </button>
+        <button type="button"
+                class="btn-moment-toggle {{ curMom == 'midi' ? 'active' : '' }}"
+                data-moment="midi"
+                onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('midi')">
+            Midi
+        </button>
+        <button type="button"
+                class="btn-moment-toggle {{ curMom == 'soir' ? 'active' : '' }}"
+                data-moment="soir"
+                onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('soir')">
+            Soir
+        </button>
+    </div>
+</div>

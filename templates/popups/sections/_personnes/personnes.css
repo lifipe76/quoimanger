@@ -1,0 +1,64 @@
+/* ==========================================================================
+   Composant Section Personnes / Participants pour Popups
+   ========================================================================== */
+
+.modal-participants-section {
+    padding: 0 1.25rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.modal-section-label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.modal-participants-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.participant-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.participant-toggle-label:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.participant-checkbox {
+    accent-color: var(--primary, #c4a587);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.modal-section-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted, #64748b);
+    margin-top: 0.4rem;
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .modal-participants-section {
+        padding: 0 1rem;
+    }
+}

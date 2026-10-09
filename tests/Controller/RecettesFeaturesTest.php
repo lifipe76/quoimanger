@@ -74,29 +74,46 @@ class RecettesFeaturesTest extends WebTestCase
 
         // 2. Barre de classement / tri
         $this->assertStringContainsString('recettes-sort-pills', $content);
-        $this->assertStringContainsString('Plus récente', $content);
-        $this->assertStringContainsString('Plus vieille', $content);
+        $this->assertStringContainsString('sort-order-btn', $content);
+        $this->assertStringContainsString('Date', $content);
         $this->assertStringContainsString('Note', $content);
+        $this->assertStringContainsString('Rang', $content);
         $this->assertStringContainsString('Nom', $content);
 
         // 3. Card recette : crayon présent, pas de poubelle ni "Ajoutée"
         $this->assertStringContainsString('card-btn-pencil', $content);
         $this->assertSelectorNotExists('.card-recette-footer');
 
-        // 4. Test tri par plus récente
-        $this->client->request('GET', '/recettes?sort=recent');
+        // 4. Test tri par date (décroissant par défaut ou explicite)
+        $this->client->request('GET', '/recettes?sort=date&order=desc');
         $this->assertResponseIsSuccessful();
 
-        // 5. Test tri par plus vieille
+        // 5. Test tri par date (croissant)
+        $this->client->request('GET', '/recettes?sort=date&order=asc');
+        $this->assertResponseIsSuccessful();
+
+        // Rétrocompatibilité : tests par recent et oldest
+        $this->client->request('GET', '/recettes?sort=recent');
+        $this->assertResponseIsSuccessful();
         $this->client->request('GET', '/recettes?sort=oldest');
         $this->assertResponseIsSuccessful();
 
         // 6. Test tri par note
         $this->client->request('GET', '/recettes?sort=note');
         $this->assertResponseIsSuccessful();
+        $this->client->request('GET', '/recettes?sort=note&order=asc');
+        $this->assertResponseIsSuccessful();
 
-        // 7. Test tri alphabétique
+        // 7. Test tri par rang
+        $this->client->request('GET', '/recettes?sort=rank');
+        $this->assertResponseIsSuccessful();
+        $this->client->request('GET', '/recettes?sort=rank&order=desc');
+        $this->assertResponseIsSuccessful();
+
+        // 8. Test tri alphabétique
         $this->client->request('GET', '/recettes?sort=alpha');
+        $this->assertResponseIsSuccessful();
+        $this->client->request('GET', '/recettes?sort=alpha&order=desc');
         $this->assertResponseIsSuccessful();
     }
 
@@ -139,16 +156,25 @@ class RecettesFeaturesTest extends WebTestCase
 
         $content = (string) $this->client->getResponse()->getContent();
 
-        // 1. Popup Ajout : 4 filtres de tri présents
+        // 1. Popup Ajout : 5 filtres de tri (dont Rang) et recherche extensible
         $this->assertStringContainsString('modal-sort-pills', $content);
-        $this->assertStringContainsString('Plus récente', $content);
-        $this->assertStringContainsString('Plus vieille', $content);
+        $this->assertStringContainsString('modal-search-expandable', $content);
+        $this->assertStringContainsString('btn-search-toggle', $content);
+        $this->assertStringContainsString('search-input-collapse', $content);
+        $this->assertStringContainsString('modal-sort-order-btn', $content);
+        $this->assertStringContainsString('Date', $content);
         $this->assertStringContainsString('Note', $content);
+        $this->assertStringContainsString('Rang', $content);
         $this->assertStringContainsString('Nom', $content);
 
         // 2. Boutons date rapide présents
         $this->assertStringContainsString('btn-date-quick', $content);
         $this->assertStringContainsString("Aujourd'hui", $content);
         $this->assertStringContainsString('Hier', $content);
+
+        // 3. Card recette : pas de "Ma note" ni de rating-row, la note est dans l'en-tête
+        $this->assertSelectorNotExists('.card-recette-quick-rate');
+        $this->assertSelectorNotExists('.card-recette-rating-row');
+        $this->assertStringNotContainsString('Ma note :', $content);
     }
 }

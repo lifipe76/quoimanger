@@ -1,0 +1,150 @@
+{# Composant Calendrier des repas - Vue mensuelle et vue détaillée par jour #}
+
+{% set calendarMeals = [] %}
+{% for item in timeline %}
+    {% set pIds = [] %}
+    {% set pNames = [] %}
+    {% if item.participants is defined %}
+        {% for p in item.participants %}
+            {% set pIds = pIds|merge([p.id]) %}
+            {% set pNames = pNames|merge([p.firstname|default(p.displayName)]) %}
+        {% endfor %}
+    {% endif %}
+
+    {% set nMap = {} %}
+    {% if item.notes is defined %}
+        {% for n in item.notes %}
+            {% if n.user %}
+                {% set nMap = nMap|merge({ (n.user.id): n.note }) %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% set photo = (item.photo ? item.photoUrl : (item.recette.photo ? item.recette.photoUrl : null)) %}
+
+    {% set mealData = {
+        'id': item.id,
+        'date': item.realiseAt ? item.realiseAt|date('Y-m-d') : '',
+        'moment': item.moment|default('soir'),
+        'momentLabel': item.momentLabel|default('Soir'),
+        'title': item.recette.designation,
+        'recetteId': item.recette.id,
+        'photoUrl': photo,
+        'hasPhoto': photo ? true : false,
+        'complement': item.complement|default(''),
+        'participantsLabel': pNames|join(', '),
+        'participantIds': pIds,
+        'notesMap': nMap,
+        'averageNote': item.recette.averageNote|default(null),
+        'notesCount': item.recette.notesCount|default(0),
+        'intervalLabel': item.intervalLabel|default(''),
+        'updateDateUrl': path('app_realisation_update_date', {'id': item.id}),
+        'updateToken': csrf_token('update_realisation_date_' ~ item.id),
+        'deleteUrl': path('app_realisation_delete', {'id': item.id}),
+        'deleteToken': csrf_token('delete_realisation_' ~ item.id),
+        'recetteEditUrl': path('app_recette_edit', {'id': item.recette.id}),
+        'updateComplementUrl': path('app_realisation_update_complement', {'id': item.id}),
+        'updateComplementToken': csrf_token('update_realisation_complement_' ~ item.id)
+    } %}
+    {% set calendarMeals = calendarMeals|merge([mealData]) %}
+{% endfor %}
+
+<div class="calendar-wrapper" id="calendar-app">
+    <!-- Données des repas sérialisées en JSON -->
+    <script id="calendar-meals-data" type="application/json">
+        {{ calendarMeals|json_encode|raw }}
+    </script>
+
+    <!-- En-tête / Barre de commande du calendrier -->
+    <div class="calendar-header-card">
+        <div class="calendar-header-nav">
+            <button type="button" class="calendar-nav-btn" id="calendar-prev-btn" title="Mois précédent" aria-label="Mois précédent">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <h2 class="calendar-month-title" id="calendar-current-month-label">
+                <!-- Rempli en JS -->
+            </h2>
+            <button type="button" class="calendar-nav-btn" id="calendar-next-btn" title="Mois suivant" aria-label="Mois suivant">
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="calendar-today-btn" id="calendar-today-btn" title="Revenir au mois et jour actuel">
+                Aujourd'hui
+            </button>
+        </div>
+
+        <div class="calendar-header-actions">
+            <span class="calendar-meals-counter" id="calendar-meals-counter" title="Nombre de repas enregistrés ce mois">
+                <span id="calendar-meals-count">0</span> repas
+            </span>
+            <button type="button" class="calendar-quick-add-btn" onclick="openRepasModal()">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                <span>Ajouter un repas</span>
+            </button>
+        </div>
+    </div>
+
+    {% if suggestion and suggestion.recette %}
+        <div class="calendar-suggestion-banner">
+            <form method="post" action="{{ path('app_realisation_add') }}" class="calendar-suggestion-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('add_realisation') }}">
+                <input type="hidden" name="recette_id" value="{{ suggestion.recette.id }}">
+                <input type="hidden" name="moment" value="{{ defaultMoment|default('soir') }}">
+                <input type="hidden" name="date" value="{{ 'now'|date('Y-m-d') }}">
+
+                <div class="calendar-suggestion-info">
+                    <span class="calendar-suggestion-label">Idée du jour :</span>
+                    <a href="{{ path('app_recette_edit', {'id': suggestion.recette.id}) }}" class="calendar-suggestion-link">
+                        {{ suggestion.recette.designation }}
+                    </a>
+                    {% if suggestion.reason %}
+                        <span class="calendar-suggestion-badge">{{ suggestion.reason }}</span>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="calendar-suggestion-btn" title="Enregistrer « {{ suggestion.recette.designation }} » comme mangé aujourd'hui">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    <span>Ajouter</span>
+                </button>
+            </form>
+        </div>
+    {% endif %}
+
+    <!-- Grille du calendrier mensuel -->
+    <div class="calendar-grid-card">
+        <!-- Ligne des jours de la semaine -->
+        <div class="calendar-weekdays-row" aria-hidden="true">
+            <div class="calendar-weekday"><span class="full">Lundi</span><span class="short">Lun</span></div>
+            <div class="calendar-weekday"><span class="full">Mardi</span><span class="short">Mar</span></div>
+            <div class="calendar-weekday"><span class="full">Mercredi</span><span class="short">Mer</span></div>
+            <div class="calendar-weekday"><span class="full">Jeudi</span><span class="short">Jeu</span></div>
+            <div class="calendar-weekday"><span class="full">Vendredi</span><span class="short">Ven</span></div>
+            <div class="calendar-weekday"><span class="full">Samedi</span><span class="short">Sam</span></div>
+            <div class="calendar-weekday"><span class="full">Dimanche</span><span class="short">Dim</span></div>
+        </div>
+
+        <!-- Grille des cellules de jour -->
+        <div class="calendar-days-grid" id="calendar-days-grid" role="grid" aria-label="Calendrier des repas">
+            <!-- Cellules générées dynamiquement en JS -->
+        </div>
+    </div>
+
+    <!-- Section détaillée du jour sélectionné -->
+    <div class="calendar-day-details-card" id="calendar-day-details-panel">
+        <div class="day-details-header">
+            <div class="day-details-title-wrap">
+                <h3 class="day-details-title" id="day-details-date-label">
+                    <!-- Rempli en JS: ex. "Samedi 10 octobre 2026" -->
+                </h3>
+                <span class="day-details-tag" id="day-details-relative-tag" style="display: none;"></span>
+            </div>
+            <button type="button" class="day-details-add-btn" id="day-details-add-btn">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                <span>Ajouter un repas</span>
+            </button>
+        </div>
+
+        <div class="day-details-meals" id="day-details-meals-list">
+            <!-- Cartes détaillées générées dynamiquement en JS -->
+        </div>
+    </div>
+</div>

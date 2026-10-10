@@ -1,0 +1,989 @@
+/* ==========================================================================
+   Composant Calendrier des Repas - QuoiManger
+   ========================================================================== */
+
+.calendar-wrapper {
+    max-width: 1040px;
+    margin: 1.5rem auto 3.5rem auto;
+}
+
+/* ==========================================================================
+   En-tête et barre de commandes
+   ========================================================================== */
+.calendar-header-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--border-radius, 16px);
+    padding: 1rem 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+    margin-bottom: 1.25rem;
+}
+
+.calendar-header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.calendar-nav-btn {
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main, #0f172a);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+    background: #ffffff;
+    border-color: var(--primary, #c4a587);
+    color: var(--primary-dark, #a68363);
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.2);
+}
+
+.calendar-month-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-main, #0f172a);
+    letter-spacing: -0.02em;
+    min-width: 180px;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.calendar-today-btn {
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 10px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-today-btn:hover {
+    background: #fbf7f4;
+    border-color: var(--primary, #c4a587);
+    color: var(--primary-dark, #a68363);
+}
+
+.calendar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.calendar-meals-counter {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 0.45rem 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.calendar-quick-add-btn {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(196, 165, 135, 0.3);
+}
+
+.calendar-quick-add-btn:hover {
+    background: var(--primary-hover, #b59373);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(196, 165, 135, 0.4);
+}
+
+/* ==========================================================================
+   Bandeau suggestion du jour (compact)
+   ========================================================================== */
+.calendar-suggestion-banner {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    background: linear-gradient(135deg, #fffcf8 0%, #fffbf5 100%);
+    border-radius: 14px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(196, 165, 135, 0.08);
+}
+
+.calendar-suggestion-form {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.calendar-suggestion-info {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.calendar-suggestion-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #9a3412;
+}
+
+.calendar-suggestion-link {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.calendar-suggestion-link:hover {
+    color: var(--primary-dark, #a68363);
+}
+
+.calendar-suggestion-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #ffedd5;
+    color: #9a3412;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    border: 1px solid #fed7aa;
+}
+
+.calendar-suggestion-btn {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+
+.calendar-suggestion-btn:hover {
+    background: #fff7ed;
+    border-color: #fb923c;
+    color: #7c2d12;
+}
+
+/* ==========================================================================
+   Grille du calendrier (Mois)
+   ========================================================================== */
+.calendar-grid-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--border-radius, 16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+    margin-bottom: 1.5rem;
+}
+
+.calendar-weekdays-row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    width: 100%;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.calendar-weekday {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 0.25rem;
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-weekday .short {
+    display: none;
+}
+
+.calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    width: 100%;
+    gap: 1px;
+    background: #e2e8f0;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Cellule de jour individuelle (largeur strictement identique pour tous)
+   ========================================================================== */
+.calendar-day-cell {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    min-height: 110px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    overflow: hidden;
+}
+
+.calendar-day-cell:hover {
+    background-color: #fdfaf7;
+}
+
+.calendar-day-cell.is-other-month {
+    background-color: #fbfcfe;
+    color: #94a3b8;
+    opacity: 0.55;
+}
+
+.calendar-day-cell.is-today {
+    background-color: #fffdfa;
+}
+
+.calendar-day-cell.is-today .cell-day-num {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.35);
+}
+
+.calendar-day-cell.is-selected {
+    background-color: #fbf7f2;
+    box-shadow: inset 0 0 0 2px var(--primary, #c4a587);
+}
+
+.cell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+}
+
+.cell-day-num {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    line-height: 1;
+}
+
+.calendar-day-cell.is-other-month .cell-day-num {
+    color: #94a3b8;
+}
+
+.cell-add-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.15s ease;
+}
+
+.calendar-day-cell:hover .cell-add-btn {
+    opacity: 1;
+}
+
+.cell-add-btn:hover {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+}
+
+/* Repas dans la cellule (Mode Desktop) */
+.cell-meals-desktop {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.cell-meal-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    padding: 0.25rem 0.35rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.cell-meal-item:hover {
+    border-color: var(--primary, #c4a587);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(196, 165, 135, 0.2);
+}
+
+/* Vignette photo dans la cellule */
+.cell-meal-photo-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #f1f5f9;
+}
+
+.cell-meal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cell-meal-photo-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.cell-meal-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 0%;
+    line-height: 1.15;
+    overflow: hidden;
+}
+
+.cell-meal-moment-badge {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.cell-meal-name {
+    font-size: 0.77rem;
+    font-weight: 700;
+    color: var(--text-main, #0f172a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    width: 100%;
+    display: block;
+}
+
+.cell-meal-edit-icon {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 0;
+    font-size: 0.7rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.cell-meal-item:hover .cell-meal-edit-icon {
+    opacity: 1;
+}
+
+.cell-meal-edit-icon:hover {
+    color: var(--primary, #c4a587);
+}
+
+/* Couleurs des moments pour les badges */
+.moment-matin .cell-meal-moment-badge,
+.moment-matin.cell-meal-moment-badge,
+.meal-card-moment-badge.moment-matin {
+    color: #92400e;
+}
+
+.moment-midi .cell-meal-moment-badge,
+.moment-midi.cell-meal-moment-badge,
+.meal-card-moment-badge.moment-midi {
+    color: #c2410c;
+}
+
+.moment-soir .cell-meal-moment-badge,
+.moment-soir.cell-meal-moment-badge,
+.meal-card-moment-badge.moment-soir {
+    color: #6d28d9;
+}
+
+.moment-gouter .cell-meal-moment-badge,
+.moment-gouter.cell-meal-moment-badge,
+.meal-card-moment-badge.moment-gouter {
+    color: #9d174d;
+}
+
+/* Plus de repas indicateur */
+.cell-more-meals {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--primary-dark, #a68363);
+    padding: 0.1rem 0.25rem;
+    text-align: center;
+}
+
+/* Repas dans la cellule (Mode Mobile - masqué par défaut sur desktop) */
+.cell-meals-mobile {
+    display: none;
+}
+
+/* ==========================================================================
+   Section détaillée du jour sélectionné
+   ========================================================================== */
+.calendar-day-details-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--border-radius, 16px);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+}
+
+.day-details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    margin-bottom: 1.25rem;
+}
+
+.day-details-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.day-details-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-main, #0f172a);
+    letter-spacing: -0.02em;
+    text-transform: capitalize;
+}
+
+.day-details-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #fbf7f4;
+    color: var(--primary-dark, #a68363);
+    border: 1px solid #ebd9c8;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+}
+
+.day-details-add-btn {
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    color: var(--text-main, #0f172a);
+    border-radius: 10px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.day-details-add-btn:hover {
+    background: #ffffff;
+    border-color: var(--primary, #c4a587);
+    color: var(--primary-dark, #a68363);
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.2);
+}
+
+.day-details-meals {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Carte repas détaillée */
+.day-detail-meal-card {
+    display: flex;
+    gap: 1.25rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 14px;
+    padding: 1rem;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.day-detail-meal-card:hover {
+    border-color: var(--primary, #c4a587);
+    box-shadow: 0 6px 16px rgba(196, 165, 135, 0.15);
+}
+
+.meal-card-photo-col {
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.meal-card-photo {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.meal-card-photo-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 1.5rem;
+}
+
+.meal-card-content-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.meal-card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.meal-card-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.meal-card-moment-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    border: 1px solid currentColor;
+    background: #ffffff;
+}
+
+.meal-card-interval-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+
+.meal-card-participants-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #0369a1;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+
+.meal-card-edit-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    border-radius: 8px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+}
+
+.meal-card-edit-btn:hover {
+    background: #fbf7f4;
+    border-color: var(--primary, #c4a587);
+    color: var(--primary-dark, #a68363);
+}
+
+.meal-card-title {
+    margin: 0.15rem 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.meal-card-title-link {
+    color: var(--text-main, #0f172a);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.meal-card-title-link:hover {
+    color: var(--primary, #c4a587);
+    text-decoration: underline;
+}
+
+.meal-card-complement {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 0.35rem;
+}
+
+.meal-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.meal-card-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: #b45309;
+}
+
+.meal-card-rating .star-icon {
+    color: #f59e0b;
+}
+
+.meal-card-rating .rating-val {
+    font-weight: 700;
+}
+
+.meal-card-rating .rating-cnt {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.meal-card-no-rating {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* État vide du jour sélectionné */
+.day-detail-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    background: #f8fafc;
+    border: 1px dashed var(--border-color, #e2e8f0);
+    border-radius: 12px;
+}
+
+.day-detail-empty-icon {
+    font-size: 2.25rem;
+    color: #cbd5e1;
+    margin-bottom: 0.65rem;
+}
+
+.day-detail-empty-text {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.day-detail-empty-btn {
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    color: var(--primary-dark, #a68363);
+    border-radius: 10px;
+    padding: 0.55rem 1.15rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.day-detail-empty-btn:hover {
+    background: #fbf7f4;
+    border-color: var(--primary, #c4a587);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Mode Téléphone / Mobile (max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .calendar-wrapper {
+        margin: 1rem auto 2.5rem auto;
+    }
+
+    .calendar-header-card {
+        padding: 0.85rem 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+        border-radius: 14px;
+    }
+
+    .calendar-header-nav {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .calendar-month-title {
+        font-size: 1.15rem;
+        min-width: auto;
+        flex: 1;
+    }
+
+    .calendar-nav-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .calendar-today-btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.78rem;
+    }
+
+    .calendar-header-actions {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .calendar-quick-add-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .calendar-weekdays-row {
+        background: #f8fafc;
+    }
+
+    .calendar-weekday {
+        padding: 0.5rem 0.15rem;
+        font-size: 0.72rem;
+    }
+
+    .calendar-weekday .full {
+        display: none;
+    }
+
+    .calendar-weekday .short {
+        display: inline;
+    }
+
+    /* Cellule de jour compacte sur mobile */
+    .calendar-day-cell {
+        min-height: 56px;
+        padding: 0.3rem 0.15rem;
+        align-items: center;
+    }
+
+    .cell-header {
+        margin-bottom: 0.2rem;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .cell-day-num {
+        font-size: 0.8rem;
+    }
+
+    .cell-add-btn {
+        display: none;
+    }
+
+    /* Masquer les cartes complètes desktop */
+    .cell-meals-desktop {
+        display: none;
+    }
+
+    /* Afficher les indicateurs mobiles compacts */
+    .cell-meals-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex-wrap: wrap;
+        width: 100%;
+        margin-top: 2px;
+    }
+
+    .mobile-photo-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 1.5px solid #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+        flex-shrink: 0;
+        background: #f1f5f9;
+        display: inline-block;
+    }
+
+    .mobile-dot-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .mobile-moment-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .mobile-moment-dot.moment-matin {
+        background-color: #f59e0b;
+    }
+
+    .mobile-moment-dot.moment-midi {
+        background-color: #ea580c;
+    }
+
+    .mobile-moment-dot.moment-soir {
+        background-color: #7c3aed;
+    }
+
+    .mobile-moment-dot.moment-gouter {
+        background-color: #db2777;
+    }
+
+    .mobile-extra-count {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--primary-dark, #a68363);
+        line-height: 1;
+    }
+
+    .calendar-day-details-card {
+        padding: 1.15rem 1rem;
+        border-radius: 14px;
+    }
+
+    .day-details-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .day-details-title {
+        font-size: 1.1rem;
+    }
+
+    .day-details-add-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .day-detail-meal-card {
+        padding: 0.85rem;
+        gap: 0.85rem;
+        border-radius: 12px;
+    }
+
+    .meal-card-photo-col {
+        width: 72px;
+        height: 72px;
+        border-radius: 10px;
+    }
+
+    .meal-card-title {
+        font-size: 0.98rem;
+    }
+
+    .meal-card-edit-btn span {
+        display: none;
+    }
+
+    .meal-card-edit-btn {
+        padding: 0.35rem 0.5rem;
+    }
+}

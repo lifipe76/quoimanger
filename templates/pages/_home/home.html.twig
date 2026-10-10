@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Timeline des repas - QuoiManger{% endblock %}
+{% block title %}Repas - QuoiManger{% endblock %}
 
 {% block body %}
 {% set timelineContent %}
@@ -117,13 +117,35 @@
 {% endset %}
 
 {% set homeContent %}
-    {{ composant('_composants/timeline', {
-        'content': timelineContent
-    }) }}
+    <!-- Sélecteur de vue : Timeline vs Calendrier -->
+    <div class="home-view-toggle-bar">
+        <div class="home-view-toggle-pills" role="tablist" aria-label="Mode d'affichage des repas">
+            <button type="button" class="view-toggle-pill active" id="btn-view-timeline" data-view="timeline" role="tab" aria-selected="true" title="Afficher la chronologie">
+                <i class="fa-solid fa-stream" aria-hidden="true"></i>
+                <span>Timeline</span>
+            </button>
+            <button type="button" class="view-toggle-pill" id="btn-view-calendar" data-view="calendar" role="tab" aria-selected="false" title="Afficher le calendrier">
+                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                <span>Calendrier</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Vue Timeline -->
+    <div id="home-view-timeline" class="home-view-panel active">
+        {{ composant('_composants/timeline', {
+            'content': timelineContent
+        }) }}
+    </div>
+
+    <!-- Vue Calendrier -->
+    <div id="home-view-calendar" class="home-view-panel" style="display: none;">
+        {{ composant('_composants/calendar', _context) }}
+    </div>
 {% endset %}
 
 {{ composant('_composants/container', {
-    'class': 'timeline-page',
+    'class': 'home-page-container timeline-page',
     'content': homeContent
 }) }}
 

@@ -29,19 +29,19 @@
 
     <div class="moment-toggle-group">
         <button type="button"
-                class="btn-moment-toggle {{ curMom == 'matin' ? 'active' : '' }}"
+                class="btn-moment-toggle {{ pfx == 'edit-meal' ? 'btn-edit-moment-toggle ' : '' }}{{ curMom == 'matin' ? 'active' : '' }}"
                 data-moment="matin"
                 onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('matin')">
             Matin
         </button>
         <button type="button"
-                class="btn-moment-toggle {{ curMom == 'midi' ? 'active' : '' }}"
+                class="btn-moment-toggle {{ pfx == 'edit-meal' ? 'btn-edit-moment-toggle ' : '' }}{{ curMom == 'midi' ? 'active' : '' }}"
                 data-moment="midi"
                 onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('midi')">
             Midi
         </button>
         <button type="button"
-                class="btn-moment-toggle {{ curMom == 'soir' ? 'active' : '' }}"
+                class="btn-moment-toggle {{ pfx == 'edit-meal' ? 'btn-edit-moment-toggle ' : '' }}{{ curMom == 'soir' ? 'active' : '' }}"
                 data-moment="soir"
                 onclick="{{ on_moment_click|default('select' ~ (pfx == 'repas' ? 'Repas' : 'Edit') ~ 'Moment') }}('soir')">
             Soir

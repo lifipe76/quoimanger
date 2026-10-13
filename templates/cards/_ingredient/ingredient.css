@@ -3,11 +3,11 @@
 @keyframes cardIngredientEntrance {
     0% {
         opacity: 0;
-        transform: perspective(900px) rotateY(16deg) rotateX(8deg)
+        transform: perspective(900px) rotateY(-16deg) rotateX(8deg)
             translateY(35px) scale(0.93);
     }
     70% {
-        transform: perspective(900px) rotateY(-2deg) rotateX(-1deg)
+        transform: perspective(900px) rotateY(2deg) rotateX(-1deg)
             translateY(-4px) scale(1.01);
     }
     100% {
@@ -18,13 +18,15 @@
 }
 
 .card-ingredient {
+    --card-pad-y: 0.75rem;
+    --card-pad-x: 0.85rem;
     background: #ffffff;
     border-radius: 16px;
     border: 1px solid rgba(226, 232, 240, 0.9);
-    padding: 1.5rem;
+    padding: var(--card-pad-y) var(--card-pad-x);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     position: relative;
     overflow: hidden;
     box-shadow:
@@ -63,146 +65,378 @@
     opacity: 1;
 }
 
+/* Photo en haut de la card avec coins supérieurs arrondis */
+.card-ingredient-photo-wrap {
+    margin: calc(-1 * var(--card-pad-y)) calc(-1 * var(--card-pad-x)) 0.75rem calc(-1 * var(--card-pad-x));
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    flex-shrink: 0;
+    display: block;
+}
+
+.card-ingredient-bg-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: block;
+    opacity: 1;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-ingredient:hover .card-ingredient-bg-photo {
+    transform: scale(1.05);
+}
+
+/* Photo de fond générique floue (placeholder) quand l'ingrédient n'a pas de photo */
+.card-photo-placeholder {
+    background: #e2e8f0;
+}
+
+.card-photo-placeholder .card-ingredient-bg-photo,
+.card-photo-placeholder-bg {
+    filter: blur(5px);
+    transform: scale(1.1);
+    opacity: 0.82;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
+.card-ingredient:hover .card-photo-placeholder .card-ingredient-bg-photo,
+.card-ingredient:hover .card-photo-placeholder-bg {
+    transform: scale(1.15);
+    opacity: 0.92;
+}
+
+.card-photo-count-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    line-height: 1;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-photo-count-badge svg {
+    flex-shrink: 0;
+}
+
+/* Groupe navigation photos (badge + points en bas du nombre) */
+.card-photo-nav-group {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.card-photo-nav-group .card-photo-count-badge {
+    position: static;
+    bottom: auto;
+    right: auto;
+    pointer-events: auto;
+}
+
+.card-photo-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-photo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.card-photo-dot:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: scale(1.25);
+}
+
+.card-photo-dot.active {
+    background: #ffffff;
+    width: 14px;
+    border-radius: 999px;
+}
+
+/* Flèches de défilement droite / gauche */
+.card-photo-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 3;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.card-photo-arrow:hover {
+    opacity: 1;
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.card-photo-arrow-prev {
+    left: 8px;
+}
+
+.card-photo-arrow-next {
+    right: 8px;
+}
+
+.card-photo-arrow svg {
+    display: block;
+    pointer-events: none;
+}
+
+/* Header de la card */
 .card-ingredient-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+    position: relative;
+    z-index: 1;
 }
 
-.card-ingredient-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: #ecfdf5;
-    color: #059669;
-    display: flex;
+.card-ingredient-header-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.card-ingredient-header-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.card-ingredient-status {
+    font-size: 0.725rem;
+    font-weight: 600;
+    padding: 0.18rem 0.5rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    gap: 0.35rem;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.card-ingredient-rank,
+.card-ingredient-id {
+    font-size: 0.725rem;
+    font-weight: 700;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.18rem 0.45rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    line-height: 1;
 }
 
-.card-ingredient-id {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    background: #f1f5f9;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
+.card-btn-pencil {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.18rem 0.35rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.card-btn-pencil:hover {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    transform: scale(1.1);
+}
+
+/* Ligne et titre de l'ingrédient */
+.card-ingredient-title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.55rem;
+    position: relative;
+    z-index: 1;
 }
 
 .card-ingredient-title {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 0.75rem 0;
+    margin: 0;
     line-height: 1.35;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-.card-ingredient-title a {
+.card-ingredient-title a,
+.ingredient-title-link {
     color: inherit;
     text-decoration: none;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    line-height: inherit;
 }
 
-.card-ingredient-title a:hover {
+.card-ingredient-title a:hover,
+.ingredient-title-link:hover {
     color: #059669;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
-.card-ingredient-count {
+/* Corps de la card : liste des recettes associées */
+.card-ingredient-body {
+    flex: 0 0 auto;
+    margin-top: auto;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.card-ingredient-recipes-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-ingredient-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.recipe-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    background: #f1f5f9;
-    color: #475569;
-    padding: 0.35rem 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.3rem 0.65rem;
     border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
+    font-size: 0.825rem;
+    color: #334155;
+    text-decoration: none;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s,
+        color 0.2s;
 }
 
-.card-ingredient-count.has-recipes {
+.recipe-chip:hover {
     background: #ecfdf5;
+    border-color: #a7f3d0;
     color: #047857;
 }
 
-.card-ingredient-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 1rem;
-    margin-top: auto;
+.recipe-chip-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
-.card-ingredient-date {
+.recipe-chip-more {
     font-size: 0.75rem;
-    color: #94a3b8;
-}
-
-.card-ingredient-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.card-btn,
-.button.card-btn {
-    padding: 0.4rem 0.85rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
     font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    transition: all 0.2s ease;
-    width: auto;
-    min-height: auto;
-    line-height: 1.2;
-}
-
-.card-btn-edit,
-.button.card-btn-edit {
-    background: #f1f5f9;
-    color: #334155;
-    box-shadow: none;
-}
-
-.card-btn-edit:hover,
-.button.card-btn-edit:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-    box-shadow: none;
-    transform: none;
-}
-
-.card-btn-delete,
-.button.card-btn-delete {
-    background: transparent;
     color: #94a3b8;
-    padding: 0.4rem 0.6rem;
-    box-shadow: none;
+    background: #f1f5f9;
+    padding: 0.3rem 0.55rem;
+    border-radius: 8px;
 }
 
-.card-btn-delete:hover,
-.button.card-btn-delete:hover {
-    background: #fee2e2;
-    color: #dc2626;
-    box-shadow: none;
-    transform: none;
+.card-ingredient-empty-rec {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-style: italic;
 }
 
 /* ==========================================================================
    Responsive Mobile pour Card Ingrédient
    ========================================================================== */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .card-ingredient {
-        padding: 1.15rem 1rem;
+        --card-pad-y: 0.75rem;
+        --card-pad-x: 0.85rem;
+        padding: var(--card-pad-y) var(--card-pad-x);
         border-radius: 14px;
         transform: none !important;
         animation: none;
@@ -213,18 +447,23 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
 
+    .card-ingredient-header {
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .card-ingredient-header-left {
+        gap: 0.35rem;
+    }
+
+    .card-ingredient-status {
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+    }
+
     .card-ingredient-title {
         font-size: 1.15rem;
-    }
-
-    .card-ingredient-footer {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.65rem;
-    }
-
-    .card-ingredient-actions {
-        width: 100%;
-        justify-content: flex-end;
+        margin-bottom: 0.75rem;
+        gap: 0.35rem;
     }
 }

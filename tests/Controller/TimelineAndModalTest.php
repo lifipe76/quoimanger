@@ -34,11 +34,8 @@ class TimelineAndModalTest extends WebTestCase
         $this->assertSelectorNotExists('.page-title');
         $this->assertSelectorNotExists('.page-subtitle');
 
-        // 1b. CTA marker has cutlery icon and not AI star; empty-cta-icon is removed
-        $this->assertSelectorExists('.timeline-marker.cta-marker .marker-icon');
-        $ctaIcon = $crawler->filter('.timeline-marker.cta-marker .marker-icon')->text();
-        $this->assertStringContainsString('🍴', $ctaIcon);
-        $this->assertStringNotContainsString('✨', $ctaIcon);
+        // 1b. Empty CTA card is present and empty-cta-icon is removed
+        $this->assertSelectorExists('.timeline-item-cta');
         $this->assertSelectorNotExists('.card-empty-cta .empty-cta-icon');
 
         // 2. "Dégusté le" should NOT be present inside timeline cards

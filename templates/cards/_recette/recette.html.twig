@@ -1,11 +1,51 @@
 {% set activeRealisation = realisation|default(null) %}
 {% set dateAffichage = activeRealisation ? activeRealisation.realiseAt : recette.lastRealiseAt %}
 {% set cardPhotoUrl = (activeRealisation and activeRealisation.photo) ? activeRealisation.photoUrl : (recette.photo ? recette.photoUrl : null) %}
+{% set cardPhotoUrls = (activeRealisation and activeRealisation.photos|length > 0) ? activeRealisation.photoUrls : recette.photoUrls %}
+{% if cardPhotoUrls|length == 0 and cardPhotoUrl %}
+    {% set cardPhotoUrls = [cardPhotoUrl] %}
+{% endif %}
+{% set firstPhoto = cardPhotoUrls[0]|default(cardPhotoUrl) %}
+{% set isRepas = activeRealisation is not null %}
+{% set defaultFoodPhotoUrl = '/images/default_food.webp' %}
+{% set hasRealPhoto = firstPhoto is not null %}
+{% set showPlaceholderPhoto = (not isRepas and not hasRealPhoto) %}
+{% set displayPhoto = hasRealPhoto ? firstPhoto : (showPlaceholderPhoto ? defaultFoodPhotoUrl : null) %}
 
-<div class="card-recette {{ cardPhotoUrl ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
-    {% if cardPhotoUrl %}
-        <div class="card-recette-photo-wrap">
-            <div class="card-recette-bg-photo" style="background-image: url('{{ cardPhotoUrl }}');" aria-hidden="true"></div>
+<div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
+    {% if displayPhoto %}
+        <div class="card-recette-photo-wrap {{ showPlaceholderPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
+             {% if hasRealPhoto %}
+                 data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"
+             {% endif %}>
+            <div class="card-recette-bg-photo {{ showPlaceholderPhoto ? 'card-photo-placeholder-bg' : '' }}" style="background-image: url('{{ displayPhoto }}');" aria-hidden="true"></div>
+            {% if hasRealPhoto and cardPhotoUrls|length > 1 %}
+                <button type="button" class="card-photo-arrow card-photo-arrow-prev" aria-label="Photo précédente" onclick="changeCardPhoto(event, this, -1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button type="button" class="card-photo-arrow card-photo-arrow-next" aria-label="Photo suivante" onclick="changeCardPhoto(event, this, 1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+                <div class="card-photo-nav-group">
+                    <span class="card-photo-count-badge" title="{{ cardPhotoUrls|length }} photos">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
+                        <span class="card-photo-current-idx">1</span>/{{ cardPhotoUrls|length }}
+                    </span>
+                    <div class="card-photo-dots" role="tablist" aria-label="Photos de la recette">
+                        {% for photoUrl in cardPhotoUrls %}
+                            <button type="button"
+                                    class="card-photo-dot {{ loop.first ? 'active' : '' }}"
+                                    data-index="{{ loop.index0 }}"
+                                    title="Photo {{ loop.index }} sur {{ cardPhotoUrls|length }}"
+                                    aria-label="Photo {{ loop.index }}"
+                                    onclick="selectCardPhoto(event, this, {{ loop.index0 }})"></button>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -100,7 +140,8 @@
                                 '{{ activeRealisation.complement|e('js') }}',
                                 {{ participantIds|json_encode }},
                                 {{ notesMap|json_encode }},
-                                '{{ activeRealisation.photoUrl|default('')|e('js') }}'
+                                {{ activeRealisation.photoUrls|json_encode }},
+                                {{ activeRealisation.photos|json_encode }}
                             )">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
@@ -121,7 +162,8 @@
                                 '{{ activeRealisation.complement|e('js') }}',
                                 {{ participantIds|json_encode }},
                                 {{ notesMap|json_encode }},
-                                '{{ activeRealisation.photoUrl|default('')|e('js') }}'
+                                {{ activeRealisation.photoUrls|json_encode }},
+                                {{ activeRealisation.photos|json_encode }}
                             )">
                         ✏️
                     </button>
@@ -184,6 +226,9 @@
                         <span class="ingredient-chip">
                             {% if ri.quantite %}
                                 <strong>{{ ri.quantite }}</strong>
+                            {% endif %}
+                            {% if ri.ingredient.photo %}
+                                <img src="{{ ri.ingredient.photoUrl }}" alt="" class="ingredient-chip-img" loading="lazy">
                             {% endif %}
                             <span>{{ ri.ingredient.designation }}</span>
                         </span>

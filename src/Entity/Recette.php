@@ -13,6 +13,7 @@ use App\Entity\Traits\DatesTrait;
 use App\Repository\RecetteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -53,6 +54,13 @@ class Recette
     private ?string $photo = null;
 
     /**
+     * @var list<string>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    #[Groups(['recette:read', 'recette:write'])]
+    private array $photos = [];
+
+    /**
      * @var Collection<int, RecetteRealisation>
      */
     #[ORM\OneToMany(targetEntity: RecetteRealisation::class, mappedBy: 'recette', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -72,6 +80,7 @@ class Recette
     {
         $this->recetteIngredients = new ArrayCollection();
         $this->realisations = new ArrayCollection();
+        $this->photos = [];
     }
 
     public function getId(): ?int
@@ -91,9 +100,64 @@ class Recette
         return $this;
     }
 
+    /**
+     * @return list<string>
+     */
+    public function getPhotos(): array
+    {
+        if (!isset($this->photos) || !is_array($this->photos)) {
+            $this->photos = [];
+        }
+
+        if (empty($this->photos) && $this->photo !== null && $this->photo !== '') {
+            return [$this->photo];
+        }
+
+        return $this->photos;
+    }
+
+    /**
+     * @param list<string> $photos
+     */
+    public function setPhotos(array $photos): static
+    {
+        $clean = array_values(array_filter(array_map('trim', $photos)));
+        $this->photos = $clean;
+        $this->photo = $clean[0] ?? null;
+
+        return $this;
+    }
+
+    public function addPhoto(string $photo): static
+    {
+        if (!isset($this->photos) || !is_array($this->photos)) {
+            $this->photos = [];
+        }
+        $photo = trim($photo);
+        if ($photo !== '' && !in_array($photo, $this->photos, true)) {
+            $this->photos[] = $photo;
+            if ($this->photo === null) {
+                $this->photo = $photo;
+            }
+        }
+
+        return $this;
+    }
+
+    public function removePhoto(string $photo): static
+    {
+        if (!isset($this->photos) || !is_array($this->photos)) {
+            $this->photos = [];
+        }
+        $this->photos = array_values(array_diff($this->photos, [$photo]));
+        $this->photo = $this->photos[0] ?? null;
+
+        return $this;
+    }
+
     public function getPhoto(): ?string
     {
-        return $this->photo;
+        return $this->photo ?? ($this->photos[0] ?? null);
     }
 
     public function setPhoto(?string $photo): static
@@ -102,6 +166,7 @@ class Recette
         if ($this->photo === '') {
             $this->photo = null;
         }
+        $this->photos = $this->photo !== null ? [$this->photo] : [];
 
         return $this;
     }
@@ -109,15 +174,37 @@ class Recette
     #[Groups(['recette:read'])]
     public function getPhotoUrl(): ?string
     {
-        if ($this->photo === null || $this->photo === '') {
+        $photo = $this->getPhoto();
+        if ($photo === null || $photo === '') {
             return null;
         }
 
-        if (str_starts_with($this->photo, 'http://') || str_starts_with($this->photo, 'https://')) {
-            return $this->photo;
+        if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+            return $photo;
         }
 
-        return '/photos/recettes/' . $this->photo;
+        return '/photos/recettes/' . rawurlencode($photo);
+    }
+
+    /**
+     * @return list<string>
+     */
+    #[Groups(['recette:read'])]
+    public function getPhotoUrls(): array
+    {
+        $urls = [];
+        foreach ($this->getPhotos() as $p) {
+            if ($p === '') {
+                continue;
+            }
+            if (str_starts_with($p, 'http://') || str_starts_with($p, 'https://')) {
+                $urls[] = $p;
+            } else {
+                $urls[] = '/photos/recettes/' . rawurlencode($p);
+            }
+        }
+
+        return $urls;
     }
 
     /**

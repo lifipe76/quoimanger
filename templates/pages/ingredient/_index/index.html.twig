@@ -19,7 +19,11 @@
     {% if ingredients|length > 0 %}
         <div class="cards-grid">
             {% for ingredient in ingredients %}
-                {{ composant('cards/ingredient', { 'ingredient': ingredient, 'index': loop.index0 }) }}
+                {{ composant('cards/ingredient', {
+                    'ingredient': ingredient,
+                    'index': loop.index0,
+                    'ranks': ranks|default({})
+                }) }}
             {% endfor %}
         </div>
     {% else %}

@@ -170,6 +170,146 @@
     transform: scale(1.05);
 }
 
+/* Photo de fond générique floue (placeholder) quand la recette n'a pas de photo */
+.card-photo-placeholder {
+    background: #e2e8f0;
+}
+
+.card-photo-placeholder .card-recette-bg-photo,
+.card-photo-placeholder-bg {
+    filter: blur(5px);
+    transform: scale(1.1);
+    opacity: 0.82;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
+.card-recette:hover .card-photo-placeholder .card-recette-bg-photo,
+.card-recette:hover .card-photo-placeholder-bg {
+    transform: scale(1.15);
+    opacity: 0.92;
+}
+
+.card-photo-count-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    line-height: 1;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-photo-count-badge svg {
+    flex-shrink: 0;
+}
+
+/* Groupe navigation photos (badge + points en bas du nombre) */
+.card-photo-nav-group {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.card-photo-nav-group .card-photo-count-badge {
+    position: static;
+    bottom: auto;
+    right: auto;
+    pointer-events: auto;
+}
+
+.card-photo-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-photo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.card-photo-dot:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: scale(1.25);
+}
+
+.card-photo-dot.active {
+    background: #ffffff;
+    width: 14px;
+    border-radius: 999px;
+}
+
+/* Flèches de défilement droite / gauche */
+.card-photo-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 3;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.card-photo-arrow:hover {
+    opacity: 1;
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.card-photo-arrow-prev {
+    left: 8px;
+}
+
+.card-photo-arrow-next {
+    right: 8px;
+}
+
+.card-photo-arrow svg {
+    display: block;
+    pointer-events: none;
+}
+
 .card-recette-header,
 .card-recette-title-row,
 .card-recette-body {
@@ -446,6 +586,14 @@
 .ingredient-chip strong {
     color: #c4a587;
     font-weight: 700;
+}
+
+.ingredient-chip-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .ingredient-chip-more {

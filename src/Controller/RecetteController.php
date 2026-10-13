@@ -128,23 +128,41 @@ class RecetteController extends AbstractController
                 }
             }
 
+            // Gestion de la suppression de photos
             if ($request->request->get('delete_photo') === '1') {
-                if ($recette->getPhoto()) {
-                    $recettePhotoService->delete($recette->getPhoto());
-                    $recette->setPhoto(null);
+                foreach ($recette->getPhotos() as $p) {
+                    $recettePhotoService->delete($p);
+                }
+                $recette->setPhotos([]);
+            } elseif ($request->request->has('delete_photos')) {
+                $deletedPhotos = (array) $request->request->all('delete_photos');
+                foreach ($deletedPhotos as $p) {
+                    if (is_string($p) && $p !== '') {
+                        $recettePhotoService->delete($p);
+                        $recette->removePhoto($p);
+                    }
                 }
             }
 
-            $photoFile = $request->files->get('photo');
-            if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
-                try {
-                    if ($recette->getPhoto()) {
-                        $recettePhotoService->delete($recette->getPhoto());
+            // Gestion de l'upload de photos (multiples ou unique)
+            $photoFiles = $request->files->all('photos');
+            if (empty($photoFiles)) {
+                $rawPhoto = $request->files->get('photo');
+                if ($rawPhoto instanceof UploadedFile) {
+                    $photoFiles = [$rawPhoto];
+                } elseif (is_array($rawPhoto)) {
+                    $photoFiles = $rawPhoto;
+                }
+            }
+
+            foreach ($photoFiles as $file) {
+                if ($file instanceof UploadedFile && $file->isValid()) {
+                    try {
+                        $filename = $recettePhotoService->upload($file);
+                        $recette->addPhoto($filename);
+                    } catch (\Exception $e) {
+                        $this->addFlash('warning', 'La photo n\'a pas pu être enregistrée : ' . $e->getMessage());
                     }
-                    $filename = $recettePhotoService->upload($photoFile);
-                    $recette->setPhoto($filename);
-                } catch (\Exception $e) {
-                    $this->addFlash('warning', 'La photo n\'a pas pu être enregistrée : ' . $e->getMessage());
                 }
             }
 
@@ -173,8 +191,8 @@ class RecetteController extends AbstractController
         RecettePhotoService $recettePhotoService
     ): Response {
         if ($this->isCsrfTokenValid('delete_recette_' . $recette->getId(), (string) $request->request->get('_token'))) {
-            if ($recette->getPhoto()) {
-                $recettePhotoService->delete($recette->getPhoto());
+            foreach ($recette->getPhotos() as $p) {
+                $recettePhotoService->delete($p);
             }
             $em->remove($recette);
             $em->flush();

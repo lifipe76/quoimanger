@@ -157,27 +157,30 @@ document.addEventListener("DOMContentLoaded", function () {
         container.addEventListener("submit", function (e) {
             var form = e.target;
             if (form && form.classList.contains("modal-recipe-form")) {
-                var file = window.selectedRepasPhotoFile;
-                var input = window.selectedRepasPhotoInput;
-                if (file && input && input.files && input.files.length > 0) {
+                var files = window.selectedRepasPhotoFiles || (window.selectedRepasPhotoFile ? [window.selectedRepasPhotoFile] : []);
+                if (files.length > 0) {
                     form.enctype = "multipart/form-data";
                     if (window.DataTransfer) {
                         try {
                             var dt = new DataTransfer();
-                            dt.items.add(file);
+                            files.forEach(function (f) {
+                                dt.items.add(f);
+                            });
                             var hiddenInput = document.createElement("input");
                             hiddenInput.type = "file";
-                            hiddenInput.name = "photo";
+                            hiddenInput.name = "photos[]";
+                            hiddenInput.multiple = true;
                             hiddenInput.style.display = "none";
                             hiddenInput.files = dt.files;
                             form.appendChild(hiddenInput);
                             return;
-                        } catch (err) {
-                            // Fallback if DataTransfer fails
-                        }
+                        } catch (err) {}
                     }
-                    input.name = "photo";
-                    form.appendChild(input);
+                    var input = window.selectedRepasPhotoInput;
+                    if (input) {
+                        input.name = "photos[]";
+                        form.appendChild(input);
+                    }
                 }
             }
         });

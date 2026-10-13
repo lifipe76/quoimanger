@@ -30,6 +30,8 @@
         'title': item.recette.designation,
         'recetteId': item.recette.id,
         'photoUrl': photo,
+        'photoUrls': item.photoUrls,
+        'photos': item.photos,
         'hasPhoto': photo ? true : false,
         'complement': item.complement|default(''),
         'participantsLabel': pNames|join(', '),

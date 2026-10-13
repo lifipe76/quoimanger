@@ -55,7 +55,8 @@
 
 /* Gélules Aujourd'hui et Hier - même style capsule que Matin Midi Soir */
 .btn-date-quick,
-.btn-moment-toggle {
+.btn-moment-toggle,
+.btn-edit-moment-toggle {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     color: #475569;

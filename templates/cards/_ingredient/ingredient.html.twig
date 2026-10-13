@@ -1,43 +1,105 @@
-<div class="card-ingredient" style="--card-index: {{ index|default(0) }};">
-    <div class="card-ingredient-header">
-        <div class="card-ingredient-icon">
-            🌿
+{% set cardPhotoUrls = ingredient.photoUrls|default([]) %}
+{% if cardPhotoUrls|length == 0 and ingredient.photo %}
+    {% set cardPhotoUrls = [ingredient.photoUrl] %}
+{% endif %}
+{% set cardPhotoUrl = cardPhotoUrls[0]|default(ingredient.photo ? ingredient.photoUrl : null) %}
+{% set defaultFoodPhotoUrl = '/images/default_food.webp' %}
+{% set hasRealPhoto = cardPhotoUrl is not null %}
+{% set displayPhoto = hasRealPhoto ? cardPhotoUrl : defaultFoodPhotoUrl %}
+{% set nbRecettes = ingredient.recetteIngredients|length %}
+{% set rank = (ranks is defined and ranks[ingredient.id] is defined) ? ranks[ingredient.id] : null %}
+
+<div class="card-ingredient has-photo-bg" style="--card-index: {{ index|default(0) }};">
+    <div class="card-ingredient-photo-wrap {{ not hasRealPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
+         {% if hasRealPhoto %}
+             data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"
+         {% endif %}>
+        <img src="{{ displayPhoto }}" alt="{{ hasRealPhoto ? ingredient.designation : '' }}" class="card-ingredient-bg-photo {{ not hasRealPhoto ? 'card-photo-placeholder-bg' : '' }}" loading="lazy">
+        {% if hasRealPhoto and cardPhotoUrls|length > 1 %}
+                <button type="button" class="card-photo-arrow card-photo-arrow-prev" aria-label="Photo précédente" onclick="changeCardPhoto(event, this, -1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button type="button" class="card-photo-arrow card-photo-arrow-next" aria-label="Photo suivante" onclick="changeCardPhoto(event, this, 1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+                <div class="card-photo-nav-group">
+                    <span class="card-photo-count-badge" title="{{ cardPhotoUrls|length }} photos">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
+                        <span class="card-photo-current-idx">1</span>/{{ cardPhotoUrls|length }}
+                    </span>
+                    <div class="card-photo-dots" role="tablist" aria-label="Photos de l'ingrédient">
+                        {% for photoUrl in cardPhotoUrls %}
+                            <button type="button"
+                                    class="card-photo-dot {{ loop.first ? 'active' : '' }}"
+                                    data-index="{{ loop.index0 }}"
+                                    title="Photo {{ loop.index }} sur {{ cardPhotoUrls|length }}"
+                                    aria-label="Photo {{ loop.index }}"
+                                    onclick="selectCardPhoto(event, this, {{ loop.index0 }})"></button>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
-        <span class="card-ingredient-id">#{{ ingredient.id }}</span>
+
+    <div class="card-ingredient-header">
+        <div class="card-ingredient-header-left">
+            <span class="card-ingredient-status" title="Nombre de recettes associées">
+                {{ nbRecettes }} recette{{ nbRecettes > 1 ? 's' : '' }}
+            </span>
+        </div>
+
+        <div class="card-ingredient-header-right">
+            {% if rank %}
+                <span class="card-ingredient-rank" title="Classement : {{ rank }}{{ rank == 1 ? 'er' : 'e' }} ingrédient le plus utilisé">
+                    {% if rank == 1 %}#1{% elseif rank == 2 %}#2{% elseif rank == 3 %}#3{% else %}#{{ rank }}{% endif %}
+                </span>
+            {% else %}
+                <span class="card-ingredient-id">#{{ ingredient.id }}</span>
+            {% endif %}
+
+            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}"
+               class="card-btn-pencil"
+               title="Modifier l'ingrédient « {{ ingredient.designation }} »">
+                ✏️
+            </a>
+        </div>
     </div>
 
-    <div>
+    <div class="card-ingredient-title-row">
         <h3 class="card-ingredient-title">
-            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}">
+            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}" class="ingredient-title-link">
                 {{ ingredient.designation }}
             </a>
         </h3>
-
-        <div class="card-ingredient-count {{ ingredient.recetteIngredients|length > 0 ? 'has-recipes' : '' }}">
-            <span>📖</span>
-            <span>{{ ingredient.recetteIngredients|length }} recette(s) associée(s)</span>
-        </div>
     </div>
 
-    <div class="card-ingredient-footer">
-        <span class="card-ingredient-date">
-            Ajouté {{ ingredient.createdAt ? ingredient.createdAt|date('d/m/Y') : '' }}
-        </span>
-
-        <div class="card-ingredient-actions">
-            {{ composant('_composants/button', {
-                'titre': 'Modifier',
-                'class': 'card-btn card-btn-edit',
-                'href': path('app_ingredient_edit', {'id': ingredient.id})
-            }) }}
-            <form method="post" action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}" data-confirm="Supprimer définitivement l'ingrédient « {{ ingredient.designation }} » ?" data-confirm-title="Supprimer l'ingrédient" style="margin: 0; display: inline;">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_ingredient_' ~ ingredient.id) }}">
-                {{ composant('_composants/button', {
-                    'titre': '🗑️',
-                    'class': 'card-btn card-btn-delete',
-                    'title': 'Supprimer l\'ingrédient'
-                }) }}
-            </form>
+    <div class="card-ingredient-body">
+        <div class="card-ingredient-recipes-title">
+            <span>Recettes</span>
+            <span>{{ nbRecettes }} au total</span>
         </div>
+
+        {% if nbRecettes > 0 %}
+            <div class="card-ingredient-chips">
+                {% for ri in ingredient.recetteIngredients|slice(0, 5) %}
+                    <a href="{{ path('app_recette_edit', {'id': ri.recette.id}) }}" class="recipe-chip" title="{{ ri.recette.designation }}">
+                        {% if ri.recette.photo %}
+                            <img src="{{ ri.recette.photoUrl }}" alt="" class="recipe-chip-img" loading="lazy">
+                        {% endif %}
+                        <span>{{ ri.recette.designation }}</span>
+                    </a>
+                {% endfor %}
+                {% if nbRecettes > 5 %}
+                    <span class="recipe-chip-more">
+                        +{{ nbRecettes - 5 }} autre(s)
+                    </span>
+                {% endif %}
+            </div>
+        {% else %}
+            <span class="card-ingredient-empty-rec">Aucune recette associée</span>
+        {% endif %}
     </div>
 </div>

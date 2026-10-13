@@ -153,7 +153,7 @@ class RepasPhotoTest extends WebTestCase
         $photo1Path = static::getContainer()->getParameter('kernel.project_dir') . '/public_html/photos/repas/' . $photo1;
         $this->assertFileExists($photo1Path);
 
-        // 2. Remplacer par une seconde photo : photo1 doit être supprimée
+        // 2. Remplacer par une seconde photo : photo1 supprimée via delete_photos
         $filePath2 = tempnam(sys_get_temp_dir(), 'photo2_');
         file_put_contents($filePath2, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
         $uploadedFile2 = new UploadedFile($filePath2, 'photo2.gif', 'image/gif', null, true);
@@ -167,6 +167,7 @@ class RepasPhotoTest extends WebTestCase
                 '_token' => $updateToken2,
                 'realise_at' => date('Y-m-d'),
                 'moment' => 'soir',
+                'delete_photos' => [$photo1],
             ],
             [
                 'photo' => $uploadedFile2,
@@ -198,6 +199,91 @@ class RepasPhotoTest extends WebTestCase
 
         $this->assertResponseRedirects('/');
         $this->assertFileDoesNotExist($photo2Path);
+    }
+
+    public function testUploadMultiplePhotosForRepasAndSelectiveDeletion(): void
+    {
+        $recette = $this->em->getRepository(Recette::class)->findOneBy([]);
+        if (!$recette) {
+            $recette = new Recette();
+            $recette->setDesignation('Plat Multi Photos');
+            $this->em->persist($recette);
+            $this->em->flush();
+        }
+
+        $realisation = new RecetteRealisation();
+        $realisation->setRecette($recette);
+        $realisation->setRealiseAt(new \DateTimeImmutable());
+        $realisation->setMoment('midi');
+        $this->em->persist($realisation);
+        $this->em->flush();
+
+        $realisationId = $realisation->getId();
+
+        $filePathA = tempnam(sys_get_temp_dir(), 'repas_a_');
+        file_put_contents($filePathA, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
+        $fileA = new UploadedFile($filePathA, 'ra.gif', 'image/gif', null, true);
+
+        $filePathB = tempnam(sys_get_temp_dir(), 'repas_b_');
+        file_put_contents($filePathB, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
+        $fileB = new UploadedFile($filePathB, 'rb.gif', 'image/gif', null, true);
+
+        $this->client->request('GET', '/');
+        $updateToken = $this->getCsrfToken('update_realisation_date_' . $realisationId);
+        $this->client->request(
+            'POST',
+            '/realisation/' . $realisationId . '/update-date',
+            [
+                '_token' => $updateToken,
+                'realise_at' => date('Y-m-d'),
+                'moment' => 'midi',
+            ],
+            [
+                'photos' => [$fileA, $fileB],
+            ]
+        );
+
+        $this->assertResponseRedirects('/');
+        $this->em->clear();
+        $realisation = $this->em->getRepository(RecetteRealisation::class)->find($realisationId);
+        $photos = $realisation->getPhotos();
+        $this->assertCount(2, $photos);
+
+        $pathA = static::getContainer()->getParameter('kernel.project_dir') . '/public_html/photos/repas/' . $photos[0];
+        $pathB = static::getContainer()->getParameter('kernel.project_dir') . '/public_html/photos/repas/' . $photos[1];
+        $this->assertFileExists($pathA);
+        $this->assertFileExists($pathB);
+
+        // Suppression sélective
+        $this->client->request('GET', '/');
+        $updateToken2 = $this->getCsrfToken('update_realisation_date_' . $realisationId);
+        $this->client->request(
+            'POST',
+            '/realisation/' . $realisationId . '/update-date',
+            [
+                '_token' => $updateToken2,
+                'realise_at' => date('Y-m-d'),
+                'moment' => 'midi',
+                'delete_photos' => [$photos[0]],
+            ]
+        );
+
+        $this->assertResponseRedirects('/');
+        $this->em->clear();
+        $realisation = $this->em->getRepository(RecetteRealisation::class)->find($realisationId);
+        $remaining = $realisation->getPhotos();
+        $this->assertCount(1, $remaining);
+        $this->assertEquals($photos[1], $remaining[0]);
+        $this->assertFileDoesNotExist($pathA);
+        $this->assertFileExists($pathB);
+
+        // Nettoyage disque
+        if (file_exists($pathB)) {
+            unlink($pathB);
+        }
+
+        $this->em->remove($realisation);
+        $this->em->flush();
     }
 
     private function getCsrfToken(string $tokenId): string

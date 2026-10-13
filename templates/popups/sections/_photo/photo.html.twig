@@ -1,72 +1,68 @@
-{# Composant Section Photo pour Popups (Ajouter, Modifier) #}
+{# Composant Section Photo pour Popups (Ajouter, Modifier un repas) avec Multi-photos et Drag&Drop #}
 {% set pfx = id_prefix|default('repas') %}
 {% set hasDelete = has_delete_input|default(false) %}
 
-<div class="modal-repas-photo-row" id="{{ pfx }}-photo-section">
+<div class="modal-repas-photo-row" id="{{ pfx }}-photo-section"
+     data-prefix="{{ pfx }}"
+     ondragover="onRepasModalPhotoDragOver(event, '{{ pfx }}')"
+     ondragleave="onRepasModalPhotoDragLeave(event, '{{ pfx }}')"
+     ondrop="onRepasModalPhotoDrop(event, '{{ pfx }}')">
+
+    <!-- Input pour l'appareil photo -->
     <input type="file"
            id="{{ pfx }}-photo-input"
-           name="photo"
            accept="image/*"
            capture="environment"
            style="display: none;"
-           onchange="{{ on_photo_change|default('on' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'PhotoSelected(this)') }}">
+           onchange="onRepasModalPhotoInputSelected(this, '{{ pfx }}')">
+
+    <!-- Input pour sélection de fichiers multiples -->
     <input type="file"
            id="{{ pfx }}-photo-gallery-input"
            accept="image/*"
+           multiple
            style="display: none;"
-           onchange="{{ on_photo_change|default('on' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'PhotoSelected(this)') }}">
+           onchange="onRepasModalPhotoInputSelected(this, '{{ pfx }}')">
 
-    {% if hasDelete %}
-        <input type="hidden"
-               name="delete_photo"
-               id="{{ pfx }}-delete-photo-input"
-               value="0">
-    {% endif %}
+    <!-- Input principal pour la soumission des fichiers (cas formulaire standard) -->
+    <input type="file"
+           id="{{ pfx }}-photos-input"
+           name="photos[]"
+           accept="image/*"
+           multiple
+           style="display: none;">
 
-    <!-- Photo existante (cas modification) -->
-    <div id="{{ pfx }}-current-photo" style="display: none;">
-        <div class="repas-photo-preview-box">
-            <div class="repas-photo-preview-thumb-wrap">
-                <img id="{{ pfx }}-current-photo-img" src="" alt="Photo actuelle du repas" class="repas-photo-preview-thumb">
-            </div>
-            <div class="repas-photo-preview-info">
-                <span class="repas-photo-preview-label">Photo actuelle</span>
-                <div class="repas-photo-preview-actions">
-                    <button type="button" class="btn-apn-change" onclick="{{ on_trigger_camera|default('trigger' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'PhotoInput()') }}">
-                        Changer
+    <div id="{{ pfx }}-delete-inputs-container">
+        {% if hasDelete %}
+            <input type="hidden" name="delete_photo" id="{{ pfx }}-delete-photo-input" value="0">
+        {% endif %}
+    </div>
+
+    <!-- Galerie de photos (existantes et nouvelles) et card d'ajout/dépose -->
+    <div class="modal-photo-gallery" id="{{ pfx }}-gallery">
+        <div class="modal-photo-grid" id="{{ pfx }}-existing-photos-grid"></div>
+        <div class="modal-photo-grid" id="{{ pfx }}-new-photos-grid"></div>
+
+        <!-- Card d'ajout / Dropzone positionnée derrière les photos -->
+        <div class="modal-photo-drop-card" id="{{ pfx }}-dropzone"
+             title="Ajouter ou glisser-déposer des photos"
+             onclick="triggerRepasModalGallery('{{ pfx }}')">
+            <div class="modal-photo-drop-card-inner">
+                <div class="modal-photo-drop-icons">
+                    <button type="button"
+                            class="modal-drop-icon-btn"
+                            onclick="event.stopPropagation(); triggerRepasModalCamera('{{ pfx }}')"
+                            title="Prendre une photo"
+                            aria-label="Prendre une photo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
                     </button>
-                    <button type="button" class="btn-photo-remove" onclick="{{ on_delete_existing|default('removeEditMealExistingPhoto()') }}">
-                        Supprimer
-                    </button>
+                    <span class="modal-drop-plus">+</span>
                 </div>
+                <span class="modal-drop-label">Ajouter</span>
             </div>
         </div>
-    </div>
-
-    <!-- Aperçu nouvelle photo sélectionnée -->
-    <div id="{{ pfx }}-new-photo-preview" class="repas-photo-preview-box" style="display: none;">
-        <div class="repas-photo-preview-thumb-wrap">
-            <img id="{{ pfx }}-new-photo-img" src="" alt="Aperçu photo" class="repas-photo-preview-thumb">
-        </div>
-        <div class="repas-photo-preview-info">
-            <span class="repas-photo-preview-label">Photo prête</span>
-            <button type="button" class="btn-photo-remove" onclick="{{ on_remove_new|default((pfx == 'repas' ? 'removeRepasPhoto()' : 'cancelEditMealNewPhoto()')) }}">
-                Retirer
-            </button>
-        </div>
-    </div>
-
-    <!-- Contrôles quand aucune photo -->
-    <div class="repas-photo-controls" id="{{ pfx }}-no-photo">
-        <button type="button" class="btn-apn" onclick="{{ on_trigger_camera|default('trigger' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'PhotoInput()') }}" title="Prendre une photo du plat avec l'appareil photo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                <circle cx="12" cy="13" r="3"/>
-            </svg>
-            <span>Photo du repas</span>
-        </button>
-        <button type="button" class="btn-apn-secondary" onclick="{{ on_trigger_gallery|default('trigger' ~ (pfx == 'repas' ? 'Repas' : 'EditMeal') ~ 'GalleryInput()') }}" title="Choisir une photo depuis vos fichiers">
-            <span>Choisir un fichier</span>
-        </button>
     </div>
 </div>

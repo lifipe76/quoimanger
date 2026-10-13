@@ -606,6 +606,31 @@
     height: 100%;
     background-size: cover;
     background-position: center;
+    position: relative;
+}
+
+.meal-card-photo .card-photo-count-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.35rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    line-height: 1;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.meal-card-photo .card-photo-count-badge svg {
+    flex-shrink: 0;
 }
 
 .meal-card-photo-empty {

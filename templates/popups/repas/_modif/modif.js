@@ -14,7 +14,8 @@ function openEditMealModal(
     currentComplement,
     participantIds,
     notesMap,
-    currentPhotoUrl
+    currentPhotoUrl,
+    currentPhotoNames
 ) {
     var modal = document.getElementById("edit-meal-modal");
     var updateForm = document.getElementById("edit-meal-form");
@@ -52,53 +53,21 @@ function openEditMealModal(
             deleteTokenInput.value = deleteToken;
         }
 
-        // Réinitialisation de la section photo
-        var photoInput = document.getElementById("edit-meal-photo-input");
-        if (photoInput) {
-            photoInput.value = "";
+        // Réinitialisation et peuplement de la section photo (multi-photos)
+        if (typeof clearModalPhotos === "function") {
+            clearModalPhotos("edit-meal");
         }
-        var photoGalleryInput = document.getElementById("edit-meal-photo-gallery-input");
-        if (photoGalleryInput) {
-            photoGalleryInput.value = "";
-        }
-        var deletePhotoInput = document.getElementById("edit-meal-delete-photo-input");
-        if (deletePhotoInput) {
-            deletePhotoInput.value = "0";
+        if (typeof populateModalExistingPhotos === "function" && (currentPhotoUrl || currentPhotoNames)) {
+            populateModalExistingPhotos("edit-meal", currentPhotoUrl, currentPhotoNames);
         }
 
-        var currentPhotoBox = document.getElementById("edit-meal-current-photo");
-        var currentPhotoImg = document.getElementById("edit-meal-current-photo-img");
-        var newPhotoPreviewBox = document.getElementById("edit-meal-new-photo-preview");
-        var newPhotoImg = document.getElementById("edit-meal-new-photo-img");
-        var noPhotoBox = document.getElementById("edit-meal-no-photo");
-
-        if (newPhotoImg) {
-            newPhotoImg.src = "";
-        }
-        if (newPhotoPreviewBox) {
-            newPhotoPreviewBox.style.display = "none";
-        }
-
-        if (currentPhotoUrl && currentPhotoUrl.trim() !== "") {
-            if (currentPhotoImg) {
-                currentPhotoImg.src = currentPhotoUrl;
-            }
-            if (currentPhotoBox) {
-                currentPhotoBox.style.display = "flex";
-            }
-            if (noPhotoBox) {
-                noPhotoBox.style.display = "none";
-            }
-        } else {
-            if (currentPhotoImg) {
-                currentPhotoImg.src = "";
-            }
-            if (currentPhotoBox) {
-                currentPhotoBox.style.display = "none";
-            }
-            if (noPhotoBox) {
-                noPhotoBox.style.display = "flex";
-            }
+        if (updateForm && !updateForm.dataset.multiPhotoListenerAttached) {
+            updateForm.dataset.multiPhotoListenerAttached = "true";
+            updateForm.addEventListener("submit", function () {
+                if (typeof syncModalStagedFiles === "function") {
+                    syncModalStagedFiles("edit-meal");
+                }
+            });
         }
 
         // Initialisation des cases à cocher des participants

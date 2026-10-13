@@ -119,13 +119,24 @@ class HomeController extends AbstractController
             $realisation->setMoment('soir');
         }
 
-        $photoFile = $request->files->get('photo');
-        if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
-            try {
-                $photoFilename = $photoService->upload($photoFile);
-                $realisation->setPhoto($photoFilename);
-            } catch (\Exception $e) {
-                $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
+        $photoFiles = $request->files->all('photos');
+        if (empty($photoFiles)) {
+            $rawPhoto = $request->files->get('photo');
+            if ($rawPhoto instanceof UploadedFile) {
+                $photoFiles = [$rawPhoto];
+            } elseif (is_array($rawPhoto)) {
+                $photoFiles = $rawPhoto;
+            }
+        }
+
+        foreach ($photoFiles as $photoFile) {
+            if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
+                try {
+                    $photoFilename = $photoService->upload($photoFile);
+                    $realisation->addPhoto($photoFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
+                }
             }
         }
 
@@ -171,6 +182,8 @@ class HomeController extends AbstractController
                 'realiseAt' => $realisation->getRealiseAt()?->format('d/m/Y'),
                 'photo' => $realisation->getPhoto(),
                 'photoUrl' => $realisation->getPhotoUrl(),
+                'photos' => $realisation->getPhotos(),
+                'photoUrls' => $realisation->getPhotoUrls(),
             ]);
         }
 
@@ -187,8 +200,8 @@ class HomeController extends AbstractController
         RepasPhotoService $photoService
     ): Response {
         if ($this->isCsrfTokenValid('delete_realisation_' . $realisation->getId(), (string) $request->request->get('_token'))) {
-            if ($realisation->getPhoto()) {
-                $photoService->delete($realisation->getPhoto());
+            foreach ($realisation->getPhotos() as $p) {
+                $photoService->delete($p);
             }
             $em->remove($realisation);
             $em->flush();
@@ -231,22 +244,38 @@ class HomeController extends AbstractController
             }
 
             if ($request->request->get('delete_photo') === '1') {
-                if ($realisation->getPhoto()) {
-                    $photoService->delete($realisation->getPhoto());
-                    $realisation->setPhoto(null);
+                foreach ($realisation->getPhotos() as $p) {
+                    $photoService->delete($p);
+                }
+                $realisation->setPhotos([]);
+            } elseif ($request->request->has('delete_photos')) {
+                $deletedPhotos = (array) $request->request->all('delete_photos');
+                foreach ($deletedPhotos as $p) {
+                    if (is_string($p) && $p !== '') {
+                        $photoService->delete($p);
+                        $realisation->removePhoto($p);
+                    }
                 }
             }
 
-            $photoFile = $request->files->get('photo');
-            if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
-                try {
-                    if ($realisation->getPhoto()) {
-                        $photoService->delete($realisation->getPhoto());
+            $photoFiles = $request->files->all('photos');
+            if (empty($photoFiles)) {
+                $rawPhoto = $request->files->get('photo');
+                if ($rawPhoto instanceof UploadedFile) {
+                    $photoFiles = [$rawPhoto];
+                } elseif (is_array($rawPhoto)) {
+                    $photoFiles = $rawPhoto;
+                }
+            }
+
+            foreach ($photoFiles as $photoFile) {
+                if ($photoFile instanceof UploadedFile && $photoFile->isValid()) {
+                    try {
+                        $photoFilename = $photoService->upload($photoFile);
+                        $realisation->addPhoto($photoFilename);
+                    } catch (\Exception $e) {
+                        $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
                     }
-                    $photoFilename = $photoService->upload($photoFile);
-                    $realisation->setPhoto($photoFilename);
-                } catch (\Exception $e) {
-                    $this->addFlash('warning', 'Photo non enregistrée : ' . $e->getMessage());
                 }
             }
 

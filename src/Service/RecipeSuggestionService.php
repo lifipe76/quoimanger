@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Ingredient;
 use App\Entity\Recette;
 
 class RecipeSuggestionService
@@ -18,6 +19,44 @@ class RecipeSuggestionService
         foreach ($recettes as $r) {
             if ($r->getId() !== null) {
                 $counts[$r->getId()] = $r->getRealisations()->count();
+            }
+        }
+
+        arsort($counts);
+
+        $ranks = [];
+        $currentRank = 0;
+        $prevCount = null;
+        $position = 0;
+
+        foreach ($counts as $id => $count) {
+            $position++;
+            if ($count === 0) {
+                $ranks[$id] = null;
+                continue;
+            }
+            if ($count !== $prevCount) {
+                $currentRank = $position;
+                $prevCount = $count;
+            }
+            $ranks[$id] = $currentRank;
+        }
+
+        return $ranks;
+    }
+
+    /**
+     * Calcule le classement des ingrédients par rapport au nombre de recettes associées
+     *
+     * @param Ingredient[] $ingredients
+     * @return array<int, int|null> [ingredientId => rank]
+     */
+    public function calculateIngredientRanks(array $ingredients): array
+    {
+        $counts = [];
+        foreach ($ingredients as $ing) {
+            if ($ing->getId() !== null) {
+                $counts[$ing->getId()] = $ing->getRecetteIngredients()->count();
             }
         }
 

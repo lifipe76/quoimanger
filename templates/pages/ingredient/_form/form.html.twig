@@ -3,6 +3,19 @@
 {% block title %}{{ isNew ? 'Nouvel ingrédient' : 'Modifier l\'ingrédient' }} - QuoiManger{% endblock %}
 
 {% block body %}
+{% if not isNew %}
+    {{ composant('popups/confirmation') }}
+    <form id="delete-ingredient-form"
+          method="post"
+          action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}"
+          data-confirm="Êtes-vous sûr de vouloir supprimer définitivement l'ingrédient « {{ ingredient.designation }} » ?"
+          data-confirm-title="Supprimer l'ingrédient"
+          data-confirm-btn="Supprimer"
+          style="display: none;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_ingredient_' ~ ingredient.id) }}">
+    </form>
+{% endif %}
+
 {% set formContent %}
     <div class="page-header">
         <h1 class="page-title">{{ isNew ? 'Ajouter un ingrédient' : 'Modifier l\'ingrédient' }}</h1>
@@ -14,24 +27,47 @@
     </div>
 
     <div class="card">
-        {{ form_start(form) }}
+        {{ form_start(form, {'multipart': true, 'attr': {'id': 'ingredient-form', 'enctype': 'multipart/form-data'} }) }}
             <div class="form-group">
-                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(form.designation) }}
-                {{ form_errors(form.designation, {'attr': {'class': 'form-error'}}) }}
+                {{ form_errors(form.designation, {'attr': {'class': 'form-error'} }) }}
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
-                {{ composant('_composants/button', {
-                    'titre': 'Annuler',
-                    'href': path('app_ingredients_list'),
-                    'class': 'btn-secondary'
-                }) }}
-                {{ composant('_composants/button', {
-                    'titre': isNew ? 'Créer l\'ingrédient' : 'Enregistrer les modifications',
-                    'type': 'submit',
-                    'class': 'btn-primary'
-                }) }}
+            {{ composant('_composants/photoInput', {
+                'prefix': 'ingredient',
+                'label': "Photos de l'ingrédient",
+                'current_photos': ingredient.photos,
+                'current_photo_urls': ingredient.photoUrls,
+                'alt_text': 'Photo de ' ~ ingredient.designation,
+                'camera_title': "Prendre une photo de l'ingrédient",
+                'gallery_title': 'Choisir des fichiers'
+            }) }}
+
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                <div>
+                    {% if not isNew %}
+                        <button type="submit"
+                                form="delete-ingredient-form"
+                                class="btn btn-danger btn-sm btn-delete-small"
+                                title="Supprimer définitivement cet ingrédient"
+                                aria-label="Supprimer cet ingrédient">
+                            🗑️
+                        </button>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 1rem; margin-left: auto;">
+                    {{ composant('_composants/button', {
+                        'titre': 'Annuler',
+                        'href': path('app_ingredients_list'),
+                        'class': 'btn-secondary'
+                    }) }}
+                    {{ composant('_composants/button', {
+                        'titre': isNew ? 'Créer l\'ingrédient' : 'Enregistrer les modifications',
+                        'type': 'submit',
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
             </div>
         {{ form_end(form) }}
     </div>

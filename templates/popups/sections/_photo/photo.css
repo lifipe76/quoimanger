@@ -1,28 +1,202 @@
 /* ==========================================================================
    Composant Section Photo pour Popups (Ajout & Modif)
-   Container étendu sur toute la largeur de la modal
+   Support Multi-photos & Drag and Drop
    ========================================================================== */
 
 .modal-repas-photo-row {
-    padding: 0.65rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     background: #fdfaf6;
     border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+}
+
+.modal-repas-photo-row.is-dragover {
+    background: #fef3c7;
+    outline: 2px dashed #f59e0b;
+    outline-offset: -2px;
+}
+
+/* Galerie dans la modal */
+.modal-photo-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.modal-photo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.modal-photo-item {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-photo-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary, #c4a587);
+}
+
+.modal-photo-item.modal-photo-item-new {
+    border-color: #10b981;
+}
+
+.modal-photo-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8.5px;
+    display: block;
+}
+
+/* Bouton croix décalé à cheval en haut à droite */
+.modal-photo-btn-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    transition: all 0.15s ease;
+    padding: 0;
+    z-index: 10;
+}
+
+.modal-photo-btn-remove:hover {
+    background: #dc2626;
+    transform: scale(1.18);
+}
+
+/* Card d'ajout / Dropzone placée derrière les photos */
+.modal-photo-drop-card {
+    width: 74px;
+    height: 64px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.modal-photo-drop-card:hover {
+    border-color: var(--primary, #c4a587);
+    background: #fdfaf6;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(196, 165, 135, 0.15);
+}
+
+.modal-repas-photo-row.is-dragover .modal-photo-drop-card,
+.modal-photo-drop-card.is-dragover {
+    border-color: #f59e0b;
+    background: #fef3c7;
+    transform: scale(1.04);
+}
+
+.modal-photo-drop-card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    text-align: center;
+}
+
+.modal-photo-drop-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.modal-drop-icon-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: var(--primary, #c4a587);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s ease;
+}
+
+.modal-drop-icon-btn:hover {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border-color: var(--primary, #c4a587);
+    transform: scale(1.1);
+}
+
+.modal-drop-plus {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #64748b;
+    line-height: 1;
+}
+
+.modal-drop-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #475569;
+    line-height: 1;
+}
+
+/* Contrôles d'ajout */
+.modal-photo-controls {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
-    width: 100%;
-    box-sizing: border-box;
 }
 
-.repas-photo-controls {
-    display: flex;
+.modal-photo-actions-group {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.btn-apn {
+.modal-photo-drop-hint {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.modal-repas-photo-row .btn-apn {
     background: #ffffff;
     border: 1.5px solid #cbd5e1;
     color: #1e293b;
@@ -38,21 +212,21 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.btn-apn svg {
-    color: #c4a587;
+.modal-repas-photo-row .btn-apn svg {
+    color: var(--primary, #c4a587);
     flex-shrink: 0;
 }
 
-.btn-apn:hover {
+.modal-repas-photo-row .btn-apn:hover {
     background: #f8fafc;
-    border-color: #c4a587;
+    border-color: var(--primary, #c4a587);
     color: #0f172a;
 }
 
-.btn-apn-secondary {
-    background: transparent;
-    border: 1px dashed #cbd5e1;
-    color: #64748b;
+.modal-repas-photo-row .btn-apn-secondary {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
     padding: 0.4rem 0.75rem;
     border-radius: 10px;
     font-size: 0.8rem;
@@ -61,87 +235,10 @@
     transition: all 0.2s ease;
 }
 
-.btn-apn-secondary:hover {
-    background: #ffffff;
-    color: #334155;
-    border-color: #94a3b8;
-}
-
-.btn-apn-change {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
-    padding: 0.25rem 0.6rem;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-apn-change:hover {
+.modal-repas-photo-row .btn-apn-secondary:hover {
     background: #f1f5f9;
+    color: #0f172a;
     border-color: #94a3b8;
-}
-
-.repas-photo-preview-box {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.35rem 0.65rem;
-    background: #ffffff;
-    border: 1.5px solid #c4a587;
-    border-radius: 10px;
-}
-
-.repas-photo-preview-thumb-wrap {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #f1f5f9;
-    flex-shrink: 0;
-}
-
-.repas-photo-preview-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.repas-photo-preview-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.repas-photo-preview-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #15803d;
-}
-
-.repas-photo-preview-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.btn-photo-remove {
-    background: transparent;
-    border: none;
-    color: #dc2626;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0;
-    cursor: pointer;
-    text-align: left;
-    text-decoration: underline;
-}
-
-.btn-photo-remove:hover {
-    color: #b91c1c;
 }
 
 @media (max-width: 640px) {

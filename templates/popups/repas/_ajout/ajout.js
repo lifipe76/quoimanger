@@ -1,13 +1,10 @@
-/* ==========================================================================
-   Popup "Ajouter un repas" - JavaScript spécifique
-   (Les sections Date et Photo sont gérées par leurs composants respectifs)
-   ========================================================================== */
-
-function openRepasModal() {
-    if (typeof removeRepasPhoto === "function") {
-        removeRepasPhoto();
-    }
+function openRepasModal(defaultTab) {
     openModal("repas-modal");
+    if (defaultTab) {
+        switchRepasTab(defaultTab);
+    } else {
+        switchRepasTab('toutes');
+    }
     var wrapper = document.getElementById("recipe-filter-input-wrapper");
     if (wrapper) {
         wrapper.classList.remove("is-open");
@@ -24,9 +21,47 @@ function closeRepasModal() {
     closeModal("repas-modal");
 }
 
+function switchRepasTab(tab) {
+    var btnToutes = document.getElementById("tab-btn-ajout-toutes");
+    var btnFrigo = document.getElementById("tab-btn-ajout-frigo");
+    var contToutes = document.getElementById("modal-recipes-container");
+    var contFrigo = document.getElementById("modal-ajout-frigo-container");
+    var topBar = document.getElementById("repas-modal-top-bar");
+
+    if (tab === "frigo") {
+        if (btnToutes) btnToutes.classList.remove("active");
+        if (btnFrigo) btnFrigo.classList.add("active");
+        if (contToutes) {
+            contToutes.style.display = "none";
+            contToutes.classList.remove("active");
+        }
+        if (contFrigo) {
+            contFrigo.style.display = "block";
+            contFrigo.classList.add("active");
+        }
+    } else {
+        if (btnFrigo) btnFrigo.classList.remove("active");
+        if (btnToutes) btnToutes.classList.add("active");
+        if (contFrigo) {
+            contFrigo.style.display = "none";
+            contFrigo.classList.remove("active");
+        }
+        if (contToutes) {
+            contToutes.style.display = "block";
+            contToutes.classList.add("active");
+        }
+    }
+
+    var input = document.getElementById("recipe-filter-input");
+    if (input && input.value) {
+        filterRecipesList(input.value);
+    }
+}
+window.switchRepasTab = switchRepasTab;
+
 function filterRecipesList(term) {
     var normalized = term.trim().toLowerCase();
-    var forms = document.querySelectorAll("#modal-recipes-container .modal-recipe-form");
+    var forms = document.querySelectorAll("#modal-recipes-container .modal-recipe-form, #modal-ajout-frigo-container .modal-recipe-form");
     forms.forEach(function (form) {
         var name = form.dataset.name || "";
         form.style.display = name.includes(normalized) ? "block" : "none";
@@ -106,6 +141,8 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
     var isAsc = (order === "asc");
 
     forms.sort(function (a, b) {
+        var probA = parseFloat(a.dataset.probability || "0");
+        var probB = parseFloat(b.dataset.probability || "0");
         var dateA = parseInt(a.dataset.date || "0", 10);
         var dateB = parseInt(b.dataset.date || "0", 10);
         var idA = parseInt(a.dataset.id || "0", 10);
@@ -119,7 +156,13 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
         var nameA = (a.dataset.name || "").trim();
         var nameB = (b.dataset.name || "").trim();
 
-        if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
+        if (sortKey === "probability") {
+            if (probA === probB) {
+                var cmpP = nameA.localeCompare(nameB, "fr", { sensitivity: "base" });
+                return isAsc ? cmpP : -cmpP;
+            }
+            return isAsc ? (probA - probB) : (probB - probA);
+        } else if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
             if (dateA === 0 && dateB !== 0) return 1;
             if (dateB === 0 && dateA !== 0) return -1;
             if (dateA === dateB) return isAsc ? (idA - idB) : (idB - idA);
@@ -152,40 +195,6 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
 window.sortModalRecipes = sortModalRecipes;
 
 document.addEventListener("DOMContentLoaded", function () {
-    var container = document.getElementById("modal-recipes-container");
-    if (container) {
-        container.addEventListener("submit", function (e) {
-            var form = e.target;
-            if (form && form.classList.contains("modal-recipe-form")) {
-                var files = window.selectedRepasPhotoFiles || (window.selectedRepasPhotoFile ? [window.selectedRepasPhotoFile] : []);
-                if (files.length > 0) {
-                    form.enctype = "multipart/form-data";
-                    if (window.DataTransfer) {
-                        try {
-                            var dt = new DataTransfer();
-                            files.forEach(function (f) {
-                                dt.items.add(f);
-                            });
-                            var hiddenInput = document.createElement("input");
-                            hiddenInput.type = "file";
-                            hiddenInput.name = "photos[]";
-                            hiddenInput.multiple = true;
-                            hiddenInput.style.display = "none";
-                            hiddenInput.files = dt.files;
-                            form.appendChild(hiddenInput);
-                            return;
-                        } catch (err) {}
-                    }
-                    var input = window.selectedRepasPhotoInput;
-                    if (input) {
-                        input.name = "photos[]";
-                        form.appendChild(input);
-                    }
-                }
-            }
-        });
-    }
-
     var sortPills = document.querySelector("#repas-modal .modal-sort-pills");
     if (sortPills) {
         sortPills.addEventListener("wheel", function (e) {

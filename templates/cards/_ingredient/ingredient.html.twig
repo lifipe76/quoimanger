@@ -3,7 +3,7 @@
     {% set cardPhotoUrls = [ingredient.photoUrl] %}
 {% endif %}
 {% set cardPhotoUrl = cardPhotoUrls[0]|default(ingredient.photo ? ingredient.photoUrl : null) %}
-{% set defaultFoodPhotoUrl = '/images/default_food.webp' %}
+{% set defaultFoodPhotoUrl = '/images/default_ingredient.webp' %}
 {% set hasRealPhoto = cardPhotoUrl is not null %}
 {% set displayPhoto = hasRealPhoto ? cardPhotoUrl : defaultFoodPhotoUrl %}
 {% set nbRecettes = ingredient.recetteIngredients|length %}

@@ -15,7 +15,10 @@ function openEditMealModal(
     participantIds,
     notesMap,
     currentPhotoUrl,
-    currentPhotoNames
+    currentPhotoNames,
+    boissonId,
+    boissonDateAchat,
+    boissonNote
 ) {
     var modal = document.getElementById("edit-meal-modal");
     var updateForm = document.getElementById("edit-meal-form");
@@ -129,6 +132,11 @@ function openEditMealModal(
                 span.style.color = (s <= userNote) ? "#f59e0b" : "#cbd5e1";
             });
         });
+
+        // Initialisation de la section boisson
+        if (typeof populateModalBoisson === "function") {
+            populateModalBoisson("edit-meal", boissonId, boissonDateAchat, boissonNote);
+        }
 
         openModal("edit-meal-modal");
     }

@@ -342,6 +342,13 @@
     font-weight: 600;
 }
 
+.card-recette-status.status-frigo-badge {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #86efac;
+    font-weight: 700;
+}
+
 .card-recette-rank,
 .card-recette-id {
     font-size: 0.725rem;
@@ -765,3 +772,35 @@
         justify-content: flex-end;
     }
 }
+
+/* Badge Boisson associée dans la card recette */
+.card-recette-boisson-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    color: #6b21a8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    width: fit-content;
+}
+
+.card-recette-boisson-badge .boisson-badge-icon {
+    color: #9333ea;
+    font-size: 0.75rem;
+}
+
+.card-recette-boisson-badge .boisson-badge-name {
+    color: #4c1d95;
+}
+
+.card-recette-boisson-badge .boisson-badge-note {
+    color: #d97706;
+    font-weight: 700;
+    margin-left: 0.2rem;
+}
+

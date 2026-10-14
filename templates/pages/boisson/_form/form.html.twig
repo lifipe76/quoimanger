@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isNew ? 'Nouvelle boisson' : 'Modifier la boisson' }} - QuoiManger{% endblock %}
+
+{% block body %}
+{% if not isNew %}
+    {{ composant('popups/confirmation') }}
+    <form id="delete-boisson-form"
+          method="post"
+          action="{{ path('app_boisson_delete', {'id': boisson.id}) }}"
+          data-confirm="Êtes-vous sûr de vouloir supprimer définitivement la boisson « {{ boisson.nom }} » ?"
+          data-confirm-title="Supprimer la boisson"
+          data-confirm-btn="Supprimer"
+          style="display: none;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_boisson_' ~ boisson.id) }}">
+    </form>
+{% endif %}
+
+{% set formContent %}
+    <div class="page-header">
+        <h1 class="page-title">{{ isNew ? 'Ajouter une boisson' : 'Modifier la boisson' }}</h1>
+        {{ composant('_composants/button', {
+            'titre': 'Retour à la liste',
+            'href': path('app_boissons_list'),
+            'class': 'btn-secondary'
+        }) }}
+    </div>
+
+    <div class="card">
+        {{ form_start(form, {'multipart': true, 'attr': {'id': 'boisson-form', 'enctype': 'multipart/form-data'} }) }}
+            <div class="form-group mb-3">
+                {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label'} }) }}
+                {{ form_widget(form.nom) }}
+                {{ form_errors(form.nom, {'attr': {'class': 'form-error'} }) }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.lieuAchat, null, {'label_attr': {'class': 'form-label'} }) }}
+                {{ form_widget(form.lieuAchat) }}
+                {{ form_errors(form.lieuAchat, {'attr': {'class': 'form-error'} }) }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'} }) }}
+                {{ form_widget(form.description) }}
+                {{ form_errors(form.description, {'attr': {'class': 'form-error'} }) }}
+            </div>
+
+            {{ composant('_composants/photoInput', {
+                'prefix': 'boisson',
+                'label': 'Photos de la boisson',
+                'current_photos': boisson.photos,
+                'current_photo_urls': boisson.photoUrls,
+                'alt_text': 'Photo de ' ~ boisson.nom,
+                'camera_title': 'Prendre une photo de la boisson',
+                'gallery_title': 'Choisir des fichiers'
+            }) }}
+
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                <div>
+                    {% if not isNew %}
+                        <button type="submit"
+                                form="delete-boisson-form"
+                                class="btn btn-danger btn-sm btn-delete-small"
+                                title="Supprimer définitivement cette boisson"
+                                aria-label="Supprimer cette boisson">
+                            <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                        </button>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 1rem; margin-left: auto;">
+                    {{ composant('_composants/button', {
+                        'titre': 'Annuler',
+                        'href': path('app_boissons_list'),
+                        'class': 'btn-secondary'
+                    }) }}
+                    {{ composant('_composants/button', {
+                        'titre': isNew ? 'Créer la boisson' : 'Enregistrer les modifications',
+                        'type': 'submit',
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endset %}
+
+{{ composant('_composants/container', {
+    'content': formContent
+}) }}
+{% endblock %}

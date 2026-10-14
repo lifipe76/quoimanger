@@ -9,10 +9,11 @@
             <h1 class="page-title">Mes Recettes</h1>
             <p class="page-subtitle">{{ recettes|length }} recette{{ recettes|length > 1 ? 's' : '' }} au menu</p>
         </div>
-        <a href="{{ path('app_recette_create') }}" class="btn-add-recette" title="Ajouter une recette">
-            <span class="btn-text-full">+ Ajouter une recette</span>
-            <span class="btn-text-mobile">+</span>
-        </a>
+        {{ composant('_composants/button', {
+            'titre': '+ Ajouter une recette',
+            'href': path('app_recette_create'),
+            'class': 'btn-primary'
+        }) }}
     </div>
 
     <div class="recettes-toolbar">
@@ -46,6 +47,10 @@
             <a href="{{ path('app_recettes_list', {'sort': 'alpha'}) }}"
                class="sort-pill {{ currentSort == 'alpha' ? 'active' : '' }}">
                 Nom
+            </a>
+            <a href="{{ path('app_recettes_list', {'sort': 'frigo'}) }}"
+               class="sort-pill {{ currentSort == 'frigo' or isFrigo|default(false) ? 'active' : '' }}">
+                Mon frigo
             </a>
         </div>
     </div>

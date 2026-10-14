@@ -11,6 +11,7 @@
 {% set hasRealPhoto = firstPhoto is not null %}
 {% set showPlaceholderPhoto = (not isRepas and not hasRealPhoto) %}
 {% set displayPhoto = hasRealPhoto ? firstPhoto : (showPlaceholderPhoto ? defaultFoodPhotoUrl : null) %}
+{% set activeBoisson = (activeRealisation and activeRealisation.repasBoisson) ? activeRealisation.repasBoisson : null %}
 
 <div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
     {% if displayPhoto %}
@@ -87,6 +88,11 @@
                         À réaliser
                     </span>
                 {% endif %}
+                {% if frigoRecetteIds is defined and recette.id in frigoRecetteIds %}
+                    <span class="card-recette-status status-frigo-badge" title="Cette recette est dans votre frigo">
+                        Dans le frigo
+                    </span>
+                {% endif %}
             </div>
 
             <div class="card-recette-header-right">
@@ -126,6 +132,10 @@
                             {% endif %}
                         {% endfor %}
                     {% endif %}
+                    {% set activeBoisson = activeRealisation.repasBoisson|default(null) %}
+                    {% set activeBoissonId = (activeBoisson and activeBoisson.boisson) ? activeBoisson.boisson.id : null %}
+                    {% set activeBoissonDate = (activeBoisson and activeBoisson.dateAchat) ? activeBoisson.dateAchat|date('Y-m-d') : '' %}
+                    {% set activeBoissonNote = activeBoisson ? activeBoisson.note|default(0) : 0 %}
                     <button type="button"
                             class="card-btn-pencil card-btn-apn-trigger"
                             title="{{ activeRealisation.photo ? 'Modifier la photo' : 'Prendre une photo' }}"
@@ -141,7 +151,10 @@
                                 {{ participantIds|json_encode }},
                                 {{ notesMap|json_encode }},
                                 {{ activeRealisation.photoUrls|json_encode }},
-                                {{ activeRealisation.photos|json_encode }}
+                                {{ activeRealisation.photos|json_encode }},
+                                {{ activeBoissonId|json_encode }},
+                                '{{ activeBoissonDate }}',
+                                {{ activeBoissonNote }}
                             )">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
@@ -163,7 +176,10 @@
                                 {{ participantIds|json_encode }},
                                 {{ notesMap|json_encode }},
                                 {{ activeRealisation.photoUrls|json_encode }},
-                                {{ activeRealisation.photos|json_encode }}
+                                {{ activeRealisation.photos|json_encode }},
+                                {{ activeBoissonId|json_encode }},
+                                '{{ activeBoissonDate }}',
+                                {{ activeBoissonNote }}
                             )">
                         ✏️
                     </button>
@@ -210,6 +226,15 @@
                     {% endif %}
                 {% endif %}
             </h3>
+            {% if activeBoisson and activeBoisson.boisson %}
+                <div class="card-recette-boisson-badge" title="Boisson : {{ activeBoisson.boisson.nom }}{% if activeBoisson.dateAchat %} (Acheté le {{ activeBoisson.dateAchat|date('d/m/Y') }}){% endif %}{% if activeBoisson.note %} - Note : {{ activeBoisson.note }}/5{% endif %}">
+                    <span class="boisson-badge-icon"><i class="fa-solid fa-wine-glass"></i></span>
+                    <span class="boisson-badge-name">{{ activeBoisson.boisson.nom }}</span>
+                    {% if activeBoisson.note %}
+                        <span class="boisson-badge-note">★ {{ activeBoisson.note }}/5</span>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
 
     {% set displayIngredients = showIngredients is defined ? showIngredients : (activeRealisation is null) %}

@@ -46,7 +46,10 @@
         'deleteToken': csrf_token('delete_realisation_' ~ item.id),
         'recetteEditUrl': path('app_recette_edit', {'id': item.recette.id}),
         'updateComplementUrl': path('app_realisation_update_complement', {'id': item.id}),
-        'updateComplementToken': csrf_token('update_realisation_complement_' ~ item.id)
+        'updateComplementToken': csrf_token('update_realisation_complement_' ~ item.id),
+        'boissonId': item.repasBoisson and item.repasBoisson.boisson ? item.repasBoisson.boisson.id : null,
+        'boissonDateAchat': item.repasBoisson and item.repasBoisson.dateAchat ? item.repasBoisson.dateAchat|date('Y-m-d') : '',
+        'boissonNote': item.repasBoisson ? item.repasBoisson.note|default(0) : 0
     } %}
     {% set calendarMeals = calendarMeals|merge([mealData]) %}
 {% endfor %}

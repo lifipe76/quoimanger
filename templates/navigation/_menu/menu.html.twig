@@ -3,10 +3,11 @@
 {% set is_account_page = (current_route starts with 'app_account' or current_route starts with 'app_famille') %}
 {% set is_recettes_page = (current_route starts with 'app_recette') %}
 {% set is_ingredients_page = (current_route starts with 'app_ingredient') %}
+{% set is_boissons_page = (current_route starts with 'app_boisson') %}
 {% set is_home_page = (current_route == 'home') %}
 {% set is_messagerie_page = (current_route starts with 'app_messagerie') %}
 
-{# Configuration de la navigation séquentielle : Recettes -> Ingrédients -> Fil -> Messagerie -> Compte #}
+{# Configuration de la navigation séquentielle : Recettes -> Ingrédients -> Boissons -> Fil -> Messagerie -> Compte #}
 {% set nav_left_url = null %}
 {% set nav_left_title = null %}
 {% set nav_right_url = null %}
@@ -18,15 +19,21 @@
         {% set nav_right_url = path('app_ingredients_list') %}
         {% set nav_right_title = 'Vers Ingrédients' %}
     {% elseif is_ingredients_page %}
-        {# Ingrédients : gauche -> Recettes, droite -> Fil #}
+        {# Ingrédients : gauche -> Recettes, droite -> Boissons #}
         {% set nav_left_url = path('app_recettes_list') %}
         {% set nav_left_title = 'Vers Recettes' %}
+        {% set nav_right_url = path('app_boissons_list') %}
+        {% set nav_right_title = 'Vers Boissons' %}
+    {% elseif is_boissons_page %}
+        {# Boissons : gauche -> Ingrédients, droite -> Fil #}
+        {% set nav_left_url = path('app_ingredients_list') %}
+        {% set nav_left_title = 'Vers Ingrédients' %}
         {% set nav_right_url = path('home') %}
         {% set nav_right_title = 'Vers Fil repas' %}
     {% elseif is_home_page %}
-        {# Fil : gauche -> Ingrédients, droite -> Messagerie (ou Compte si pas de messagerie) #}
-        {% set nav_left_url = path('app_ingredients_list') %}
-        {% set nav_left_title = 'Vers Ingrédients' %}
+        {# Fil : gauche -> Boissons, droite -> Messagerie (ou Compte si pas de messagerie) #}
+        {% set nav_left_url = path('app_boissons_list') %}
+        {% set nav_left_title = 'Vers Boissons' %}
         {% if app.user %}
             {% set nav_right_url = path('app_messagerie') %}
             {% set nav_right_title = 'Vers Messagerie' %}
@@ -69,6 +76,7 @@
             <nav class="nav-links nav-links-main">
                 <a href="{{ path('app_recettes_list') }}" class="nav-link{{ current_route starts with 'app_recette' ? ' active' : '' }}">Recettes</a>
                 <a href="{{ path('app_ingredients_list') }}" class="nav-link{{ current_route starts with 'app_ingredient' ? ' active' : '' }}">Ingrédients</a>
+                <a href="{{ path('app_boissons_list') }}" class="nav-link{{ current_route starts with 'app_boisson' ? ' active' : '' }}">Boissons</a>
             </nav>
         {% endif %}
     </div>

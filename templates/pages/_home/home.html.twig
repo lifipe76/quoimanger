@@ -23,6 +23,12 @@
                             'class': 'btn-secondary btn-cta',
                             'onclick': 'openPropositionModal()'
                         }) }}
+                        {{ composant('_composants/button', {
+                            'titre': 'Mon frigo' ~ (frigoItems is defined and frigoItems|length > 0 ? ' (' ~ frigoItems|length ~ ')' : ''),
+                            'type': 'button',
+                            'class': 'btn-secondary btn-cta btn-frigo-cta',
+                            'onclick': 'openFrigoModal()'
+                        }) }}
                     </div>
                 </div>
 
@@ -156,5 +162,26 @@
 {{ composant('popups/repas/accompagnement', _context) }}
 
 {{ composant('popups/repas/proposition', _context) }}
+
+{{ composant('popups/repas/frigo', _context) }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("open_frigo") === "1") {
+        if (typeof openFrigoModal === "function") {
+            openFrigoModal();
+        }
+    } else if (urlParams.get("open_repas") === "1") {
+        if (typeof openRepasModal === "function") {
+            openRepasModal('toutes');
+        }
+    } else if (urlParams.get("open_proposition") === "1") {
+        if (typeof openPropositionModal === "function") {
+            openPropositionModal('toutes');
+        }
+    }
+});
+</script>
 
 {% endblock %}

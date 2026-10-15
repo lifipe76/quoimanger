@@ -21,15 +21,80 @@ class IngredientController extends AbstractController
     #[Route('/ingredients', name: 'app_ingredients_list', methods: ['GET'])]
     public function index(
         IngredientRepository $ingredientRepository,
-        RecipeSuggestionService $suggestionService
+        RecipeSuggestionService $suggestionService,
+        Request $request
     ): Response {
-        $ingredients = $ingredientRepository->findBy([], ['designation' => 'ASC']);
+        $session = $request->hasSession() ? $request->getSession() : null;
+        $hasSortInQuery = $request->query->has('sort');
+        $hasOrderInQuery = $request->query->has('order');
+
+        if ($hasSortInQuery) {
+            $sort = (string) $request->query->get('sort');
+            $session?->set('ingredients_sort', $sort);
+        } else {
+            $sort = (string) ($session?->get('ingredients_sort') ?? 'alpha');
+        }
+
+        $defaultOrder = match ($sort) {
+            'recettes' => 'desc',
+            default => 'asc', // 'alpha', 'rank'
+        };
+
+        if ($hasOrderInQuery) {
+            $order = strtolower((string) $request->query->get('order', ''));
+            if (!in_array($order, ['asc', 'desc'], true)) {
+                $order = $defaultOrder;
+            }
+            $session?->set('ingredients_order', $order);
+        } elseif ($hasSortInQuery) {
+            $order = $defaultOrder;
+            $session?->set('ingredients_order', $order);
+        } else {
+            $order = (string) ($session?->get('ingredients_order') ?? $defaultOrder);
+            if (!in_array($order, ['asc', 'desc'], true)) {
+                $order = $defaultOrder;
+            }
+        }
+
+        $ingredients = $ingredientRepository->findAll();
         $ranks = $suggestionService->calculateIngredientRanks($ingredients);
+
+        usort($ingredients, function (Ingredient $a, Ingredient $b) use ($sort, $order, $ranks) {
+            $isAsc = ($order === 'asc');
+
+            if ($sort === 'rank') {
+                $rankA = $ranks[$a->getId()] ?? null;
+                $rankB = $ranks[$b->getId()] ?? null;
+                if ($rankA === $rankB) {
+                    $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                    return $isAsc ? $cmp : -$cmp;
+                }
+                if ($rankA === null) return 1;
+                if ($rankB === null) return -1;
+                return $isAsc ? ($rankA <=> $rankB) : ($rankB <=> $rankA);
+            } elseif ($sort === 'recettes') {
+                $countA = $a->getRecetteIngredients()->count();
+                $countB = $b->getRecetteIngredients()->count();
+                if ($countA === $countB) {
+                    $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                    return $isAsc ? $cmp : -$cmp;
+                }
+                return $isAsc ? ($countA <=> $countB) : ($countB <=> $countA);
+            } else { // 'alpha'
+                $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                if ($cmp === 0) {
+                    return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+                }
+                return $isAsc ? $cmp : -$cmp;
+            }
+        });
 
         return $this->render('pages/pageComposant.html.twig', [
             'twig' => 'pages/ingredient/index',
             'ingredients' => $ingredients,
             'ranks' => $ranks,
+            'currentSort' => $sort,
+            'currentOrder' => $order,
         ]);
     }
 
@@ -92,7 +157,15 @@ class IngredientController extends AbstractController
 
             $this->addFlash('success', $isNew ? 'Ingrédient créé avec succès.' : 'Ingrédient mis à jour avec succès.');
 
-            return $this->redirectToRoute('app_ingredients_list');
+            $sortParams = [];
+            if ($savedSort = ($request->hasSession() ? $request->getSession()->get('ingredients_sort') : null)) {
+                $sortParams['sort'] = $savedSort;
+            }
+            if ($savedOrder = ($request->hasSession() ? $request->getSession()->get('ingredients_order') : null)) {
+                $sortParams['order'] = $savedOrder;
+            }
+
+            return $this->redirectToRoute('app_ingredients_list', $sortParams);
         }
 
         return $this->render('pages/pageComposant.html.twig', [
@@ -119,6 +192,14 @@ class IngredientController extends AbstractController
             $this->addFlash('success', 'Ingrédient supprimé.');
         }
 
-        return $this->redirectToRoute('app_ingredients_list');
+        $sortParams = [];
+        if ($savedSort = ($request->hasSession() ? $request->getSession()->get('ingredients_sort') : null)) {
+            $sortParams['sort'] = $savedSort;
+        }
+        if ($savedOrder = ($request->hasSession() ? $request->getSession()->get('ingredients_order') : null)) {
+            $sortParams['order'] = $savedOrder;
+        }
+
+        return $this->redirectToRoute('app_ingredients_list', $sortParams);
     }
 }

@@ -30,7 +30,17 @@ class RecetteController extends AbstractController
         $famille = $currentUser?->getFamille();
         $frigoRecetteIds = $frigoRepository->findRecetteIdsForUserOrFamille($currentUser, $famille);
 
-        $sort = $request->query->get('sort', 'date'); // 'date', 'note', 'rank', 'alpha', 'id', 'frigo'
+        $session = $request->hasSession() ? $request->getSession() : null;
+        $hasSortInQuery = $request->query->has('sort');
+        $hasOrderInQuery = $request->query->has('order');
+
+        if ($hasSortInQuery) {
+            $sort = (string) $request->query->get('sort');
+            $session?->set('recettes_sort', $sort);
+        } else {
+            $sort = (string) ($session?->get('recettes_sort') ?? 'date');
+        }
+
         $isFrigoFilter = ($sort === 'frigo' || $request->query->getBoolean('frigo', false));
         if ($sort === 'recent') {
             $sort = 'date';
@@ -45,9 +55,20 @@ class RecetteController extends AbstractController
             };
         }
 
-        $order = strtolower($request->query->get('order', ''));
-        if (!in_array($order, ['asc', 'desc'], true)) {
+        if ($hasOrderInQuery) {
+            $order = strtolower((string) $request->query->get('order', ''));
+            if (!in_array($order, ['asc', 'desc'], true)) {
+                $order = $defaultOrder;
+            }
+            $session?->set('recettes_order', $order);
+        } elseif ($hasSortInQuery) {
             $order = $defaultOrder;
+            $session?->set('recettes_order', $order);
+        } else {
+            $order = (string) ($session?->get('recettes_order') ?? $defaultOrder);
+            if (!in_array($order, ['asc', 'desc'], true)) {
+                $order = $defaultOrder;
+            }
         }
 
         $allRecettes = $recetteRepository->findAll();
@@ -213,7 +234,15 @@ class RecetteController extends AbstractController
 
             $this->addFlash('success', $isNew ? 'Recette créée avec succès.' : 'Recette mise à jour avec succès.');
 
-            return $this->redirectToRoute('app_recettes_list');
+            $sortParams = [];
+            if ($savedSort = ($request->hasSession() ? $request->getSession()->get('recettes_sort') : null)) {
+                $sortParams['sort'] = $savedSort;
+            }
+            if ($savedOrder = ($request->hasSession() ? $request->getSession()->get('recettes_order') : null)) {
+                $sortParams['order'] = $savedOrder;
+            }
+
+            return $this->redirectToRoute('app_recettes_list', $sortParams);
         }
 
         $destination = $request->query->get('destination', $request->request->get('destination', ''));
@@ -244,6 +273,14 @@ class RecetteController extends AbstractController
             $this->addFlash('success', 'Recette supprimée.');
         }
 
-        return $this->redirectToRoute('app_recettes_list');
+        $sortParams = [];
+        if ($savedSort = ($request->hasSession() ? $request->getSession()->get('recettes_sort') : null)) {
+            $sortParams['sort'] = $savedSort;
+        }
+        if ($savedOrder = ($request->hasSession() ? $request->getSession()->get('recettes_order') : null)) {
+            $sortParams['order'] = $savedOrder;
+        }
+
+        return $this->redirectToRoute('app_recettes_list', $sortParams);
     }
 }

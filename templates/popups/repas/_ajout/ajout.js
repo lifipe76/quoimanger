@@ -1,10 +1,56 @@
+function getStorageKeyForContainer(containerId) {
+    if (!containerId) return "quoiManger_sort_repas";
+    if (containerId.indexOf("proposition") !== -1) return "quoiManger_sort_proposition";
+    if (containerId.indexOf("frigo") !== -1 && containerId.indexOf("ajout") === -1 && containerId.indexOf("prop") === -1) {
+        return "quoiManger_sort_frigo";
+    }
+    return "quoiManger_sort_repas";
+}
+window.getStorageKeyForContainer = getStorageKeyForContainer;
+
+function restoreModalSort(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+
+    var storageKey = getStorageKeyForContainer(containerId);
+    var saved = null;
+    try {
+        var raw = localStorage.getItem(storageKey);
+        if (raw) saved = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!saved || !saved.sort) return;
+
+    var modal = container.closest(".modal-overlay") || container.closest(".modal") || container.parentElement;
+    var topBar = modal ? modal.querySelector(".modal-top-bar") : null;
+    if (!topBar) {
+        topBar = document.getElementById("repas-modal-top-bar") || document.getElementById("proposition-modal-top-bar") || document.getElementById("frigo-modal-top-bar");
+    }
+
+    var pill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill[data-sort='" + saved.sort + "']") : null;
+    if (pill) {
+        window.sortModalRecipes(saved.sort, pill, containerId, saved.order || "desc");
+    }
+}
+window.restoreModalSort = restoreModalSort;
+
 function openRepasModal(defaultTab) {
     openModal("repas-modal");
-    if (defaultTab) {
-        switchRepasTab(defaultTab);
-    } else {
-        switchRepasTab('toutes');
+
+    var activeTab = defaultTab;
+    if (!activeTab) {
+        try {
+            activeTab = localStorage.getItem("quoiManger_repas_tab") || "toutes";
+        } catch (e) {
+            activeTab = "toutes";
+        }
     }
+    switchRepasTab(activeTab);
+
+    // Restaurer le tri mémorisé sur les deux onglets
+    restoreModalSort("modal-recipes-container");
+    restoreModalSort("modal-ajout-frigo-container");
+
     var wrapper = document.getElementById("recipe-filter-input-wrapper");
     if (wrapper) {
         wrapper.classList.remove("is-open");
@@ -22,6 +68,10 @@ function closeRepasModal() {
 }
 
 function switchRepasTab(tab) {
+    try {
+        localStorage.setItem("quoiManger_repas_tab", tab);
+    } catch (e) {}
+
     var btnToutes = document.getElementById("tab-btn-ajout-toutes");
     var btnFrigo = document.getElementById("tab-btn-ajout-frigo");
     var contToutes = document.getElementById("modal-recipes-container");
@@ -50,6 +100,16 @@ function switchRepasTab(tab) {
             contToutes.style.display = "block";
             contToutes.classList.add("active");
         }
+    }
+
+    // Ré-appliquer le tri actif sur l'onglet affiché
+    var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
+    var orderBtn = topBar ? topBar.querySelector(".modal-sort-order-btn") : null;
+    if (activePill) {
+        var sortKey = activePill.getAttribute("data-sort") || "probability";
+        var order = orderBtn ? (orderBtn.getAttribute("data-order") || "desc") : "desc";
+        var targetContainerId = (tab === "frigo") ? "modal-ajout-frigo-container" : "modal-recipes-container";
+        sortModalRecipes(sortKey, activePill, targetContainerId, order);
     }
 
     var input = document.getElementById("recipe-filter-input");
@@ -84,7 +144,7 @@ function toggleModalSortOrder(btnElement, containerId) {
 
     var topBar = btnElement.closest(".modal-top-bar");
     var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
-    var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "date") : "date";
+    var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "probability") : "probability";
 
     sortModalRecipes(currentSortKey, activePill, containerId, nextOrder);
 }
@@ -134,6 +194,12 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
         });
         btnElement.classList.add("active");
     }
+
+    // Sauvegarder le tri sélectionné dans le localStorage
+    try {
+        var storageKey = getStorageKeyForContainer(containerId);
+        localStorage.setItem(storageKey, JSON.stringify({ sort: sortKey, order: order }));
+    } catch (e) {}
 
     var forms = Array.from(container.querySelectorAll(".modal-recipe-form"));
     if (forms.length <= 1) return;
@@ -204,4 +270,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, { passive: false });
     }
+
+    // Restaurer le tri des modales à l'initialisation
+    restoreModalSort("modal-recipes-container");
+    restoreModalSort("modal-ajout-frigo-container");
 });

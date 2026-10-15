@@ -1,0 +1,41 @@
+{# Composant Barre de Tri réutilisable #}
+{% set nextOrder = (currentOrder|default('desc') == 'asc') ? 'desc' : 'asc' %}
+{% set labelText = label|default('Trier :') %}
+{% set routeParams = routeParams|default({}) %}
+
+<div class="recettes-toolbar sort-toolbar"
+     {% if storageKey is defined and storageKey %}
+         data-storage-key="{{ storageKey }}"
+         data-default-sort="{{ defaultSort|default('alpha') }}"
+         data-default-order="{{ defaultOrder|default('asc') }}"
+     {% endif %}>
+    <div class="recettes-toolbar-sort-wrap sort-toolbar-order-wrap">
+        <span class="recettes-toolbar-label sort-toolbar-label">{{ labelText }}</span>
+        {% set orderRouteParams = routeParams|merge({'sort': currentSort, 'order': nextOrder}) %}
+        <a href="{{ path(route, orderRouteParams) }}"
+           class="sort-order-btn"
+           title="{{ currentOrder|default('desc') == 'asc' ? 'Tri croissant (cliquer pour trier par ordre décroissant)' : 'Tri décroissant (cliquer pour trier par ordre croissant)' }}"
+           aria-label="{{ currentOrder|default('desc') == 'asc' ? 'Tri croissant (cliquer pour trier par ordre décroissant)' : 'Tri décroissant (cliquer pour trier par ordre croissant)' }}">
+            {% if currentOrder|default('desc') == 'asc' %}
+                <i class="fa-solid fa-arrow-up sort-order-icon" aria-hidden="true"></i>
+            {% else %}
+                <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
+            {% endif %}
+        </a>
+    </div>
+
+    <div class="recettes-sort-pills sort-toolbar-pills">
+        {% for item in items %}
+            {% set itemActiveKeys = item.activeKeys|default([item.key]) %}
+            {% set isActive = currentSort in itemActiveKeys %}
+            {% set itemDefaultOrder = item.defaultOrder|default('asc') %}
+            {% set targetOrder = isActive ? nextOrder : itemDefaultOrder %}
+            {% set pillRouteParams = routeParams|merge({'sort': item.key, 'order': targetOrder}) %}
+            <a href="{{ path(route, pillRouteParams) }}"
+               class="sort-pill {{ isActive ? 'active' : '' }}"
+               data-sort="{{ item.key }}">
+                {{ item.label }}
+            </a>
+        {% endfor %}
+    </div>
+</div>

@@ -165,8 +165,19 @@
 
 {{ composant('popups/repas/frigo', _context) }}
 
+{{ composant('popups/repas/notation', _context) }}
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Restaurer les tris mémorisés pour toutes les modales
+    if (typeof restoreModalSort === "function") {
+        restoreModalSort("modal-recipes-container");
+        restoreModalSort("modal-ajout-frigo-container");
+        restoreModalSort("modal-proposition-recipes-container");
+        restoreModalSort("modal-proposition-frigo-container");
+        restoreModalSort("modal-frigo-recipes-container");
+    }
+
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("open_frigo") === "1") {
         if (typeof openFrigoModal === "function") {
@@ -174,12 +185,27 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     } else if (urlParams.get("open_repas") === "1") {
         if (typeof openRepasModal === "function") {
-            openRepasModal('toutes');
+            openRepasModal(urlParams.get("tab") || null);
         }
     } else if (urlParams.get("open_proposition") === "1") {
         if (typeof openPropositionModal === "function") {
-            openPropositionModal('toutes');
+            openPropositionModal(urlParams.get("tab") || null);
         }
+    }
+
+    var selectedId = urlParams.get("selected_recette");
+    if (selectedId) {
+        setTimeout(function () {
+            var targetForm = document.querySelector(".modal-recipe-form[data-id='" + selectedId + "']");
+            if (targetForm) {
+                targetForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetForm.style.transition = 'box-shadow 0.3s ease';
+                targetForm.style.boxShadow = '0 0 0 3px var(--primary, #c4a587)';
+                setTimeout(function () {
+                    targetForm.style.boxShadow = '';
+                }, 2500);
+            }
+        }, 300);
     }
 });
 </script>

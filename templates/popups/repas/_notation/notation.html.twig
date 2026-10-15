@@ -1,0 +1,62 @@
+<!-- Modal Popup "Noter ce repas" -->
+{% set popupContent %}
+    <form method="post" id="rate-meal-form" action="">
+        <input type="hidden" name="_token" id="rate-meal-token" value="">
+        <input type="hidden" name="note" id="rate-meal-note-input" value="0">
+
+        <div class="modal-body rate-meal-modal-body">
+            <p class="rate-meal-instruction">
+                Attribuez une note pour ce repas sur votre compte connecté :
+            </p>
+
+            <div class="rate-meal-stars-picker" id="rate-meal-stars-picker" role="radiogroup" aria-label="Votre note pour ce repas">
+                {% for star in 1..5 %}
+                    <button type="button"
+                            class="rate-meal-star-btn"
+                            data-star="{{ star }}"
+                            onclick="selectRateMealStar({{ star }})"
+                            onmouseenter="hoverRateMealStar({{ star }})"
+                            onmouseleave="resetRateMealStarsHover()"
+                            title="Attribuer {{ star }} étoile{{ star > 1 ? 's' : '' }}"
+                            aria-label="{{ star }} étoile{{ star > 1 ? 's' : '' }}">
+                        ★
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div class="rate-meal-rating-feedback">
+                <span id="rate-meal-feedback-text" class="rate-meal-feedback-text">Aucune note</span>
+                <button type="button"
+                        id="rate-meal-btn-clear"
+                        class="rate-meal-btn-clear"
+                        onclick="clearRateMealStar()"
+                        style="display: none;">
+                    Effacer la note
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; padding: 1.25rem 1.75rem; background: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+            {{ composant('_composants/button', {
+                'titre': 'Annuler',
+                'type': 'button',
+                'class': 'btn-secondary',
+                'onclick': 'closeRateMealModal()'
+            }) }}
+            {{ composant('_composants/button', {
+                'titre': 'Enregistrer',
+                'type': 'submit',
+                'class': 'btn-primary'
+            }) }}
+        </div>
+    </form>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'rate-meal-modal',
+    'title': 'Noter ce repas',
+    'subtitle': 'Recette : <strong id="rate-meal-recipe-name" style="color: var(--primary, #c4a587);"></strong>',
+    'content': popupContent,
+    'onClose': 'closeRateMealModal()',
+    'onBackdropClick': 'handleRateMealBackdropClick(event)'
+}) }}

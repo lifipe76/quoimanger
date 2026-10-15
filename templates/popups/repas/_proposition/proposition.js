@@ -1,10 +1,21 @@
 function openPropositionModal(defaultTab) {
     openModal("repas-proposition-modal");
-    if (defaultTab) {
-        switchPropositionTab(defaultTab);
-    } else {
-        switchPropositionTab('toutes');
+
+    var activeTab = defaultTab;
+    if (!activeTab) {
+        try {
+            activeTab = localStorage.getItem("quoiManger_prop_tab") || "toutes";
+        } catch (e) {
+            activeTab = "toutes";
+        }
     }
+    switchPropositionTab(activeTab);
+
+    if (typeof restoreModalSort === "function") {
+        restoreModalSort("modal-proposition-recipes-container");
+        restoreModalSort("modal-proposition-frigo-container");
+    }
+
     var wrapper = document.getElementById("proposition-recipe-filter-input-wrapper");
     if (wrapper) {
         wrapper.classList.remove("is-open");
@@ -22,10 +33,16 @@ function closePropositionModal() {
 }
 
 function switchPropositionTab(tab) {
+    try {
+        localStorage.setItem("quoiManger_prop_tab", tab);
+    } catch (e) {}
+
     var btnToutes = document.getElementById("tab-btn-prop-toutes");
     var btnFrigo = document.getElementById("tab-btn-prop-frigo");
     var contToutes = document.getElementById("modal-proposition-recipes-container");
     var contFrigo = document.getElementById("modal-proposition-frigo-container");
+    var modal = document.getElementById("repas-proposition-modal");
+    var topBar = modal ? modal.querySelector(".modal-top-bar") : null;
 
     if (tab === "frigo") {
         if (btnToutes) btnToutes.classList.remove("active");
@@ -49,6 +66,15 @@ function switchPropositionTab(tab) {
             contToutes.style.display = "block";
             contToutes.classList.add("active");
         }
+    }
+
+    var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
+    var orderBtn = topBar ? topBar.querySelector(".modal-sort-order-btn") : null;
+    if (activePill && typeof sortModalRecipes === "function") {
+        var sortKey = activePill.getAttribute("data-sort") || "probability";
+        var order = orderBtn ? (orderBtn.getAttribute("data-order") || "desc") : "desc";
+        var targetContainerId = (tab === "frigo") ? "modal-proposition-frigo-container" : "modal-proposition-recipes-container";
+        sortModalRecipes(sortKey, activePill, targetContainerId, order);
     }
 
     var input = document.getElementById("proposition-recipe-filter-input");
@@ -170,7 +196,13 @@ if (typeof window.sortModalRecipes !== "function") {
             btnElement.classList.add("active");
         }
 
-        var forms = Array.from(container.querySelectorAll(".modal-recipe-form"));
+        // Sauvegarder dans le localStorage
+        try {
+            var storageKey = (typeof getStorageKeyForContainer === "function") ? getStorageKeyForContainer(containerId) : "quoiManger_sort_proposition";
+            localStorage.setItem(storageKey, JSON.stringify({ sort: sortKey, order: order }));
+        } catch (e) {}
+
+        var forms = Array.from(container.querySelectorAll(".modal-recipe-form, .modal-prop-recipe-form"));
         if (forms.length <= 1) return;
 
         var isAsc = (order === "asc");
@@ -238,5 +270,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 sortPills.scrollLeft += e.deltaY;
             }
         }, { passive: false });
+    }
+
+    if (typeof restoreModalSort === "function") {
+        restoreModalSort("modal-proposition-recipes-container");
+        restoreModalSort("modal-proposition-frigo-container");
     }
 });

@@ -95,10 +95,12 @@
             {% for f in frigoItems %}
                 {% if f.recette %}
                     {% set r = f.recette %}
+                    {% set probScore = (probabilityScores is defined and probabilityScores[r.id] is defined) ? probabilityScores[r.id] : 0 %}
                     <form method="post" action="{{ path('app_realisation_add') }}"
                           class="modal-recipe-form modal-frigo-direct-form"
                           data-name="{{ r.designation|lower }}"
                           data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
+                          data-probability="{{ probScore }}"
                           data-note="{{ r.averageNote|default(0) }}"
                           data-count="{{ r.notesCount|default(0) }}"
                           data-rank="{{ (ranks is defined and ranks[r.id] is defined and ranks[r.id] is not null) ? ranks[r.id] : 999999 }}"

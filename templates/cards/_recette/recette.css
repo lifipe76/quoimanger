@@ -511,6 +511,24 @@
     line-height: 1;
 }
 
+.card-recette-stars-group.is-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.card-recette-stars-group.is-clickable:hover {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.card-recette-stars-group.is-clickable:focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+}
+
 .card-recette-stars-group .stars-display {
     display: inline-flex;
     align-items: center;

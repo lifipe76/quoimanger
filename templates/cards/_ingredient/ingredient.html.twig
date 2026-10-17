@@ -9,7 +9,9 @@
 {% set nbRecettes = ingredient.recetteIngredients|length %}
 {% set rank = (ranks is defined and ranks[ingredient.id] is defined) ? ranks[ingredient.id] : null %}
 
-<div class="card-ingredient has-photo-bg" style="--card-index: {{ index|default(0) }};">
+<div class="card-ingredient has-photo-bg"
+     data-name="{{ ingredient.designation|lower }}"
+     style="--card-index: {{ index|default(0) }};">
     <div class="card-ingredient-photo-wrap {{ not hasRealPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
          {% if hasRealPhoto %}
              data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"

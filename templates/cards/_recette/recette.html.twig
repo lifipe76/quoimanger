@@ -12,8 +12,18 @@
 {% set showPlaceholderPhoto = (not isRepas and not hasRealPhoto) %}
 {% set displayPhoto = hasRealPhoto ? firstPhoto : (showPlaceholderPhoto ? defaultFoodPhotoUrl : null) %}
 {% set activeBoisson = (activeRealisation and activeRealisation.repasBoisson) ? activeRealisation.repasBoisson : null %}
+{% set recipeSearchKeywords = [recette.designation] %}
+{% if recette.recetteIngredients is defined and recette.recetteIngredients|length > 0 %}
+    {% for ri in recette.recetteIngredients %}
+        {% if ri.ingredient and ri.ingredient.designation %}
+            {% set recipeSearchKeywords = recipeSearchKeywords|merge([ri.ingredient.designation]) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-<div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
+<div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}"
+     data-name="{{ recipeSearchKeywords|join(' ')|lower }}"
+     style="--card-index: {{ index|default(0) }};">
     {% if displayPhoto %}
         <div class="card-recette-photo-wrap {{ showPlaceholderPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
              {% if hasRealPhoto %}

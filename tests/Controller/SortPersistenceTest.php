@@ -186,6 +186,25 @@ class SortPersistenceTest extends WebTestCase
         $this->assertSelectorExists('.sort-pill[href*="sort=rank"].active');
     }
 
+    public function testSearchComponentReplacesTrierLabelOnRecettesAndIngredientsPages(): void
+    {
+        // 1. Page Recettes
+        $crawlerRecettes = $this->client->request('GET', '/recettes');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.sort-toolbar #recettes-search-input-wrapper');
+        $this->assertSelectorExists('.sort-toolbar #recettes-search-input');
+        $this->assertSelectorExists('.sort-toolbar .btn-search-toggle');
+        $this->assertSelectorNotExists('.sort-toolbar .sort-toolbar-label');
+
+        // 2. Page Ingrédients
+        $crawlerIngredients = $this->client->request('GET', '/ingredients');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('.sort-toolbar #ingredients-search-input-wrapper');
+        $this->assertSelectorExists('.sort-toolbar #ingredients-search-input');
+        $this->assertSelectorExists('.sort-toolbar .btn-search-toggle');
+        $this->assertSelectorNotExists('.sort-toolbar .sort-toolbar-label');
+    }
+
     public function testTimelineModalsIncludeSortPersistenceLogic(): void
     {
         $crawler = $this->client->request('GET', '/');

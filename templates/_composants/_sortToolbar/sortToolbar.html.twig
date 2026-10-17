@@ -1,7 +1,13 @@
-{# Composant Barre de Tri réutilisable #}
+{# Composant Barre de Tri réutilisable avec recherche intégrée #}
 {% set nextOrder = (currentOrder|default('desc') == 'asc') ? 'desc' : 'asc' %}
 {% set labelText = label|default('Trier :') %}
 {% set routeParams = routeParams|default({}) %}
+{% set withSearch = withSearch is defined ? withSearch : true %}
+{% set defaultTarget = (route|default('') == 'app_recettes_list') ? '.card-recette' : ((route|default('') == 'app_ingredients_list') ? '.card-ingredient' : '') %}
+{% set searchTarget = searchTarget|default(defaultTarget) %}
+{% set defaultPlaceholder = (route|default('') == 'app_ingredients_list') ? 'Rechercher un ingrédient...' : 'Rechercher une recette...' %}
+{% set searchPlaceholder = searchPlaceholder|default(defaultPlaceholder) %}
+{% set searchId = searchId|default((route|default('sort') ~ '-search-input')|replace({'_': '-'})) %}
 
 <div class="recettes-toolbar sort-toolbar"
      {% if storageKey is defined and storageKey %}
@@ -10,7 +16,16 @@
          data-default-order="{{ defaultOrder|default('asc') }}"
      {% endif %}>
     <div class="recettes-toolbar-sort-wrap sort-toolbar-order-wrap">
-        <span class="recettes-toolbar-label sort-toolbar-label">{{ labelText }}</span>
+        {% if withSearch and searchTarget %}
+            {{ composant('_composants/_popup/recherche', {
+                'id': searchId,
+                'placeholder': searchPlaceholder,
+                'target': searchTarget
+            }) }}
+        {% else %}
+            <span class="recettes-toolbar-label sort-toolbar-label">{{ labelText }}</span>
+        {% endif %}
+
         {% set orderRouteParams = routeParams|merge({'sort': currentSort, 'order': nextOrder}) %}
         <a href="{{ path(route, orderRouteParams) }}"
            class="sort-order-btn"

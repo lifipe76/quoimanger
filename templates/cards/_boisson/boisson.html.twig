@@ -1,0 +1,114 @@
+{% set cardPhotoUrls = boisson.photoUrls|default([]) %}
+{% if cardPhotoUrls|length == 0 and boisson.photo %}
+    {% set cardPhotoUrls = [boisson.photoUrl] %}
+{% endif %}
+{% set cardPhotoUrl = cardPhotoUrls[0]|default(boisson.photo ? boisson.photoUrl : null) %}
+{% set defaultDrinkPhotoUrl = '/images/default_drink.webp' %}
+{% set hasRealPhoto = cardPhotoUrl is not null %}
+{% set displayPhoto = hasRealPhoto ? cardPhotoUrl : defaultDrinkPhotoUrl %}
+{% set nbRepas = boisson.realisationsCount|default(0) %}
+{% set avgNote = boisson.averageNote %}
+
+<div class="card-boisson has-photo-bg" style="--card-index: {{ index|default(0) }};">
+    <div class="card-boisson-photo-wrap {{ not hasRealPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
+         {% if hasRealPhoto %}
+             data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"
+         {% endif %}>
+        <img src="{{ displayPhoto }}" alt="{{ hasRealPhoto ? boisson.nom : '' }}" class="card-boisson-bg-photo {{ not hasRealPhoto ? 'card-photo-placeholder-bg' : '' }}" loading="lazy">
+        {% if hasRealPhoto and cardPhotoUrls|length > 1 %}
+            <button type="button" class="card-photo-arrow card-photo-arrow-prev" aria-label="Photo précédente" onclick="changeCardPhoto(event, this, -1)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button type="button" class="card-photo-arrow card-photo-arrow-next" aria-label="Photo suivante" onclick="changeCardPhoto(event, this, 1)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <div class="card-photo-nav-group">
+                <span class="card-photo-count-badge" title="{{ cardPhotoUrls|length }} photos">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span class="card-photo-current-idx">1</span>/{{ cardPhotoUrls|length }}
+                </span>
+                <div class="card-photo-dots" role="tablist" aria-label="Photos de la boisson">
+                    {% for photoUrl in cardPhotoUrls %}
+                        <button type="button"
+                                class="card-photo-dot {{ loop.first ? 'active' : '' }}"
+                                data-index="{{ loop.index0 }}"
+                                title="Photo {{ loop.index }} sur {{ cardPhotoUrls|length }}"
+                                aria-label="Photo {{ loop.index }}"
+                                onclick="selectCardPhoto(event, this, {{ loop.index0 }})"></button>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card-boisson-header">
+        <div class="card-boisson-header-left">
+            <span class="card-boisson-status" title="Nombre de repas associés">
+                {{ nbRepas > 0 ? (nbRepas ~ ' repas') : 'Non servie' }}
+            </span>
+            {% if boisson.lieuAchat %}
+                <span class="card-boisson-lieu" title="Lieu d'achat">
+                    {{ boisson.lieuAchat }}
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="card-boisson-header-right">
+            {% if avgNote %}
+                <div class="card-boisson-stars" title="Note moyenne : {{ avgNote }} / 5 ({{ boisson.notesCount }} avis)">
+                    <span class="boisson-star-filled">★</span>
+                    <span class="boisson-note-val">{{ avgNote }}</span>
+                    <span class="boisson-note-count">({{ boisson.notesCount }})</span>
+                </div>
+            {% endif %}
+
+            <span class="card-boisson-id">#{{ boisson.id }}</span>
+
+            <a href="{{ path('app_boisson_edit', {'id': boisson.id}) }}"
+               class="card-btn-pencil"
+               title="Modifier la boisson « {{ boisson.nom }} »">
+                ✏️
+            </a>
+        </div>
+    </div>
+
+    <div class="card-boisson-title-row">
+        <h3 class="card-boisson-title">
+            <a href="{{ path('app_boisson_edit', {'id': boisson.id}) }}" class="boisson-title-link">
+                {{ boisson.nom }}
+            </a>
+        </h3>
+    </div>
+
+    <div class="card-boisson-body">
+        {% if boisson.description %}
+            <p class="card-boisson-desc">{{ boisson.description }}</p>
+        {% endif %}
+
+        {% if nbRepas > 0 %}
+            <div class="card-boisson-repas-list">
+                <span class="card-boisson-repas-label">Derniers repas accompagnés :</span>
+                <div class="card-boisson-chips">
+                    {% for rb in boisson.repasBoissons|slice(0, 3) %}
+                        {% if rb.realisation and rb.realisation.recette %}
+                            <span class="repas-chip" title="{{ rb.realisation.realiseAt ? rb.realisation.realiseAt|date('d/m/Y') : '' }}">
+                                {{ rb.realisation.recette.designation }}
+                                {% if rb.note %}
+                                    <span class="chip-note">★ {{ rb.note }}</span>
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                    {% if nbRepas > 3 %}
+                        <span class="recipe-chip-more">+{{ nbRepas - 3 }} autre(s)</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <span class="card-boisson-empty">Aucun repas associé pour le moment</span>
+        {% endif %}
+    </div>
+</div>

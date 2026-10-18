@@ -96,11 +96,19 @@ class RecetteRealisation
     #[Groups(['realisation:read'])]
     private Collection $notes;
 
+    /**
+     * @var Collection<int, RepasBoisson>
+     */
+    #[ORM\OneToMany(targetEntity: RepasBoisson::class, mappedBy: 'realisation', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Groups(['realisation:read'])]
+    private Collection $repasBoissons;
+
     public function __construct()
     {
         $this->realiseAt = new \DateTimeImmutable();
         $this->participants = new ArrayCollection();
         $this->notes = new ArrayCollection();
+        $this->repasBoissons = new ArrayCollection();
         $this->photos = [];
         $this->recettes = new ArrayCollection();
     }
@@ -633,5 +641,52 @@ class RecetteRealisation
         }
 
         return round($total / $this->notes->count(), 1);
+    }
+
+    /**
+     * @return Collection<int, RepasBoisson>
+     */
+    public function getRepasBoissons(): Collection
+    {
+        return $this->repasBoissons;
+    }
+
+    public function addRepasBoisson(RepasBoisson $repasBoisson): static
+    {
+        if (!$this->repasBoissons->contains($repasBoisson)) {
+            $this->repasBoissons->add($repasBoisson);
+            $repasBoisson->setRealisation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRepasBoisson(RepasBoisson $repasBoisson): static
+    {
+        if ($this->repasBoissons->removeElement($repasBoisson)) {
+            if ($repasBoisson->getRealisation() === $this) {
+                $repasBoisson->setRealisation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Retourne la première boisson associée au repas ou null.
+     */
+    public function getBoisson(): ?Boisson
+    {
+        $first = $this->repasBoissons->first();
+
+        return $first ? $first->getBoisson() : null;
+    }
+
+    /**
+     * Retourne la première relation RepasBoisson ou null.
+     */
+    public function getRepasBoisson(): ?RepasBoisson
+    {
+        return $this->repasBoissons->first() ?: null;
     }
 }

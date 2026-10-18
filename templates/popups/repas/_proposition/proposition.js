@@ -1,5 +1,21 @@
-function openPropositionModal() {
+function openPropositionModal(defaultTab) {
     openModal("repas-proposition-modal");
+
+    var activeTab = defaultTab;
+    if (!activeTab) {
+        try {
+            activeTab = localStorage.getItem("quoiManger_prop_tab") || "toutes";
+        } catch (e) {
+            activeTab = "toutes";
+        }
+    }
+    switchPropositionTab(activeTab);
+
+    if (typeof restoreModalSort === "function") {
+        restoreModalSort("modal-proposition-recipes-container");
+        restoreModalSort("modal-proposition-frigo-container");
+    }
+
     var wrapper = document.getElementById("proposition-recipe-filter-input-wrapper");
     if (wrapper) {
         wrapper.classList.remove("is-open");
@@ -15,6 +31,58 @@ function openPropositionModal() {
 function closePropositionModal() {
     closeModal("repas-proposition-modal");
 }
+
+function switchPropositionTab(tab) {
+    try {
+        localStorage.setItem("quoiManger_prop_tab", tab);
+    } catch (e) {}
+
+    var btnToutes = document.getElementById("tab-btn-prop-toutes");
+    var btnFrigo = document.getElementById("tab-btn-prop-frigo");
+    var contToutes = document.getElementById("modal-proposition-recipes-container");
+    var contFrigo = document.getElementById("modal-proposition-frigo-container");
+    var modal = document.getElementById("repas-proposition-modal");
+    var topBar = modal ? modal.querySelector(".modal-top-bar") : null;
+
+    if (tab === "frigo") {
+        if (btnToutes) btnToutes.classList.remove("active");
+        if (btnFrigo) btnFrigo.classList.add("active");
+        if (contToutes) {
+            contToutes.style.display = "none";
+            contToutes.classList.remove("active");
+        }
+        if (contFrigo) {
+            contFrigo.style.display = "block";
+            contFrigo.classList.add("active");
+        }
+    } else {
+        if (btnFrigo) btnFrigo.classList.remove("active");
+        if (btnToutes) btnToutes.classList.add("active");
+        if (contFrigo) {
+            contFrigo.style.display = "none";
+            contFrigo.classList.remove("active");
+        }
+        if (contToutes) {
+            contToutes.style.display = "block";
+            contToutes.classList.add("active");
+        }
+    }
+
+    var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
+    var orderBtn = topBar ? topBar.querySelector(".modal-sort-order-btn") : null;
+    if (activePill && typeof sortModalRecipes === "function") {
+        var sortKey = activePill.getAttribute("data-sort") || "probability";
+        var order = orderBtn ? (orderBtn.getAttribute("data-order") || "desc") : "desc";
+        var targetContainerId = (tab === "frigo") ? "modal-proposition-frigo-container" : "modal-proposition-recipes-container";
+        sortModalRecipes(sortKey, activePill, targetContainerId, order);
+    }
+
+    var input = document.getElementById("proposition-recipe-filter-input");
+    if (input && input.value) {
+        filterPropositionRecipesList(input.value);
+    }
+}
+window.switchPropositionTab = switchPropositionTab;
 
 function selectPropositionMoment(moment) {
     document.querySelectorAll(".btn-prop-moment-toggle").forEach(function (btn) {
@@ -52,7 +120,7 @@ function onPropositionDateInputChange(val) {
 
 function filterPropositionRecipesList(term) {
     var normalized = term.trim().toLowerCase();
-    var forms = document.querySelectorAll("#modal-proposition-recipes-container .modal-prop-recipe-form");
+    var forms = document.querySelectorAll("#modal-proposition-recipes-container .modal-prop-recipe-form, #modal-proposition-frigo-container .modal-prop-recipe-form");
     forms.forEach(function (form) {
         var name = form.dataset.name || "";
         form.style.display = name.includes(normalized) ? "block" : "none";
@@ -76,7 +144,7 @@ if (typeof window.toggleModalSortOrder !== "function") {
 
         var topBar = btnElement.closest(".modal-top-bar");
         var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
-        var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "date") : "date";
+        var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "probability") : "probability";
 
         window.sortModalRecipes(currentSortKey, activePill, containerId, nextOrder);
     };
@@ -128,12 +196,20 @@ if (typeof window.sortModalRecipes !== "function") {
             btnElement.classList.add("active");
         }
 
-        var forms = Array.from(container.querySelectorAll(".modal-recipe-form"));
+        // Sauvegarder dans le localStorage
+        try {
+            var storageKey = (typeof getStorageKeyForContainer === "function") ? getStorageKeyForContainer(containerId) : "quoiManger_sort_proposition";
+            localStorage.setItem(storageKey, JSON.stringify({ sort: sortKey, order: order }));
+        } catch (e) {}
+
+        var forms = Array.from(container.querySelectorAll(".modal-recipe-form, .modal-prop-recipe-form"));
         if (forms.length <= 1) return;
 
         var isAsc = (order === "asc");
 
         forms.sort(function (a, b) {
+            var probA = parseFloat(a.dataset.probability || "0");
+            var probB = parseFloat(b.dataset.probability || "0");
             var dateA = parseInt(a.dataset.date || "0", 10);
             var dateB = parseInt(b.dataset.date || "0", 10);
             var idA = parseInt(a.dataset.id || "0", 10);
@@ -147,7 +223,13 @@ if (typeof window.sortModalRecipes !== "function") {
             var nameA = (a.dataset.name || "").trim();
             var nameB = (b.dataset.name || "").trim();
 
-            if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
+            if (sortKey === "probability") {
+                if (probA === probB) {
+                    var cmpP = nameA.localeCompare(nameB, "fr", { sensitivity: "base" });
+                    return isAsc ? cmpP : -cmpP;
+                }
+                return isAsc ? (probA - probB) : (probB - probA);
+            } else if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
                 if (dateA === 0 && dateB !== 0) return 1;
                 if (dateB === 0 && dateA !== 0) return -1;
                 if (dateA === dateB) return isAsc ? (idA - idB) : (idB - idA);
@@ -188,5 +270,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 sortPills.scrollLeft += e.deltaY;
             }
         }, { passive: false });
+    }
+
+    if (typeof restoreModalSort === "function") {
+        restoreModalSort("modal-proposition-recipes-container");
+        restoreModalSort("modal-proposition-frigo-container");
     }
 });

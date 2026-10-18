@@ -73,37 +73,55 @@ function renderEditMealRecipes() {
 
     var count = editMealCurrentRecipes.length;
     if (countEl) {
-        countEl.textContent = count > 1 ? count + " recettes" : count + " recette";
+        countEl.textContent =
+            count > 1 ? count + " recettes" : count + " recette";
     }
 
     var chipsHtml = "";
     editMealCurrentRecipes.forEach(function (r) {
         var rId = r.id ? String(r.id) : "";
-        chipsHtml += '<span class="edit-meal-recipe-chip" data-recipe-id="' + rId + '">';
-        chipsHtml += '<span class="chip-label">' + escapeHtmlModif(r.designation) + '</span>';
+        chipsHtml +=
+            '<span class="edit-meal-recipe-chip" data-recipe-id="' + rId + '">';
+        chipsHtml +=
+            '<span class="chip-label">' +
+            escapeHtmlModif(r.designation) +
+            "</span>";
         if (count > 1) {
-            chipsHtml += '<button type="button" class="btn-remove-recipe-chip" onclick="removeRecipeFromEditMeal(\'' + rId + '\')" title="Retirer cette recette" aria-label="Retirer cette recette">✕</button>';
+            chipsHtml +=
+                '<button type="button" class="btn-remove-recipe-chip" onclick="removeRecipeFromEditMeal(\'' +
+                rId +
+                '\')" title="Retirer cette recette" aria-label="Retirer cette recette">✕</button>';
         }
-        chipsHtml += '</span>';
+        chipsHtml += "</span>";
     });
     chipsContainer.innerHTML = chipsHtml;
 
-    var inputsHtml = '<input type="hidden" name="has_recettes_field" value="1">';
+    var inputsHtml =
+        '<input type="hidden" name="has_recettes_field" value="1">';
     editMealCurrentRecipes.forEach(function (r) {
         if (r.id) {
-            inputsHtml += '<input type="hidden" name="recette_ids[]" value="' + escapeHtmlModif(r.id) + '">';
+            inputsHtml +=
+                '<input type="hidden" name="recette_ids[]" value="' +
+                escapeHtmlModif(r.id) +
+                '">';
         }
     });
     inputsContainer.innerHTML = inputsHtml;
 
-    var titles = editMealCurrentRecipes.map(function (r) { return r.designation; });
+    var titles = editMealCurrentRecipes.map(function (r) {
+        return r.designation;
+    });
     var mergedTitle = computeMergedMealTitle(titles);
     if (recipeNameEl && mergedTitle) {
         recipeNameEl.textContent = mergedTitle;
     }
 
     if (selectEl) {
-        var selectedIds = new Set(editMealCurrentRecipes.map(function (r) { return String(r.id); }));
+        var selectedIds = new Set(
+            editMealCurrentRecipes.map(function (r) {
+                return String(r.id);
+            }),
+        );
         for (var i = 0; i < selectEl.options.length; i++) {
             var opt = selectEl.options[i];
             if (opt.value && selectedIds.has(String(opt.value))) {
@@ -122,7 +140,11 @@ function addSelectedRecipeToEditMeal() {
 
     var selectedId = selectEl.value;
     var selectedOption = selectEl.options[selectEl.selectedIndex];
-    var designation = (selectedOption.getAttribute("data-designation") || selectedOption.text || "").trim();
+    var designation = (
+        selectedOption.getAttribute("data-designation") ||
+        selectedOption.text ||
+        ""
+    ).trim();
 
     var alreadyExists = editMealCurrentRecipes.some(function (r) {
         return String(r.id) === String(selectedId);
@@ -131,7 +153,7 @@ function addSelectedRecipeToEditMeal() {
     if (!alreadyExists) {
         editMealCurrentRecipes.push({
             id: parseInt(selectedId, 10),
-            designation: designation
+            designation: designation,
         });
         renderEditMealRecipes();
     }
@@ -159,7 +181,10 @@ function openEditMealModal(
     notesMap,
     currentPhotoUrl,
     currentPhotoNames,
-    currentRecipesData
+    currentRecipesData,
+    boissonId,
+    boissonDateAchat,
+    boissonNote,
 ) {
     var modal = document.getElementById("edit-meal-modal");
     var updateForm = document.getElementById("edit-meal-form");
@@ -204,7 +229,10 @@ function openEditMealModal(
             var selectEl = document.getElementById("edit-meal-recipe-select");
             if (selectEl) {
                 for (var sIdx = 0; sIdx < selectEl.options.length; sIdx++) {
-                    if (selectEl.options[sIdx].text.trim().toLowerCase() === recipeTitle.trim().toLowerCase()) {
+                    if (
+                        selectEl.options[sIdx].text.trim().toLowerCase() ===
+                        recipeTitle.trim().toLowerCase()
+                    ) {
                         matchedId = selectEl.options[sIdx].value;
                         break;
                     }
@@ -212,7 +240,7 @@ function openEditMealModal(
             }
             editMealCurrentRecipes.push({
                 id: matchedId ? parseInt(matchedId, 10) : null,
-                designation: recipeTitle
+                designation: recipeTitle,
             });
         }
 
@@ -231,8 +259,15 @@ function openEditMealModal(
         if (typeof clearModalPhotos === "function") {
             clearModalPhotos("edit-meal");
         }
-        if (typeof populateModalExistingPhotos === "function" && (currentPhotoUrl || currentPhotoNames)) {
-            populateModalExistingPhotos("edit-meal", currentPhotoUrl, currentPhotoNames);
+        if (
+            typeof populateModalExistingPhotos === "function" &&
+            (currentPhotoUrl || currentPhotoNames)
+        ) {
+            populateModalExistingPhotos(
+                "edit-meal",
+                currentPhotoUrl,
+                currentPhotoNames,
+            );
         }
 
         if (updateForm && !updateForm.dataset.multiPhotoListenerAttached) {
@@ -258,14 +293,18 @@ function openEditMealModal(
             }
         }
 
-        var participantCheckboxes = document.querySelectorAll("#edit-meal-participants-container .participant-checkbox");
+        var participantCheckboxes = document.querySelectorAll(
+            "#edit-meal-participants-container .participant-checkbox",
+        );
         participantCheckboxes.forEach(function (chk) {
             var val = parseInt(chk.value, 10);
             var isChecked = parsedParticipantIds.includes(val);
             chk.checked = isChecked;
             var label = chk.closest(".participant-toggle-label");
             if (label) {
-                label.style.borderColor = isChecked ? "var(--primary, #c4a587)" : "#cbd5e1";
+                label.style.borderColor = isChecked
+                    ? "var(--primary, #c4a587)"
+                    : "#cbd5e1";
                 label.style.background = isChecked ? "#fdf8f4" : "#f8fafc";
             }
         });
@@ -284,25 +323,42 @@ function openEditMealModal(
             }
         }
 
-        document.querySelectorAll("#edit-meal-ratings-container .modal-star-rating").forEach(function (container) {
-            var userId = container.dataset.userId;
-            var userNote = parsedNotes[userId] || 0;
+        document
+            .querySelectorAll("#edit-meal-ratings-container .modal-star-rating")
+            .forEach(function (container) {
+                var userId = container.dataset.userId;
+                var userNote = parsedNotes[userId] || 0;
 
-            var input = document.getElementById("edit-meal-note-" + userId);
-            if (input) {
-                input.value = userNote;
-            }
+                var input = document.getElementById("edit-meal-note-" + userId);
+                if (input) {
+                    input.value = userNote;
+                }
 
-            container.querySelectorAll(".modal-star-btn").forEach(function (btn) {
-                var s = parseInt(btn.dataset.star, 10);
-                btn.style.color = (s <= userNote) ? "#f59e0b" : "#cbd5e1";
+                container
+                    .querySelectorAll(".modal-star-btn")
+                    .forEach(function (btn) {
+                        var s = parseInt(btn.dataset.star, 10);
+                        btn.style.color = s <= userNote ? "#f59e0b" : "#cbd5e1";
+                    });
+
+                container
+                    .querySelectorAll(".modal-star-display")
+                    .forEach(function (span) {
+                        var s = parseInt(span.dataset.star, 10);
+                        span.style.color =
+                            s <= userNote ? "#f59e0b" : "#cbd5e1";
+                    });
             });
 
-            container.querySelectorAll(".modal-star-display").forEach(function (span) {
-                var s = parseInt(span.dataset.star, 10);
-                span.style.color = (s <= userNote) ? "#f59e0b" : "#cbd5e1";
-            });
-        });
+        // Initialisation de la section boisson
+        if (typeof populateModalBoisson === "function") {
+            populateModalBoisson(
+                "edit-meal",
+                boissonId,
+                boissonDateAchat,
+                boissonNote,
+            );
+        }
 
         openModal("edit-meal-modal");
     }
@@ -328,7 +384,7 @@ function submitDeleteMeal() {
             confirmClass: "btn-danger",
             onConfirm: function () {
                 form.submit();
-            }
+            },
         });
     } else {
         form.submit();

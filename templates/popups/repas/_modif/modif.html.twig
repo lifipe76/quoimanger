@@ -78,6 +78,11 @@
                 'familleMembres': familleMembres|default([])
             }) }}
 
+            {{ composant('popups/sections/boisson', {
+                'id_prefix': 'edit-meal',
+                'boissons': boissons|default([])
+            }) }}
+
             {{ composant('popups/sections/note', {
                 'id_prefix': 'edit-meal',
                 'familleMembres': familleMembres|default([])

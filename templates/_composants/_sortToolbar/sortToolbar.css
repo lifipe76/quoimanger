@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Composant Sort Toolbar (Barre de tri avec recherche, bouton d'ordre et pilules)
+   ========================================================================== */
+
+.sort-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+.sort-toolbar-order-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.sort-toolbar-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Bouton de recherche extensible dans la toolbar */
+.sort-toolbar .modal-search-expandable {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sort-toolbar .btn-search-toggle {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    border-radius: 9999px !important;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.sort-toolbar .btn-search-toggle:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: var(--primary, #c4a587);
+    transform: translateY(-1px);
+}
+
+.sort-toolbar .modal-search-expandable.is-open .btn-search-toggle {
+    background: var(--primary, #c4a587);
+    border-color: var(--primary, #c4a587);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.35);
+}
+
+.sort-toolbar .search-input-collapse .modal-search-input {
+    height: 32px;
+    font-size: 0.85rem;
+    padding: 0.3rem 1.6rem 0.3rem 0.75rem;
+    border-radius: 9999px;
+    border: 1.5px solid #cbd5e1;
+}
+
+.sort-toolbar .search-input-collapse .modal-search-input:focus {
+    border-color: var(--primary, #c4a587);
+    box-shadow: 0 0 0 3px rgba(196, 165, 135, 0.2);
+}
+
+/* Bouton d'ordre (croissant / décroissant) */
+.sort-order-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    margin: 0;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px !important;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+    line-height: 1;
+}
+
+.sort-order-btn:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    color: var(--primary, #c4a587);
+    transform: translateY(-1px);
+}
+
+.sort-order-btn .sort-order-icon {
+    font-size: 0.95rem;
+    color: currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.sort-order-btn svg {
+    width: 15px;
+    height: 15px;
+    display: block;
+    stroke: currentColor;
+}
+
+.sort-toolbar-pills {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.sort-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sort-pill:hover:not(.active) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.sort-pill.active {
+    background: var(--primary, #c4a587);
+    border-color: var(--primary, #c4a587);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.35);
+}
+
+@media (max-width: 768px) {
+    .sort-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .sort-toolbar-order-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .sort-toolbar .btn-search-toggle,
+    .sort-order-btn {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        min-height: 30px !important;
+        padding: 0 !important;
+    }
+
+    .sort-toolbar .search-input-collapse .modal-search-input {
+        height: 30px;
+        font-size: 0.8rem;
+    }
+
+    .sort-order-btn .sort-order-icon {
+        font-size: 0.85rem;
+    }
+
+    .sort-order-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .sort-toolbar-pills {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        gap: 0.4rem;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .sort-toolbar-pills::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+
+    .sort-pill {
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.7rem;
+    }
+}

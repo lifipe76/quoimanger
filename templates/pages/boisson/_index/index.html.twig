@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Boissons - QuoiManger{% endblock %}
+
+{% block body %}
+{% set indexContent %}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Mes Boissons</h1>
+            <p class="page-subtitle">{{ boissons|length }} boisson{{ boissons|length > 1 ? 's' : '' }} répertoriée{{ boissons|length > 1 ? 's' : '' }}</p>
+        </div>
+        {{ composant('_composants/button', {
+            'titre': '+ Ajouter une boisson',
+            'href': path('app_boisson_create'),
+            'class': 'btn-primary'
+        }) }}
+    </div>
+
+    {% if boissons|length > 0 %}
+        <div class="cards-grid">
+            {% for boisson in boissons %}
+                {{ composant('cards/boisson', {
+                    'boisson': boisson,
+                    'index': loop.index0
+                }) }}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <div class="empty-state-icon">
+                <i class="fa-solid fa-wine-glass" style="font-size: 2.5rem; color: #7c3aed;"></i>
+            </div>
+            <h2>Aucune boisson pour le moment</h2>
+            <p>Ajoutez des boissons (vins, bières, cidres, jus maison...) pour pouvoir les associer à vos repas.</p>
+            <div style="margin-top: 1.5rem;">
+                {{ composant('_composants/button', {
+                    'titre': '+ Créer ma première boisson',
+                    'href': path('app_boisson_create'),
+                    'class': 'btn-primary'
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+{% endset %}
+
+{{ composant('_composants/container', {
+    'content': indexContent
+}) }}
+{% endblock %}

@@ -287,7 +287,7 @@ class FamilleAndUserTest extends WebTestCase
         $card = $crawler->filterXPath(sprintf('//div[contains(@class, "card-recette") and .//*[contains(text(), "%s")]]', $recette->getDesignation()));
         $this->assertGreaterThan(0, $card->count());
 
-        $token = $card->filter('.quick-stars-wrapper')->attr('data-csrf');
+        $token = $card->filter('.card-recette-stars-group')->attr('data-csrf');
 
         $this->client->request('POST', sprintf('/realisation/%d/rate', $realisation->getId()), [
             '_token' => $token,
@@ -305,7 +305,7 @@ class FamilleAndUserTest extends WebTestCase
         $crawlerMaman = $this->client->request('GET', '/');
         $this->assertResponseIsSuccessful();
         $cardMaman = $crawlerMaman->filterXPath(sprintf('//div[contains(@class, "card-recette") and .//*[contains(text(), "%s")]]', $recette->getDesignation()));
-        $tokenMaman = $cardMaman->filter('.quick-stars-wrapper')->attr('data-csrf');
+        $tokenMaman = $cardMaman->filter('.card-recette-stars-group')->attr('data-csrf');
 
         $this->client->request('POST', sprintf('/realisation/%d/rate', $realisation->getId()), [
             '_token' => $tokenMaman,

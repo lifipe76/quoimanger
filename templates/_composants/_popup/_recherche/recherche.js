@@ -1,21 +1,55 @@
 /* ==========================================================================
-   Composant Barre de Recherche pour Popups / Modales - JavaScript
+   Composant Barre de Recherche pour Popups / Modales & Pages - JavaScript
    ========================================================================== */
 
 /**
- * Filtre les éléments d'une liste de popup en fonction d'un terme et d'un sélecteur cible.
+ * Normalise une chaîne pour comparaison insensible aux accents et à la casse.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+function normalizeSearchText(str) {
+    return (str || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+/**
+ * Filtre les éléments d'une liste ou grille en fonction d'un terme et d'un sélecteur cible.
  *
  * @param {string} term Le terme recherché
- * @param {string} targetSelector Sélecteur CSS des éléments à filtrer (ex: '.modal-recipe-form')
+ * @param {string} targetSelector Sélecteur CSS des éléments à filtrer (ex: '.card-recette', '.card-ingredient')
  */
 function filterPopupList(term, targetSelector) {
     if (!targetSelector) return;
-    var normalized = (term || "").trim().toLowerCase();
+    var normalized = normalizeSearchText(term);
     var items = document.querySelectorAll(targetSelector);
+    var visibleCount = 0;
+
     items.forEach(function (item) {
-        var name = (item.dataset.name || item.textContent || "").toLowerCase();
-        item.style.display = name.includes(normalized) ? "" : "none";
+        var name = normalizeSearchText(item.dataset.name || item.textContent || "");
+        var match = normalized === "" || name.includes(normalized);
+        item.style.display = match ? "" : "none";
+        if (match) visibleCount++;
     });
+
+    var container = items.length > 0 ? items[0].parentElement : null;
+    if (container) {
+        var cleanId = targetSelector.replace(/[^a-zA-Z0-9_-]/g, "");
+        var emptyMsg = container.querySelector(".empty-search-message-" + cleanId);
+        if (!emptyMsg && items.length > 0) {
+            emptyMsg = document.createElement("div");
+            emptyMsg.className = "empty-search-message empty-search-message-" + cleanId + " card";
+            emptyMsg.style.cssText = "grid-column: 1 / -1; width: 100%; text-align: center; padding: 2rem 1rem; color: #64748b; font-weight: 500; font-size: 0.95rem; border-radius: 16px; margin: 1rem 0; box-sizing: border-box; display: none;";
+            emptyMsg.innerHTML = "Aucun résultat pour cette recherche.";
+            container.appendChild(emptyMsg);
+        }
+        if (emptyMsg) {
+            emptyMsg.style.display = (normalized !== "" && visibleCount === 0) ? "block" : "none";
+        }
+    }
 }
 
 /**
@@ -98,4 +132,20 @@ document.addEventListener("click", function (e) {
             }
         }
     });
+});
+
+/* Fermer la recherche avec la touche Échap */
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+        document.querySelectorAll(".modal-search-expandable.is-open").forEach(function (wrapper) {
+            var input = wrapper.querySelector(".modal-search-input");
+            var clearBtn = wrapper.querySelector(".btn-search-clear");
+            if (clearBtn && wrapper.classList.contains("has-value")) {
+                clearBtn.click();
+            } else if (input) {
+                input.value = "";
+                wrapper.classList.remove("is-open", "has-value");
+            }
+        });
+    }
 });

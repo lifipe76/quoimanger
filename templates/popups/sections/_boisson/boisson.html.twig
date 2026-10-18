@@ -1,0 +1,74 @@
+{# Composant Section Boisson pour Popups (Ajouter, Modifier Repas) #}
+{% set pfx = id_prefix|default('edit-meal') %}
+
+<div class="form-group mb-3 modal-boisson-section" id="{{ pfx }}-boisson-section">
+    <div class="modal-section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+        <label for="{{ pfx }}-boisson-id" class="modal-section-label" style="margin-bottom: 0;">
+            Boisson
+        </label>
+        <a href="{{ path('app_boisson_create') }}" target="_blank" class="modal-boisson-new-link" title="Ouvrir la création d'une boisson dans un nouvel onglet">
+            + Nouvelle boisson
+        </a>
+    </div>
+
+    <!-- Sélecteur de boisson -->
+    <div class="modal-boisson-select-wrap">
+        <select name="boisson_id"
+                id="{{ pfx }}-boisson-id"
+                class="form-control modal-boisson-select"
+                onchange="onModalBoissonChanged(this, '{{ pfx }}')">
+            <option value="">-- Aucune boisson --</option>
+            {% for b in boissons|default([]) %}
+                <option value="{{ b.id }}"
+                        data-lieu="{{ b.lieuAchat|e('html_attr') }}">
+                    {{ b.nom }}{% if b.lieuAchat %} ({{ b.lieuAchat }}){% endif %}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Champs complémentaires (Date d'achat & Note sur 5) -->
+    <div class="modal-boisson-details" id="{{ pfx }}-boisson-details" style="display: none;">
+        <!-- Date d'achat -->
+        <div class="modal-boisson-field-row">
+            <label for="{{ pfx }}-boisson-date-achat" class="modal-sub-label">
+                Date d'achat
+            </label>
+            <div class="modal-boisson-date-wrap">
+                <input type="date"
+                       name="boisson_date_achat"
+                       id="{{ pfx }}-boisson-date-achat"
+                       class="form-control modal-boisson-date-input">
+                <button type="button"
+                        class="btn-boisson-quick-date"
+                        onclick="setModalBoissonToday('{{ pfx }}')"
+                        title="Définir à aujourd'hui">
+                    Aujourd'hui
+                </button>
+            </div>
+        </div>
+
+        <!-- Note de la boisson sur 5 -->
+        <div class="modal-boisson-field-row">
+            <label class="modal-sub-label">
+                Note de la boisson (sur 5)
+            </label>
+            <div class="modal-boisson-rating-wrap">
+                <input type="hidden"
+                       name="boisson_note"
+                       id="{{ pfx }}-boisson-note"
+                       value="0">
+                <div class="modal-star-rating modal-boisson-stars" id="{{ pfx }}-boisson-stars-container">
+                    {% for star in 1..5 %}
+                        <button type="button"
+                                class="modal-star-btn modal-boisson-star-btn"
+                                data-star="{{ star }}"
+                                onclick="setModalBoissonStar({{ star }}, '{{ pfx }}')"
+                                title="Attribuer {{ star }} étoile(s) à la boisson">★</button>
+                    {% endfor %}
+                    <span class="modal-boisson-note-display" id="{{ pfx }}-boisson-note-text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

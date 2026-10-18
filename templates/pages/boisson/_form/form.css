@@ -1,0 +1,18 @@
+/* Style formulaire Boisson */
+
+.btn-delete-small {
+    padding: 0.4rem 0.65rem;
+    font-size: 1rem;
+    line-height: 1;
+    min-width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-small:hover {
+    transform: scale(1.05);
+}

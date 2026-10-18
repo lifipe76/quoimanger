@@ -3,13 +3,15 @@
     {% set cardPhotoUrls = [ingredient.photoUrl] %}
 {% endif %}
 {% set cardPhotoUrl = cardPhotoUrls[0]|default(ingredient.photo ? ingredient.photoUrl : null) %}
-{% set defaultFoodPhotoUrl = '/images/default_food.webp' %}
+{% set defaultFoodPhotoUrl = '/images/default_ingredient.webp' %}
 {% set hasRealPhoto = cardPhotoUrl is not null %}
 {% set displayPhoto = hasRealPhoto ? cardPhotoUrl : defaultFoodPhotoUrl %}
 {% set nbRecettes = ingredient.recetteIngredients|length %}
 {% set rank = (ranks is defined and ranks[ingredient.id] is defined) ? ranks[ingredient.id] : null %}
 
-<div class="card-ingredient has-photo-bg" style="--card-index: {{ index|default(0) }};">
+<div class="card-ingredient has-photo-bg"
+     data-name="{{ ingredient.designation|lower }}"
+     style="--card-index: {{ index|default(0) }};">
     <div class="card-ingredient-photo-wrap {{ not hasRealPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
          {% if hasRealPhoto %}
              data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"

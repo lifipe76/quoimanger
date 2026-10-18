@@ -1,13 +1,56 @@
-/* ==========================================================================
-   Popup "Ajouter un repas" - JavaScript spécifique
-   (Les sections Date et Photo sont gérées par leurs composants respectifs)
-   ========================================================================== */
-
-function openRepasModal() {
-    if (typeof removeRepasPhoto === "function") {
-        removeRepasPhoto();
+function getStorageKeyForContainer(containerId) {
+    if (!containerId) return "quoiManger_sort_repas";
+    if (containerId.indexOf("proposition") !== -1) return "quoiManger_sort_proposition";
+    if (containerId.indexOf("frigo") !== -1 && containerId.indexOf("ajout") === -1 && containerId.indexOf("prop") === -1) {
+        return "quoiManger_sort_frigo";
     }
+    return "quoiManger_sort_repas";
+}
+window.getStorageKeyForContainer = getStorageKeyForContainer;
+
+function restoreModalSort(containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+
+    var storageKey = getStorageKeyForContainer(containerId);
+    var saved = null;
+    try {
+        var raw = localStorage.getItem(storageKey);
+        if (raw) saved = JSON.parse(raw);
+    } catch (e) {}
+
+    if (!saved || !saved.sort) return;
+
+    var modal = container.closest(".modal-overlay") || container.closest(".modal") || container.parentElement;
+    var topBar = modal ? modal.querySelector(".modal-top-bar") : null;
+    if (!topBar) {
+        topBar = document.getElementById("repas-modal-top-bar") || document.getElementById("proposition-modal-top-bar") || document.getElementById("frigo-modal-top-bar");
+    }
+
+    var pill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill[data-sort='" + saved.sort + "']") : null;
+    if (pill) {
+        window.sortModalRecipes(saved.sort, pill, containerId, saved.order || "desc");
+    }
+}
+window.restoreModalSort = restoreModalSort;
+
+function openRepasModal(defaultTab) {
     openModal("repas-modal");
+
+    var activeTab = defaultTab;
+    if (!activeTab) {
+        try {
+            activeTab = localStorage.getItem("quoiManger_repas_tab") || "toutes";
+        } catch (e) {
+            activeTab = "toutes";
+        }
+    }
+    switchRepasTab(activeTab);
+
+    // Restaurer le tri mémorisé sur les deux onglets
+    restoreModalSort("modal-recipes-container");
+    restoreModalSort("modal-ajout-frigo-container");
+
     var wrapper = document.getElementById("recipe-filter-input-wrapper");
     if (wrapper) {
         wrapper.classList.remove("is-open");
@@ -24,9 +67,61 @@ function closeRepasModal() {
     closeModal("repas-modal");
 }
 
+function switchRepasTab(tab) {
+    try {
+        localStorage.setItem("quoiManger_repas_tab", tab);
+    } catch (e) {}
+
+    var btnToutes = document.getElementById("tab-btn-ajout-toutes");
+    var btnFrigo = document.getElementById("tab-btn-ajout-frigo");
+    var contToutes = document.getElementById("modal-recipes-container");
+    var contFrigo = document.getElementById("modal-ajout-frigo-container");
+    var topBar = document.getElementById("repas-modal-top-bar");
+
+    if (tab === "frigo") {
+        if (btnToutes) btnToutes.classList.remove("active");
+        if (btnFrigo) btnFrigo.classList.add("active");
+        if (contToutes) {
+            contToutes.style.display = "none";
+            contToutes.classList.remove("active");
+        }
+        if (contFrigo) {
+            contFrigo.style.display = "block";
+            contFrigo.classList.add("active");
+        }
+    } else {
+        if (btnFrigo) btnFrigo.classList.remove("active");
+        if (btnToutes) btnToutes.classList.add("active");
+        if (contFrigo) {
+            contFrigo.style.display = "none";
+            contFrigo.classList.remove("active");
+        }
+        if (contToutes) {
+            contToutes.style.display = "block";
+            contToutes.classList.add("active");
+        }
+    }
+
+    // Ré-appliquer le tri actif sur l'onglet affiché
+    var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
+    var orderBtn = topBar ? topBar.querySelector(".modal-sort-order-btn") : null;
+    if (activePill) {
+        var sortKey = activePill.getAttribute("data-sort") || "probability";
+        var order = orderBtn ? (orderBtn.getAttribute("data-order") || "desc") : "desc";
+        var targetContainerId = (tab === "frigo") ? "modal-ajout-frigo-container" : "modal-recipes-container";
+        sortModalRecipes(sortKey, activePill, targetContainerId, order);
+    }
+
+    var input = document.getElementById("recipe-filter-input");
+    if (input && input.value) {
+        filterRecipesList(input.value);
+    }
+}
+window.switchRepasTab = switchRepasTab;
+
 function filterRecipesList(term) {
     var normalized = term.trim().toLowerCase();
-    var forms = document.querySelectorAll("#modal-recipes-container .modal-recipe-form");
+    var forms = document.querySelectorAll("#modal-recipes-container .modal-recipe-form, #modal-ajout-frigo-container .modal-recipe-form");
     forms.forEach(function (form) {
         var name = form.dataset.name || "";
         form.style.display = name.includes(normalized) ? "block" : "none";
@@ -49,7 +144,7 @@ function toggleModalSortOrder(btnElement, containerId) {
 
     var topBar = btnElement.closest(".modal-top-bar");
     var activePill = topBar ? topBar.querySelector(".modal-sort-pills .sort-pill.active") : null;
-    var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "date") : "date";
+    var currentSortKey = activePill ? (activePill.getAttribute("data-sort") || "probability") : "probability";
 
     sortModalRecipes(currentSortKey, activePill, containerId, nextOrder);
 }
@@ -100,12 +195,20 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
         btnElement.classList.add("active");
     }
 
+    // Sauvegarder le tri sélectionné dans le localStorage
+    try {
+        var storageKey = getStorageKeyForContainer(containerId);
+        localStorage.setItem(storageKey, JSON.stringify({ sort: sortKey, order: order }));
+    } catch (e) {}
+
     var forms = Array.from(container.querySelectorAll(".modal-recipe-form"));
     if (forms.length <= 1) return;
 
     var isAsc = (order === "asc");
 
     forms.sort(function (a, b) {
+        var probA = parseFloat(a.dataset.probability || "0");
+        var probB = parseFloat(b.dataset.probability || "0");
         var dateA = parseInt(a.dataset.date || "0", 10);
         var dateB = parseInt(b.dataset.date || "0", 10);
         var idA = parseInt(a.dataset.id || "0", 10);
@@ -119,7 +222,13 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
         var nameA = (a.dataset.name || "").trim();
         var nameB = (b.dataset.name || "").trim();
 
-        if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
+        if (sortKey === "probability") {
+            if (probA === probB) {
+                var cmpP = nameA.localeCompare(nameB, "fr", { sensitivity: "base" });
+                return isAsc ? cmpP : -cmpP;
+            }
+            return isAsc ? (probA - probB) : (probB - probA);
+        } else if (sortKey === "date" || sortKey === "recent" || sortKey === "oldest") {
             if (dateA === 0 && dateB !== 0) return 1;
             if (dateB === 0 && dateA !== 0) return -1;
             if (dateA === dateB) return isAsc ? (idA - idB) : (idB - idA);
@@ -152,40 +261,6 @@ function sortModalRecipes(sortKey, btnElement, containerId, forcedOrder) {
 window.sortModalRecipes = sortModalRecipes;
 
 document.addEventListener("DOMContentLoaded", function () {
-    var container = document.getElementById("modal-recipes-container");
-    if (container) {
-        container.addEventListener("submit", function (e) {
-            var form = e.target;
-            if (form && form.classList.contains("modal-recipe-form")) {
-                var files = window.selectedRepasPhotoFiles || (window.selectedRepasPhotoFile ? [window.selectedRepasPhotoFile] : []);
-                if (files.length > 0) {
-                    form.enctype = "multipart/form-data";
-                    if (window.DataTransfer) {
-                        try {
-                            var dt = new DataTransfer();
-                            files.forEach(function (f) {
-                                dt.items.add(f);
-                            });
-                            var hiddenInput = document.createElement("input");
-                            hiddenInput.type = "file";
-                            hiddenInput.name = "photos[]";
-                            hiddenInput.multiple = true;
-                            hiddenInput.style.display = "none";
-                            hiddenInput.files = dt.files;
-                            form.appendChild(hiddenInput);
-                            return;
-                        } catch (err) {}
-                    }
-                    var input = window.selectedRepasPhotoInput;
-                    if (input) {
-                        input.name = "photos[]";
-                        form.appendChild(input);
-                    }
-                }
-            }
-        });
-    }
-
     var sortPills = document.querySelector("#repas-modal .modal-sort-pills");
     if (sortPills) {
         sortPills.addEventListener("wheel", function (e) {
@@ -195,4 +270,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, { passive: false });
     }
+
+    // Restaurer le tri des modales à l'initialisation
+    restoreModalSort("modal-recipes-container");
+    restoreModalSort("modal-ajout-frigo-container");
 });

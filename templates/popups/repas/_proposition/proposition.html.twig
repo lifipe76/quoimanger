@@ -43,7 +43,7 @@
     </div>
 
     <!-- Barre de recherche et 4 filtres sur la même ligne -->
-    <div class="modal-top-bar">
+    <div class="modal-top-bar" id="proposition-modal-top-bar">
         {{ composant('_composants/_popup/recherche', {
             'id': 'proposition-recipe-filter-input',
             'placeholder': 'Rechercher...',
@@ -59,20 +59,35 @@
             <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
         </button>
         <div class="modal-sort-pills">
-            <button type="button" class="sort-pill active" data-sort="date" onclick="sortModalRecipes('date', this, 'modal-proposition-recipes-container')">Date</button>
+            <button type="button" class="sort-pill active" data-sort="probability" onclick="sortModalRecipes('probability', this, 'modal-proposition-recipes-container')">Probabilité</button>
+            <button type="button" class="sort-pill" data-sort="date" onclick="sortModalRecipes('date', this, 'modal-proposition-recipes-container')">Date</button>
             <button type="button" class="sort-pill" data-sort="note" onclick="sortModalRecipes('note', this, 'modal-proposition-recipes-container')">Note</button>
             <button type="button" class="sort-pill" data-sort="rank" onclick="sortModalRecipes('rank', this, 'modal-proposition-recipes-container')">Rang</button>
             <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalRecipes('alpha', this, 'modal-proposition-recipes-container')">Nom</button>
         </div>
     </div>
 
-    <div class="modal-recipes-list" id="modal-proposition-recipes-container">
-        {% if recettes|length > 0 %}
-            {% for r in recettes %}
+    <!-- Onglets Proposition vs Mon frigo -->
+    <div class="modal-tabs-bar">
+        <button type="button" class="modal-tab-pill active" id="tab-btn-prop-toutes" onclick="switchPropositionTab('toutes')">
+            Proposition
+        </button>
+        <button type="button" class="modal-tab-pill" id="tab-btn-prop-frigo" onclick="switchPropositionTab('frigo')">
+            Mon frigo ({{ frigoItems is defined ? frigoItems|length : 0 }})
+        </button>
+    </div>
+
+    <!-- Contenu Tab 1 : Proposition (toutes les recettes classées par probabilité) -->
+    <div class="modal-recipes-list modal-tab-content active" id="modal-proposition-recipes-container">
+        {% set listeRecettes = recettesProposees|default(recettes) %}
+        {% if listeRecettes|length > 0 %}
+            {% for r in listeRecettes %}
+                {% set probScore = (probabilityScores is defined and probabilityScores[r.id] is defined) ? probabilityScores[r.id] : 0 %}
                 <form method="post" action="{{ path('app_repas_proposer') }}"
                       class="modal-recipe-form modal-prop-recipe-form"
                       data-name="{{ r.designation|lower }}"
                       data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
+                      data-probability="{{ probScore }}"
                       data-note="{{ r.averageNote|default(0) }}"
                       data-count="{{ r.notesCount|default(0) }}"
                       data-rank="{{ (ranks is defined and ranks[r.id] is defined and ranks[r.id] is not null) ? ranks[r.id] : 999999 }}"
@@ -94,12 +109,64 @@
                 <div style="margin-top: 0.5rem;">
                     {{ composant('_composants/button', {
                         'titre': '+ Créer une recette d\'abord',
-                        'href': path('app_recette_create'),
+                        'href': path('app_recette_create', {'destination': 'proposition'}),
                         'class': 'btn-primary'
                     }) }}
                 </div>
             </div>
         {% endif %}
+    </div>
+
+    <!-- Contenu Tab 2 : Mon frigo pour proposition -->
+    <div class="modal-recipes-list modal-tab-content" id="modal-proposition-frigo-container" style="display: none;">
+        {% if frigoItems is defined and frigoItems|length > 0 %}
+            {% for f in frigoItems %}
+                {% if f.recette %}
+                    {% set r = f.recette %}
+                    {% set probScore = (probabilityScores is defined and probabilityScores[r.id] is defined) ? probabilityScores[r.id] : 0 %}
+                    <form method="post" action="{{ path('app_repas_proposer') }}"
+                          class="modal-recipe-form modal-prop-recipe-form modal-prop-frigo-form"
+                          data-name="{{ r.designation|lower }}"
+                          data-date="{{ r.lastRealiseAt ? r.lastRealiseAt|date('U') : 0 }}"
+                          data-probability="{{ probScore }}"
+                          data-note="{{ r.averageNote|default(0) }}"
+                          data-count="{{ r.notesCount|default(0) }}"
+                          data-rank="{{ (ranks is defined and ranks[r.id] is defined and ranks[r.id] is not null) ? ranks[r.id] : 999999 }}"
+                          data-id="{{ r.id }}">
+                        <input type="hidden" name="recette_id" value="{{ r.id }}">
+                        <input type="hidden" name="moment" class="input-form-moment input-prop-form-moment" value="{{ defaultMoment|default('soir') }}">
+                        <input type="hidden" name="date" class="input-prop-form-date" value="{{ 'now'|date('Y-m-d') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('proposer_repas') }}">
+                        {{ composant('cards/popup/recette', {
+                            'recette': r,
+                            'ranks': ranks|default({}),
+                            'action_label': 'Proposer ce plat du frigo →'
+                        }) }}
+                    </form>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state frigo-empty-state" style="padding: 2rem 1rem; text-align: center;">
+                <p class="frigo-empty-message">Mon frigo est vide.</p>
+                <div style="margin-top: 0.75rem;">
+                    {{ composant('_composants/button', {
+                        'titre': 'Gérer mon frigo',
+                        'type': 'button',
+                        'class': 'btn-secondary',
+                        'onclick': 'closePropositionModal(); openFrigoModal();'
+                    }) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer modal-footer-center">
+        {{ composant('_composants/button', {
+            'titre': '+ Créer une nouvelle recette',
+            'href': path('app_recette_create', {'destination': 'proposition'}),
+            'class': 'btn-primary',
+            'style': 'width: 100%;'
+        }) }}
     </div>
 {% endset %}
 

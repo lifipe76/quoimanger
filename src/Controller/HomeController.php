@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Boisson;
 use App\Entity\Recette;
 use App\Entity\RecetteRealisation;
+use App\Entity\RepasBoisson;
+use App\Repository\BoissonRepository;
 use App\Repository\RecetteRealisationRepository;
 use App\Repository\RecetteRepository;
 use App\Service\RepasPhotoService;
@@ -24,6 +27,8 @@ class HomeController extends AbstractController
     public function home(
         RecetteRealisationRepository $realisationRepository,
         RecetteRepository $recetteRepository,
+        BoissonRepository $boissonRepository,
+        \App\Repository\FrigoRepository $frigoRepository,
         \App\Service\RecipeSuggestionService $suggestionService
     ): Response {
         $timeline = $realisationRepository->findTimeline();
@@ -31,10 +36,24 @@ class HomeController extends AbstractController
         $ranks = $this->calculateRecipeRanks($recettes);
         $suggestion = $suggestionService->getSuggestion($recettes);
 
+        // Calcul des scores de probabilité (ancienneté, habitude jour de la semaine, favoris)
+        $today = new \DateTimeImmutable('today');
+        $probabilityScores = [];
+        foreach ($recettes as $r) {
+            if ($r->getId() !== null) {
+                $probabilityScores[$r->getId()] = $suggestionService->calculateScore($r, $today, $ranks);
+            }
+        }
+        // Trier les recettes par probabilité décroissante
+        $recettesProposees = $suggestionService->sortRecettesByProbability($recettes, $today, $ranks);
+
         /** @var \App\Entity\User|null $currentUser */
         $currentUser = $this->getUser();
         $famille = $currentUser?->getFamille();
         $isChef = $famille ? $famille->isChef($currentUser) : true;
+
+        $frigoItems = $frigoRepository->findForUserOrFamille($currentUser, $famille);
+        $frigoRecetteIds = $frigoRepository->findRecetteIdsForUserOrFamille($currentUser, $famille);
 
         // Pour les membres non-chefs, afficher les repas de toute la famille (isPourTous)
         // et ceux où le membre connecté participe, mais masquer ceux réservés à d'autres membres
@@ -63,9 +82,14 @@ class HomeController extends AbstractController
             'timelineByDay' => $timelineByDay,
             'defaultMoment' => $defaultMoment,
             'recettes' => $recettes,
+            'recettesProposees' => $recettesProposees,
+            'probabilityScores' => $probabilityScores,
             'ranks' => $ranks,
             'familleMembres' => $familleMembres,
             'suggestion' => $suggestion,
+            'boissons' => $boissonRepository->findAllOrdered(),
+            'frigoItems' => $frigoItems,
+            'frigoRecetteIds' => $frigoRecetteIds,
         ]);
     }
 
@@ -73,6 +97,7 @@ class HomeController extends AbstractController
     public function addRealisation(
         Request $request,
         RecetteRepository $recetteRepository,
+        \App\Repository\FrigoRepository $frigoRepository,
         EntityManagerInterface $em,
         RepasPhotoService $photoService
     ): Response {
@@ -185,6 +210,13 @@ class HomeController extends AbstractController
         }
 
         $em->persist($realisation);
+
+        // Si la recette était dans le frigo de l'utilisateur ou de sa famille, on la retire
+        /** @var \App\Entity\User|null $currentUser */
+        $currentUser = $this->getUser();
+        $famille = $currentUser?->getFamille();
+        $frigoRepository->removeByRecette($recette, $currentUser, $famille);
+
         $em->flush();
 
         if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
@@ -351,6 +383,45 @@ class HomeController extends AbstractController
                             $em->remove($existingNote);
                         }
                     }
+                }
+            }
+
+            if ($request->request->has('boisson_id')) {
+                $boissonId = $request->request->get('boisson_id');
+                $dateAchatStr = (string) $request->request->get('boisson_date_achat');
+                $boissonNoteVal = (int) $request->request->get('boisson_note');
+
+                $existingRepasBoisson = $realisation->getRepasBoisson();
+
+                if ($boissonId !== null && $boissonId !== '') {
+                    $selectedBoisson = $em->getRepository(Boisson::class)->find((int) $boissonId);
+                    if ($selectedBoisson) {
+                        if (!$existingRepasBoisson) {
+                            $existingRepasBoisson = new RepasBoisson();
+                            $existingRepasBoisson->setRealisation($realisation);
+                            $em->persist($existingRepasBoisson);
+                        }
+                        $existingRepasBoisson->setBoisson($selectedBoisson);
+
+                        if ($dateAchatStr !== '') {
+                            try {
+                                $existingRepasBoisson->setDateAchat(new \DateTimeImmutable($dateAchatStr));
+                            } catch (\Exception) {
+                                $existingRepasBoisson->setDateAchat(null);
+                            }
+                        } else {
+                            $existingRepasBoisson->setDateAchat(null);
+                        }
+
+                        if ($boissonNoteVal >= 1 && $boissonNoteVal <= 5) {
+                            $existingRepasBoisson->setNote($boissonNoteVal);
+                        } else {
+                            $existingRepasBoisson->setNote(null);
+                        }
+                    }
+                } elseif ($existingRepasBoisson) {
+                    $realisation->removeRepasBoisson($existingRepasBoisson);
+                    $em->remove($existingRepasBoisson);
                 }
             }
 

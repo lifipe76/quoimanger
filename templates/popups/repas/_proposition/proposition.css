@@ -223,6 +223,68 @@
     box-shadow: 0 2px 6px rgba(196, 165, 135, 0.3);
 }
 
+/* Onglets Proposition vs Mon frigo */
+#repas-proposition-modal .modal-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem 0.4rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+#repas-proposition-modal .modal-tab-pill {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#repas-proposition-modal .modal-tab-pill:hover:not(.active) {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+#repas-proposition-modal .modal-tab-pill.active {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border-color: var(--primary, #c4a587);
+    box-shadow: 0 2px 6px rgba(196, 165, 135, 0.25);
+}
+
+#repas-proposition-modal .modal-tab-content {
+    animation: fadeInTab 0.2s ease;
+}
+
+#repas-proposition-modal .modal-prop-frigo-form .modal-recipe-item {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+#repas-proposition-modal .modal-prop-frigo-form .modal-recipe-item:hover {
+    border-color: #22c55e;
+    background: #dcfce7;
+}
+
+#repas-proposition-modal .modal-prop-frigo-form .recipe-item-action {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+#repas-proposition-modal .modal-prop-frigo-form .recipe-item-action:hover {
+    background: #bbf7d0;
+}
+
 /* Liste des recettes scrollable */
 #repas-proposition-modal .modal-recipes-list {
     flex: 1 1 auto;

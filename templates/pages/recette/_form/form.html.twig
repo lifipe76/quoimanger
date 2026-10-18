@@ -81,6 +81,9 @@
         {% endif %}
 
         {{ form_start(form, {'multipart': true, 'attr': {'id': 'recette-form', 'enctype': 'multipart/form-data'} }) }}
+            {% if destination|default('') %}
+                <input type="hidden" name="destination" value="{{ destination }}">
+            {% endif %}
             <div class="form-group">
                 {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(form.designation) }}

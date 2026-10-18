@@ -16,6 +16,23 @@
         }) }}
     </div>
 
+    {{ composant('_composants/sortToolbar', {
+        'currentSort': currentSort|default('alpha'),
+        'currentOrder': currentOrder|default('asc'),
+        'route': 'app_ingredients_list',
+        'storageKey': 'quoiManger_ingredients',
+        'defaultSort': 'alpha',
+        'defaultOrder': 'asc',
+        'searchTarget': '.card-ingredient',
+        'searchId': 'ingredients-search-input',
+        'searchPlaceholder': 'Rechercher un ingrédient...',
+        'items': [
+            {'key': 'alpha', 'label': 'Nom', 'defaultOrder': 'asc'},
+            {'key': 'rank', 'label': 'Rang', 'defaultOrder': 'asc'},
+            {'key': 'recettes', 'label': 'Nb de recettes', 'defaultOrder': 'desc'}
+        ]
+    }) }}
+
     {% if ingredients|length > 0 %}
         <div class="cards-grid">
             {% for ingredient in ingredients %}

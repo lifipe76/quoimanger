@@ -11,8 +11,19 @@
 {% set hasRealPhoto = firstPhoto is not null %}
 {% set showPlaceholderPhoto = (not isRepas and not hasRealPhoto) %}
 {% set displayPhoto = hasRealPhoto ? firstPhoto : (showPlaceholderPhoto ? defaultFoodPhotoUrl : null) %}
+{% set activeBoisson = (activeRealisation and activeRealisation.repasBoisson) ? activeRealisation.repasBoisson : null %}
+{% set recipeSearchKeywords = [recette.designation] %}
+{% if recette.recetteIngredients is defined and recette.recetteIngredients|length > 0 %}
+    {% for ri in recette.recetteIngredients %}
+        {% if ri.ingredient and ri.ingredient.designation %}
+            {% set recipeSearchKeywords = recipeSearchKeywords|merge([ri.ingredient.designation]) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-<div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}" style="--card-index: {{ index|default(0) }};">
+<div class="card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}"
+     data-name="{{ recipeSearchKeywords|join(' ')|lower }}"
+     style="--card-index: {{ index|default(0) }};">
     {% if displayPhoto %}
         <div class="card-recette-photo-wrap {{ showPlaceholderPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
              {% if hasRealPhoto %}
@@ -87,6 +98,11 @@
                         À réaliser
                     </span>
                 {% endif %}
+                {% if frigoRecetteIds is defined and recette.id in frigoRecetteIds %}
+                    <span class="card-recette-status status-frigo-badge" title="Cette recette est dans votre frigo">
+                        Dans le frigo
+                    </span>
+                {% endif %}
             </div>
 
             <div class="card-recette-header-right">
@@ -104,6 +120,45 @@
                     <span class="rating-avg-value" style="{{ displayedAvg ? '' : 'display: none;' }}">{{ displayedAvg|default('') }}</span>
                     <span class="rating-count">({{ displayedCount }})</span>
                 </div>
+                {% if activeRealisation and app.user %}
+                    {% set myRealisationNote = activeRealisation.getNoteForUser(app.user)|default(0) %}
+                    <div class="card-recette-stars-group is-clickable"
+                         role="button"
+                         tabindex="0"
+                         data-realisation-id="{{ activeRealisation.id }}"
+                         data-csrf="{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}"
+                         title="{{ (recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant') ~ ' - Cliquer pour noter ce repas' ~ (myRealisationNote > 0 ? ' (votre note : ' ~ myRealisationNote ~ '/5)' : '') }}"
+                         onclick="openRateMealModal(
+                             {{ activeRealisation.id }},
+                             '{{ recette.designation|e('js') }}',
+                             {{ myRealisationNote }},
+                             '{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}',
+                             '{{ path('app_realisation_rate', {'id': activeRealisation.id}) }}'
+                         )"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
+                        <span class="stars-display">
+                            {% if recette.averageNote %}
+                                <span class="star star-filled">★</span>
+                            {% else %}
+                                <span class="star star-empty">☆</span>
+                            {% endif %}
+                        </span>
+                        <span class="rating-avg-value" style="{{ recette.averageNote ? '' : 'display: none;' }}">{{ recette.averageNote|default('') }}</span>
+                        <span class="rating-count">({{ recette.notesCount|default(0) }})</span>
+                    </div>
+                {% else %}
+                    <div class="card-recette-stars-group" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount|default(0) }} notation{{ (recette.notesCount|default(0)) > 1 ? 's' : '' }})">
+                        <span class="stars-display">
+                            {% if recette.averageNote %}
+                                <span class="star star-filled">★</span>
+                            {% else %}
+                                <span class="star star-empty">☆</span>
+                            {% endif %}
+                        </span>
+                        <span class="rating-avg-value" style="{{ recette.averageNote ? '' : 'display: none;' }}">{{ recette.averageNote|default('') }}</span>
+                        <span class="rating-count">({{ recette.notesCount|default(0) }})</span>
+                    </div>
+                {% endif %}
 
                 {% set rank = (ranks is defined and ranks[recette.id] is defined) ? ranks[recette.id] : null %}
                 {% if rank %}
@@ -129,6 +184,10 @@
                             {% endif %}
                         {% endfor %}
                     {% endif %}
+                    {% set activeBoisson = activeRealisation.repasBoisson|default(null) %}
+                    {% set activeBoissonId = (activeBoisson and activeBoisson.boisson) ? activeBoisson.boisson.id : null %}
+                    {% set activeBoissonDate = (activeBoisson and activeBoisson.dateAchat) ? activeBoisson.dateAchat|date('Y-m-d') : '' %}
+                    {% set activeBoissonNote = activeBoisson ? activeBoisson.note|default(0) : 0 %}
                     <button type="button"
                             class="card-btn-pencil card-btn-apn-trigger"
                             title="{{ activeRealisation.photo ? 'Modifier la photo' : 'Prendre une photo' }}"
@@ -146,6 +205,9 @@
                                 {{ activeRealisation.photoUrls|json_encode }},
                                 {{ activeRealisation.photos|json_encode }},
                                 {{ activeRealisation.recettesData|json_encode }}
+                                {{ activeBoissonId|json_encode }},
+                                '{{ activeBoissonDate }}',
+                                {{ activeBoissonNote }}
                             )">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
@@ -169,6 +231,9 @@
                                 {{ activeRealisation.photoUrls|json_encode }},
                                 {{ activeRealisation.photos|json_encode }},
                                 {{ activeRealisation.recettesData|json_encode }}
+                                {{ activeBoissonId|json_encode }},
+                                '{{ activeBoissonDate }}',
+                                {{ activeBoissonNote }}
                             )">
                         ✏️
                     </button>
@@ -215,6 +280,15 @@
                     {% endif %}
                 {% endif %}
             </h3>
+            {% if activeBoisson and activeBoisson.boisson %}
+                <div class="card-recette-boisson-badge" title="Boisson : {{ activeBoisson.boisson.nom }}{% if activeBoisson.dateAchat %} (Acheté le {{ activeBoisson.dateAchat|date('d/m/Y') }}){% endif %}{% if activeBoisson.note %} - Note : {{ activeBoisson.note }}/5{% endif %}">
+                    <span class="boisson-badge-icon"><i class="fa-solid fa-wine-glass"></i></span>
+                    <span class="boisson-badge-name">{{ activeBoisson.boisson.nom }}</span>
+                    {% if activeBoisson.note %}
+                        <span class="boisson-badge-note">★ {{ activeBoisson.note }}/5</span>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
 
         {% if activeRealisation and app.user %}

@@ -27,6 +27,8 @@ class RecetteRealisationRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('rr')
             ->join('rr.recette', 'r')
             ->addSelect('r')
+            ->leftJoin('rr.recettes', 'rr_recettes')
+            ->addSelect('rr_recettes')
             ->leftJoin('r.realisations', 'r_realisations')
             ->addSelect('r_realisations')
             ->leftJoin('r.recetteIngredients', 'ri')

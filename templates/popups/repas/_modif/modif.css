@@ -105,6 +105,109 @@
     border-color: #fca5a5 !important;
 }
 
+/* Section multi-recettes du repas */
+.edit-meal-recipes-group {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.85rem 1rem !important;
+    margin: 0 1.25rem 1.25rem !important;
+}
+
+.edit-meal-recipes-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+}
+
+.edit-meal-recipes-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    min-height: 2rem;
+    margin-bottom: 0.65rem;
+}
+
+.edit-meal-recipe-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9999px;
+    padding: 0.25rem 0.6rem 0.25rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.edit-meal-recipe-chip .chip-label {
+    white-space: nowrap;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edit-meal-recipe-chip .btn-remove-recipe-chip {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    line-height: 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    transition: all 0.15s ease;
+}
+
+.edit-meal-recipe-chip .btn-remove-recipe-chip:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.edit-meal-add-recipe-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.edit-meal-recipe-select {
+    flex: 1;
+    padding: 0.55rem 0.85rem;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+    color: #1e293b;
+    box-sizing: border-box;
+}
+
+.btn-add-recipe-chip {
+    background: #0ea5e9;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.btn-add-recipe-chip:hover {
+    background: #0284c7;
+}
+
 @media (max-width: 640px) {
     #edit-meal-modal .modal-dialog {
         width: 100% !important;

@@ -74,6 +74,14 @@ class RecetteRealisation
     private array $photos = [];
 
     /**
+     * @var Collection<int, Recette>
+     */
+    #[ORM\ManyToMany(targetEntity: Recette::class, inversedBy: 'multiRealisations')]
+    #[ORM\JoinTable(name: 'realisation_recettes')]
+    #[Groups(['realisation:read', 'realisation:write'])]
+    private Collection $recettes;
+
+    /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class)]
@@ -94,6 +102,7 @@ class RecetteRealisation
         $this->participants = new ArrayCollection();
         $this->notes = new ArrayCollection();
         $this->photos = [];
+        $this->recettes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -103,14 +112,195 @@ class RecetteRealisation
 
     public function getRecette(): ?Recette
     {
+        if ($this->recette === null && !$this->recettes->isEmpty()) {
+            return $this->recettes->first();
+        }
+
         return $this->recette;
     }
 
     public function setRecette(?Recette $recette): static
     {
         $this->recette = $recette;
+        if ($recette !== null && !$this->recettes->contains($recette)) {
+            $this->recettes->add($recette);
+        }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Recette>
+     */
+    public function getRecettes(): Collection
+    {
+        if ($this->recettes->isEmpty() && $this->recette !== null) {
+            $this->recettes->add($this->recette);
+        }
+
+        return $this->recettes;
+    }
+
+    public function addRecette(Recette $recette): static
+    {
+        if (!$this->recettes->contains($recette)) {
+            $this->recettes->add($recette);
+            if ($this->recette === null) {
+                $this->recette = $recette;
+            }
+        }
+
+        return $this;
+    }
+
+    public function removeRecette(Recette $recette): static
+    {
+        if ($this->recettes->removeElement($recette)) {
+            if ($this->recette === $recette) {
+                $this->recette = $this->recettes->first() ?: null;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param iterable<Recette> $recettes
+     */
+    public function setRecettes(iterable $recettes): static
+    {
+        $this->recettes->clear();
+        foreach ($recettes as $r) {
+            $this->addRecette($r);
+        }
+        if (!$this->recettes->isEmpty()) {
+            if ($this->recette === null || !$this->recettes->contains($this->recette)) {
+                $this->recette = $this->recettes->first();
+            }
+        } else {
+            $this->recette = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{id: int, designation: string}>
+     */
+    #[Groups(['realisation:read'])]
+    public function getRecettesData(): array
+    {
+        $data = [];
+        foreach ($this->getRecettes() as $r) {
+            if ($r && $r->getId()) {
+                $data[] = [
+                    'id' => $r->getId(),
+                    'designation' => (string) $r->getDesignation(),
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Fusionne intelligemment les titres de recettes d'un repas :
+     * - Ex: "Steak" + "Frites" -> "Steak, frites"
+     * - Ex: "Pizza" + "Pizza jambon" -> "Pizza jambon" (texte commun mis 1 fois)
+     *
+     * @param list<string> $titles
+     */
+    public static function mergeRecipeTitles(array $titles): string
+    {
+        $clean = [];
+        foreach ($titles as $t) {
+            $t = trim((string) $t);
+            if ($t === '') {
+                continue;
+            }
+            $lower = mb_strtolower($t, 'UTF-8');
+            $found = false;
+            foreach ($clean as $existing) {
+                if (mb_strtolower($existing, 'UTF-8') === $lower) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $clean[] = $t;
+            }
+        }
+
+        if (empty($clean)) {
+            return '';
+        }
+        if (count($clean) === 1) {
+            return $clean[0];
+        }
+
+        // Élimination des titres subsumés (ex: "pizza" dans "pizza jambon")
+        $filtered = [];
+        foreach ($clean as $i => $titleA) {
+            $subsumed = false;
+            $normA = mb_strtolower($titleA, 'UTF-8');
+            foreach ($clean as $j => $titleB) {
+                if ($i === $j) {
+                    continue;
+                }
+                $normB = mb_strtolower($titleB, 'UTF-8');
+                if (mb_strlen($normB, 'UTF-8') > mb_strlen($normA, 'UTF-8') && str_contains($normB, $normA)) {
+                    $subsumed = true;
+                    break;
+                }
+            }
+            if (!$subsumed) {
+                $filtered[] = $titleA;
+            }
+        }
+
+        if (empty($filtered)) {
+            $filtered = [$clean[0]];
+        }
+
+        if (count($filtered) === 1) {
+            return $filtered[0];
+        }
+
+        $result = [];
+        foreach ($filtered as $idx => $t) {
+            if ($idx === 0) {
+                $firstChar = mb_strtoupper(mb_substr($t, 0, 1, 'UTF-8'), 'UTF-8');
+                $rest = mb_substr($t, 1, null, 'UTF-8');
+                $result[] = $firstChar . $rest;
+            } else {
+                $result[] = mb_strtolower($t, 'UTF-8');
+            }
+        }
+
+        return implode(', ', $result);
+    }
+
+    #[Groups(['realisation:read'])]
+    public function getDisplayTitle(): string
+    {
+        $recettes = $this->getRecettes();
+        if ($recettes->isEmpty()) {
+            return $this->recette ? (string) $this->recette->getDesignation() : 'Repas';
+        }
+
+        $titles = [];
+        foreach ($recettes as $r) {
+            $d = trim((string) $r->getDesignation());
+            if ($d !== '') {
+                $titles[] = $d;
+            }
+        }
+
+        if (empty($titles)) {
+            return $this->recette ? (string) $this->recette->getDesignation() : 'Repas';
+        }
+
+        return self::mergeRecipeTitles($titles);
     }
 
     public function getRealiseAt(): ?\DateTimeImmutable

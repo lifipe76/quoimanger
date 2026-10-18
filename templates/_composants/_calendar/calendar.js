@@ -481,7 +481,8 @@
                 meal.participantIds || [],
                 meal.notesMap || {},
                 meal.photoUrls || (meal.photoUrl ? [meal.photoUrl] : []),
-                meal.photos || []
+                meal.photos || [],
+                meal.recettesData || []
             );
         }
     }

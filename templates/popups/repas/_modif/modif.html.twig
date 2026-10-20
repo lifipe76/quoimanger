@@ -28,6 +28,38 @@
         }) }}
 
         <div class="modal-body edit-meal-body-content">
+            <div class="form-group mb-3 edit-meal-recipes-group" style="padding: 0 1.25rem;">
+                <label class="modal-section-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span>Recette(s) de ce repas</span>
+                    <span id="edit-meal-recipes-count" class="edit-meal-recipes-count"></span>
+                </label>
+
+                <!-- Liste des chips de recettes associées -->
+                <div id="edit-meal-recipes-chips" class="edit-meal-recipes-chips">
+                    <!-- Rempli dynamiquement en JS -->
+                </div>
+
+                <!-- Inputs cachés pour la soumission des recettes -->
+                <div id="edit-meal-recipes-inputs">
+                    <input type="hidden" name="has_recettes_field" value="1">
+                </div>
+
+                <!-- Sélecteur pour ajouter une autre recette au repas -->
+                <div class="edit-meal-add-recipe-row">
+                    <select id="edit-meal-recipe-select" class="form-control edit-meal-recipe-select">
+                        <option value="">+ Ajouter une autre recette au repas...</option>
+                        {% if recettes is defined %}
+                            {% for r in recettes %}
+                                <option value="{{ r.id }}" data-designation="{{ r.designation }}">{{ r.designation }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn-add-recipe-chip" onclick="addSelectedRecipeToEditMeal()">
+                        Ajouter
+                    </button>
+                </div>
+            </div>
+
             <div class="form-group mb-3" style="padding: 0 1.25rem;">
                 <label for="edit-meal-complement-input" class="modal-section-label">
                     Complément (texte libre)

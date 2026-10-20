@@ -69,6 +69,13 @@ class Recette
     private Collection $realisations;
 
     /**
+     * @var Collection<int, RecetteRealisation>
+     */
+    #[ORM\ManyToMany(targetEntity: RecetteRealisation::class, mappedBy: 'recettes')]
+    #[ORM\OrderBy(['realiseAt' => 'DESC'])]
+    private Collection $multiRealisations;
+
+    /**
      * @var Collection<int, RecetteIngredient>
      */
     #[ORM\OneToMany(targetEntity: RecetteIngredient::class, mappedBy: 'recette', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -80,6 +87,7 @@ class Recette
     {
         $this->recetteIngredients = new ArrayCollection();
         $this->realisations = new ArrayCollection();
+        $this->multiRealisations = new ArrayCollection();
         $this->photos = [];
     }
 
@@ -210,9 +218,37 @@ class Recette
     /**
      * @return Collection<int, RecetteRealisation>
      */
+    public function getMultiRealisations(): Collection
+    {
+        return $this->multiRealisations;
+    }
+
+    /**
+     * @return Collection<int, RecetteRealisation>
+     */
     public function getRealisations(): Collection
     {
-        return $this->realisations;
+        if ($this->multiRealisations->isEmpty()) {
+            return $this->realisations;
+        }
+
+        $seen = [];
+        $combined = [];
+        foreach ($this->realisations as $r) {
+            if ($r && $r->getId() && !isset($seen[$r->getId()])) {
+                $seen[$r->getId()] = true;
+                $combined[] = $r;
+            }
+        }
+        foreach ($this->multiRealisations as $r) {
+            if ($r && $r->getId() && !isset($seen[$r->getId()])) {
+                $seen[$r->getId()] = true;
+                $combined[] = $r;
+            }
+        }
+        usort($combined, fn(RecetteRealisation $a, RecetteRealisation $b) => ($b->getRealiseAt() <=> $a->getRealiseAt()));
+
+        return new ArrayCollection($combined);
     }
 
     public function addRealisation(RecetteRealisation $realisation): static
@@ -239,11 +275,12 @@ class Recette
     #[Groups(['recette:read'])]
     public function getLastRealiseAt(): ?\DateTimeImmutable
     {
-        if ($this->realisations->isEmpty()) {
+        $all = $this->getRealisations();
+        if ($all->isEmpty()) {
             return null;
         }
 
-        return $this->realisations->first()->getRealiseAt();
+        return $all->first()->getRealiseAt();
     }
 
     public function getRealiseAt(): ?\DateTimeImmutable

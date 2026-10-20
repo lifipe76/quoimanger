@@ -107,6 +107,11 @@ class HomeController extends AbstractController
     ): Response {
         $data = json_decode($request->getContent(), true) ?? [];
         $recetteId = (int) ($request->request->get('recette_id') ?? $data['recette_id'] ?? 0);
+        $recetteIds = (array) ($request->request->all('recette_ids') ?? $data['recette_ids'] ?? []);
+        if (empty($recetteIds) && $recetteId > 0) {
+            $recetteIds = [$recetteId];
+        }
+
         $csrfToken = (string) ($request->request->get('_token') ?? $data['_token'] ?? '');
         $moment = (string) ($request->request->get('moment') ?? $data['moment'] ?? 'soir');
         $dateStr = (string) ($request->request->get('date') ?? $data['date'] ?? '');
@@ -119,17 +124,33 @@ class HomeController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        $recette = $recetteRepository->find($recetteId);
-        if (!$recette) {
+        $realisation = new RecetteRealisation();
+        $first = true;
+        $order = [];
+        foreach ($recetteIds as $rId) {
+            $r = $recetteRepository->find((int) $rId);
+            if ($r) {
+                if ($first) {
+                    $realisation->setRecette($r);
+                    $first = false;
+                }
+                $realisation->addRecette($r);
+                if ($r->getId()) {
+                    $order[] = $r->getId();
+                }
+            }
+        }
+        if (!empty($order)) {
+            $realisation->setRecettesOrder($order);
+        }
+
+        if (!$realisation->getRecette()) {
             if ($request->isXmlHttpRequest() || str_contains($request->headers->get('Accept', ''), 'application/json')) {
                 return new JsonResponse(['error' => 'Recette introuvable.'], Response::HTTP_NOT_FOUND);
             }
             $this->addFlash('danger', 'Recette introuvable.');
             return $this->redirectToRoute('home');
         }
-
-        $realisation = new RecetteRealisation();
-        $realisation->setRecette($recette);
 
         if ($dateStr !== '') {
             try {
@@ -201,11 +222,15 @@ class HomeController extends AbstractController
 
         $em->persist($realisation);
 
-        // Si la recette était dans le frigo de l'utilisateur ou de sa famille, on la retire
+        // Si les recettes étaient dans le frigo de l'utilisateur ou de sa famille, on les retire
         /** @var \App\Entity\User|null $currentUser */
         $currentUser = $this->getUser();
         $famille = $currentUser?->getFamille();
-        $frigoRepository->removeByRecette($recette, $currentUser, $famille);
+        foreach ($realisation->getRecettes() as $rec) {
+            if ($rec) {
+                $frigoRepository->removeByRecette($rec, $currentUser, $famille);
+            }
+        }
 
         $em->flush();
 
@@ -213,7 +238,7 @@ class HomeController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'id' => $realisation->getId(),
-                'recette' => $recette->getDesignation(),
+                'recette' => $realisation->getDisplayTitle(),
                 'moment' => $realisation->getMoment(),
                 'realiseAt' => $realisation->getRealiseAt()?->format('d/m/Y'),
                 'photo' => $realisation->getPhoto(),
@@ -223,7 +248,7 @@ class HomeController extends AbstractController
             ]);
         }
 
-        $this->addFlash('success', sprintf('Repas enregistré avec succès : « %s » !', $recette->getDesignation()));
+        $this->addFlash('success', sprintf('Repas enregistré avec succès : « %s » !', $realisation->getDisplayTitle()));
 
         return $this->redirectToRoute('home');
     }
@@ -277,6 +302,29 @@ class HomeController extends AbstractController
             if ($request->request->has('complement')) {
                 $complement = $request->request->get('complement');
                 $realisation->setComplement($complement !== null ? (string) $complement : null);
+            }
+
+            if ($request->request->has('has_recettes_field') || $request->request->has('recette_ids')) {
+                $recetteIds = (array) $request->request->all('recette_ids');
+                if (!empty($recetteIds)) {
+                    $recetteRepo = $em->getRepository(Recette::class);
+                    $newRecettes = [];
+                    $order = [];
+                    foreach ($recetteIds as $rId) {
+                        $rec = $recetteRepo->find((int) $rId);
+                        if ($rec && !in_array($rec, $newRecettes, true)) {
+                            $newRecettes[] = $rec;
+                            if ($rec->getId()) {
+                                $order[] = $rec->getId();
+                            }
+                        }
+                    }
+                    if (!empty($newRecettes)) {
+                        $realisation->setRecettes($newRecettes);
+                        $realisation->setRecettesOrder($order);
+                        $realisation->setRecette($newRecettes[0]);
+                    }
+                }
             }
 
             if ($request->request->get('delete_photo') === '1') {
@@ -432,13 +480,13 @@ class HomeController extends AbstractController
         if ($realisation->getComplement()) {
             $this->addFlash('success', sprintf(
                 'Complément mis à jour pour « %s » (%s).',
-                $realisation->getRecette()->getDesignation(),
+                $realisation->getDisplayTitle(),
                 $realisation->getComplement()
             ));
         } else {
             $this->addFlash('success', sprintf(
                 'Complément retiré pour « %s ».',
-                $realisation->getRecette()->getDesignation()
+                $realisation->getDisplayTitle()
             ));
         }
 
@@ -497,8 +545,10 @@ class HomeController extends AbstractController
                 'success' => true,
                 'realisationId' => $realisation->getId(),
                 'userNote' => $realisation->getNoteForUser($currentUser),
-                'recipeAverage' => $realisation->getRecette()->getAverageNote(),
-                'recipeCount' => $realisation->getRecette()->getNotesCount(),
+                'recipeAverage' => $realisation->getAverageNote(),
+                'recipeCount' => $realisation->getNotesCount(),
+                'mealAverage' => $realisation->getAverageNote(),
+                'mealCount' => $realisation->getNotesCount(),
             ]);
         }
 

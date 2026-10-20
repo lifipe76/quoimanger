@@ -20,14 +20,17 @@
     <div class="page-header">
         <h1 class="page-title">{{ isNew ? 'Ajouter un ingrédient' : 'Modifier l\'ingrédient' }}</h1>
         {{ composant('_composants/button', {
-            'titre': 'Retour à la liste',
-            'href': path('app_ingredients_list'),
+            'titre': returnTo|default(null) ? 'Retour à la recette' : 'Retour à la liste',
+            'href': returnTo|default(null) ? returnTo : path('app_ingredients_list'),
             'class': 'btn-secondary'
         }) }}
     </div>
 
     <div class="card">
         {{ form_start(form, {'multipart': true, 'attr': {'id': 'ingredient-form', 'enctype': 'multipart/form-data'} }) }}
+            {% if returnTo|default(null) %}
+                <input type="hidden" name="return_to" value="{{ returnTo }}">
+            {% endif %}
             <div class="form-group">
                 {{ form_label(form.designation, null, {'label_attr': {'class': 'form-label'} }) }}
                 {{ form_widget(form.designation) }}
@@ -52,14 +55,14 @@
                                 class="btn btn-danger btn-sm btn-delete-small"
                                 title="Supprimer définitivement cet ingrédient"
                                 aria-label="Supprimer cet ingrédient">
-                            🗑️
+                            Supprimer
                         </button>
                     {% endif %}
                 </div>
                 <div style="display: flex; gap: 1rem; margin-left: auto;">
                     {{ composant('_composants/button', {
                         'titre': 'Annuler',
-                        'href': path('app_ingredients_list'),
+                        'href': returnTo|default(null) ? returnTo : path('app_ingredients_list'),
                         'class': 'btn-secondary'
                     }) }}
                     {{ composant('_composants/button', {

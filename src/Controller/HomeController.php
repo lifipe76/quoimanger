@@ -122,6 +122,7 @@ class HomeController extends AbstractController
 
         $realisation = new RecetteRealisation();
         $first = true;
+        $order = [];
         foreach ($recetteIds as $rId) {
             $r = $recetteRepository->find((int) $rId);
             if ($r) {
@@ -130,7 +131,13 @@ class HomeController extends AbstractController
                     $first = false;
                 }
                 $realisation->addRecette($r);
+                if ($r->getId()) {
+                    $order[] = $r->getId();
+                }
             }
+        }
+        if (!empty($order)) {
+            $realisation->setRecettesOrder($order);
         }
 
         if (!$realisation->getRecette()) {
@@ -211,11 +218,15 @@ class HomeController extends AbstractController
 
         $em->persist($realisation);
 
-        // Si la recette était dans le frigo de l'utilisateur ou de sa famille, on la retire
+        // Si les recettes étaient dans le frigo de l'utilisateur ou de sa famille, on les retire
         /** @var \App\Entity\User|null $currentUser */
         $currentUser = $this->getUser();
         $famille = $currentUser?->getFamille();
-        $frigoRepository->removeByRecette($recette, $currentUser, $famille);
+        foreach ($realisation->getRecettes() as $rec) {
+            if ($rec) {
+                $frigoRepository->removeByRecette($rec, $currentUser, $famille);
+            }
+        }
 
         $em->flush();
 
@@ -294,14 +305,20 @@ class HomeController extends AbstractController
                 if (!empty($recetteIds)) {
                     $recetteRepo = $em->getRepository(Recette::class);
                     $newRecettes = [];
+                    $order = [];
                     foreach ($recetteIds as $rId) {
                         $rec = $recetteRepo->find((int) $rId);
                         if ($rec && !in_array($rec, $newRecettes, true)) {
                             $newRecettes[] = $rec;
+                            if ($rec->getId()) {
+                                $order[] = $rec->getId();
+                            }
                         }
                     }
                     if (!empty($newRecettes)) {
                         $realisation->setRecettes($newRecettes);
+                        $realisation->setRecettesOrder($order);
+                        $realisation->setRecette($newRecettes[0]);
                     }
                 }
             }

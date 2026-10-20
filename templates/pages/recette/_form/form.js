@@ -1,10 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
     const wrapper = document.getElementById("ingredients-wrapper");
     const addBtn = document.getElementById("add-ingredient-btn");
+    const createBtn = document.getElementById("create-ingredient-btn");
     const emptyMsg = document.getElementById("no-ingredients-msg");
+    const form = document.getElementById("recette-form");
+    const designationInput = form ? form.querySelector('[name$="[designation]"]') : null;
+    const draftKey = "recette_draft_" + window.location.pathname;
 
     function checkEmptyState() {
-        if (!emptyMsg) return;
+        if (!emptyMsg || !wrapper) return;
         const rows = wrapper.querySelectorAll(".ingredient-row");
         emptyMsg.style.display = rows.length === 0 ? "block" : "none";
     }
@@ -18,24 +22,125 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    if (addBtn && wrapper) {
-        addBtn.addEventListener("click", function () {
-            const prototype = wrapper.dataset.prototype;
-            let index = parseInt(wrapper.dataset.index, 10) || 0;
-            const newHtml = prototype.replace(/__name__/g, index);
-            wrapper.dataset.index = index + 1;
+    function addIngredientRow(ingredientId, quantite) {
+        if (!wrapper) return null;
+        const prototype = wrapper.dataset.prototype;
+        let index = parseInt(wrapper.dataset.index, 10) || 0;
+        const newHtml = prototype.replace(/__name__/g, index);
+        wrapper.dataset.index = index + 1;
 
-            const temp = document.createElement("div");
-            temp.innerHTML = newHtml;
-            const newRow = temp.firstElementChild;
-            wrapper.appendChild(newRow);
-            bindRemoveButtons(newRow);
-            checkEmptyState();
+        const temp = document.createElement("div");
+        temp.innerHTML = newHtml;
+        const newRow = temp.firstElementChild;
+        wrapper.appendChild(newRow);
+        bindRemoveButtons(newRow);
+
+        if (ingredientId !== undefined && ingredientId !== null && ingredientId !== "") {
+            const select = newRow.querySelector(".select-ingredient");
+            if (select) {
+                select.value = String(ingredientId);
+            }
+        }
+        if (quantite !== undefined && quantite !== null && quantite !== "") {
+            const quantiteInput = newRow.querySelector(".input-quantite");
+            if (quantiteInput) {
+                quantiteInput.value = quantite;
+            }
+        }
+
+        checkEmptyState();
+        return newRow;
+    }
+
+    function saveDraft() {
+        try {
+            const draft = {
+                designation: designationInput ? designationInput.value : "",
+                ingredients: []
+            };
+            if (wrapper) {
+                wrapper.querySelectorAll(".ingredient-row").forEach((row) => {
+                    const sel = row.querySelector(".select-ingredient");
+                    const qte = row.querySelector(".input-quantite");
+                    draft.ingredients.push({
+                        ingredient: sel ? sel.value : "",
+                        quantite: qte ? qte.value : ""
+                    });
+                });
+            }
+            sessionStorage.setItem(draftKey, JSON.stringify(draft));
+        } catch (e) {}
+    }
+
+    if (addBtn) {
+        addBtn.addEventListener("click", function () {
+            addIngredientRow();
+        });
+    }
+
+    if (createBtn) {
+        createBtn.addEventListener("click", function () {
+            saveDraft();
         });
     }
 
     bindRemoveButtons(wrapper);
     checkEmptyState();
+
+    // Restauration du brouillon si l'utilisateur revient de la création d'ingrédient
+    const urlParams = new URLSearchParams(window.location.search);
+    const newIngredientId = urlParams.get("new_ingredient_id");
+    const savedDraftStr = sessionStorage.getItem(draftKey);
+
+    if (savedDraftStr) {
+        try {
+            const draft = JSON.parse(savedDraftStr);
+            if (designationInput && (!designationInput.value || designationInput.value.trim() === "")) {
+                if (draft.designation) {
+                    designationInput.value = draft.designation;
+                }
+            }
+            const currentRows = wrapper ? wrapper.querySelectorAll(".ingredient-row") : [];
+            if (currentRows.length === 0 && Array.isArray(draft.ingredients) && draft.ingredients.length > 0) {
+                draft.ingredients.forEach((item) => {
+                    addIngredientRow(item.ingredient, item.quantite);
+                });
+            }
+        } catch (e) {}
+    }
+
+    // Si un nouvel ingrédient vient d'être créé, le pré-sélectionner
+    if (newIngredientId) {
+        let targetRow = null;
+        if (wrapper) {
+            const rows = wrapper.querySelectorAll(".ingredient-row");
+            for (let i = 0; i < rows.length; i++) {
+                const sel = rows[i].querySelector(".select-ingredient");
+                if (sel && (!sel.value || sel.value === "")) {
+                    targetRow = rows[i];
+                    sel.value = String(newIngredientId);
+                    break;
+                }
+            }
+        }
+        if (!targetRow) {
+            targetRow = addIngredientRow(newIngredientId, "");
+        }
+        if (targetRow) {
+            const sel = targetRow.querySelector(".select-ingredient");
+            if (sel) {
+                sel.focus();
+            }
+        }
+    }
+
+    if (form) {
+        form.addEventListener("submit", function () {
+            try {
+                sessionStorage.removeItem(draftKey);
+            } catch (e) {}
+        });
+    }
 });
 
 function triggerRecettePhotoInput() {

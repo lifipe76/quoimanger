@@ -277,4 +277,74 @@ class RepasMultiRecettesTest extends WebTestCase
         $this->assertSelectorExists('#edit-meal-modal select#edit-meal-recipe-select');
         $this->assertSelectorExists('#edit-meal-modal .btn-add-recipe-chip');
     }
+
+    public function testRecipeOrderIsPreservedOnCreateAndUpdate(): void
+    {
+        $recetteA = new Recette();
+        $recetteA->setDesignation('Aiguillettes de canard ' . uniqid());
+        $this->em->persist($recetteA);
+
+        $recetteB = new Recette();
+        $recetteB->setDesignation('Pommes grenailles ' . uniqid());
+        $this->em->persist($recetteB);
+
+        $this->em->flush();
+
+        $this->client->request('GET', '/');
+        $token = $this->getCsrfToken('add_realisation');
+
+        // Créer un repas avec B en premier, puis A
+        $this->client->request('POST', '/realisation/add', [
+            '_token' => $token,
+            'recette_ids' => [$recetteB->getId(), $recetteA->getId()],
+            'moment' => 'soir',
+            'date' => '2026-10-18',
+        ]);
+        $this->assertResponseRedirects('/');
+
+        $freshEm = static::getContainer()->get(EntityManagerInterface::class);
+        $freshEm->clear();
+
+        $realisation = $freshEm->getRepository(RecetteRealisation::class)->findOneBy(
+            ['moment' => 'soir'],
+            ['id' => 'DESC']
+        );
+
+        $this->assertNotNull($realisation);
+        $this->assertSame([$recetteB->getId(), $recetteA->getId()], $realisation->getRecettesOrder());
+
+        // L'ordre des recettes doit être B puis A
+        $recettesInRealisation = array_values($realisation->getRecettes()->toArray());
+        $this->assertSame($recetteB->getId(), $recettesInRealisation[0]->getId());
+        $this->assertSame($recetteA->getId(), $recettesInRealisation[1]->getId());
+
+        // Display title commence par Pommes grenailles (B), puis aiguillettes (A)
+        $expectedTitle = RecetteRealisation::mergeRecipeTitles([$recetteB->getDesignation(), $recetteA->getDesignation()]);
+        $this->assertSame($expectedTitle, $realisation->getDisplayTitle());
+
+        // Maintenant, modification pour inverser l'ordre : A en premier, puis B
+        $this->client->request('GET', '/');
+        $updateToken = $this->getCsrfToken('update_realisation_date_' . $realisation->getId());
+
+        $this->client->request('POST', '/realisation/' . $realisation->getId() . '/update-date', [
+            '_token' => $updateToken,
+            'has_recettes_field' => '1',
+            'recette_ids' => [$recetteA->getId(), $recetteB->getId()],
+            'realise_at' => '2026-10-18',
+            'moment' => 'soir',
+        ]);
+        $this->assertResponseRedirects('/');
+
+        $freshEm->clear();
+        $updated = $freshEm->getRepository(RecetteRealisation::class)->find($realisation->getId());
+        $this->assertNotNull($updated);
+
+        $this->assertSame([$recetteA->getId(), $recetteB->getId()], $updated->getRecettesOrder());
+        $recettesUpdated = array_values($updated->getRecettes()->toArray());
+        $this->assertSame($recetteA->getId(), $recettesUpdated[0]->getId());
+        $this->assertSame($recetteB->getId(), $recettesUpdated[1]->getId());
+
+        $expectedUpdatedTitle = RecetteRealisation::mergeRecipeTitles([$recetteA->getDesignation(), $recetteB->getDesignation()]);
+        $this->assertSame($expectedUpdatedTitle, $updated->getDisplayTitle());
+    }
 }

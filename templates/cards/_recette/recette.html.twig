@@ -109,17 +109,6 @@
                 {% set displayedAvg = activeRealisation ? activeRealisation.averageNote : recette.averageNote %}
                 {% set displayedCount = activeRealisation ? activeRealisation.notesCount : recette.notesCount|default(0) %}
                 {% set starsTitle = activeRealisation ? (displayedAvg ? 'Note du repas : ' ~ displayedAvg ~ ' / 5' : 'Aucune note pour ce repas') ~ ' (' ~ displayedCount ~ ' notation' ~ (displayedCount > 1 ? 's' : '') ~ ')' : (displayedAvg ? 'Note moyenne : ' ~ displayedAvg ~ ' / 5' : 'Aucune note pour l\'instant') ~ ' (' ~ displayedCount ~ ' notation' ~ (displayedCount > 1 ? 's' : '') ~ ')' %}
-                <div class="card-recette-stars-group" title="{{ starsTitle }}">
-                    <span class="stars-display">
-                        {% if displayedAvg %}
-                            <span class="star star-filled">★</span>
-                        {% else %}
-                            <span class="star star-empty">☆</span>
-                        {% endif %}
-                    </span>
-                    <span class="rating-avg-value" style="{{ displayedAvg ? '' : 'display: none;' }}">{{ displayedAvg|default('') }}</span>
-                    <span class="rating-count">({{ displayedCount }})</span>
-                </div>
                 {% if activeRealisation and app.user %}
                     {% set myRealisationNote = activeRealisation.getNoteForUser(app.user)|default(0) %}
                     <div class="card-recette-stars-group is-clickable"
@@ -127,36 +116,36 @@
                          tabindex="0"
                          data-realisation-id="{{ activeRealisation.id }}"
                          data-csrf="{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}"
-                         title="{{ (recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant') ~ ' - Cliquer pour noter ce repas' ~ (myRealisationNote > 0 ? ' (votre note : ' ~ myRealisationNote ~ '/5)' : '') }}"
+                         title="{{ (displayedAvg ? 'Note du repas : ' ~ displayedAvg ~ ' / 5' : 'Aucune note pour ce repas') ~ ' - Cliquer pour noter ce repas' ~ (myRealisationNote > 0 ? ' (votre note : ' ~ myRealisationNote ~ '/5)' : '') }}"
                          onclick="openRateMealModal(
                              {{ activeRealisation.id }},
-                             '{{ recette.designation|e('js') }}',
+                             '{{ (activeRealisation ? activeRealisation.displayTitle : recette.designation)|e('js') }}',
                              {{ myRealisationNote }},
                              '{{ csrf_token('rate_realisation_' ~ activeRealisation.id) }}',
                              '{{ path('app_realisation_rate', {'id': activeRealisation.id}) }}'
                          )"
                          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">
                         <span class="stars-display">
-                            {% if recette.averageNote %}
+                            {% if displayedAvg %}
                                 <span class="star star-filled">★</span>
                             {% else %}
                                 <span class="star star-empty">☆</span>
                             {% endif %}
                         </span>
-                        <span class="rating-avg-value" style="{{ recette.averageNote ? '' : 'display: none;' }}">{{ recette.averageNote|default('') }}</span>
-                        <span class="rating-count">({{ recette.notesCount|default(0) }})</span>
+                        <span class="rating-avg-value" style="{{ displayedAvg ? '' : 'display: none;' }}">{{ displayedAvg|default('') }}</span>
+                        <span class="rating-count">({{ displayedCount }})</span>
                     </div>
                 {% else %}
-                    <div class="card-recette-stars-group" title="{{ recette.averageNote ? 'Note moyenne : ' ~ recette.averageNote ~ ' / 5' : 'Aucune note pour l\'instant' }} ({{ recette.notesCount|default(0) }} notation{{ (recette.notesCount|default(0)) > 1 ? 's' : '' }})">
+                    <div class="card-recette-stars-group" title="{{ starsTitle }}">
                         <span class="stars-display">
-                            {% if recette.averageNote %}
+                            {% if displayedAvg %}
                                 <span class="star star-filled">★</span>
                             {% else %}
                                 <span class="star star-empty">☆</span>
                             {% endif %}
                         </span>
-                        <span class="rating-avg-value" style="{{ recette.averageNote ? '' : 'display: none;' }}">{{ recette.averageNote|default('') }}</span>
-                        <span class="rating-count">({{ recette.notesCount|default(0) }})</span>
+                        <span class="rating-avg-value" style="{{ displayedAvg ? '' : 'display: none;' }}">{{ displayedAvg|default('') }}</span>
+                        <span class="rating-count">({{ displayedCount }})</span>
                     </div>
                 {% endif %}
 
@@ -204,7 +193,7 @@
                                 {{ notesMap|json_encode }},
                                 {{ activeRealisation.photoUrls|json_encode }},
                                 {{ activeRealisation.photos|json_encode }},
-                                {{ activeRealisation.recettesData|json_encode }}
+                                {{ activeRealisation.recettesData|json_encode }},
                                 {{ activeBoissonId|json_encode }},
                                 '{{ activeBoissonDate }}',
                                 {{ activeBoissonNote }}
@@ -230,7 +219,7 @@
                                 {{ notesMap|json_encode }},
                                 {{ activeRealisation.photoUrls|json_encode }},
                                 {{ activeRealisation.photos|json_encode }},
-                                {{ activeRealisation.recettesData|json_encode }}
+                                {{ activeRealisation.recettesData|json_encode }},
                                 {{ activeBoissonId|json_encode }},
                                 '{{ activeBoissonDate }}',
                                 {{ activeBoissonNote }}

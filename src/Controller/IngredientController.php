@@ -112,6 +112,12 @@ class IngredientController extends AbstractController
             $isNew = true;
         }
 
+        $rawReturnTo = $request->query->get('return_to', $request->request->get('return_to', ''));
+        $returnTo = null;
+        if (is_string($rawReturnTo) && str_starts_with($rawReturnTo, '/') && !str_starts_with($rawReturnTo, '//') && !str_starts_with($rawReturnTo, '/\\')) {
+            $returnTo = $rawReturnTo;
+        }
+
         $form = $this->createForm(IngredientType::class, $ingredient);
         $form->handleRequest($request);
 
@@ -157,6 +163,11 @@ class IngredientController extends AbstractController
 
             $this->addFlash('success', $isNew ? 'Ingrédient créé avec succès.' : 'Ingrédient mis à jour avec succès.');
 
+            if ($returnTo) {
+                $separator = str_contains($returnTo, '?') ? '&' : '?';
+                return $this->redirect($returnTo . $separator . 'new_ingredient_id=' . $ingredient->getId());
+            }
+
             $sortParams = [];
             if ($savedSort = ($request->hasSession() ? $request->getSession()->get('ingredients_sort') : null)) {
                 $sortParams['sort'] = $savedSort;
@@ -173,6 +184,7 @@ class IngredientController extends AbstractController
             'ingredient' => $ingredient,
             'form' => $form->createView(),
             'isNew' => $isNew,
+            'returnTo' => $returnTo,
         ]);
     }
 

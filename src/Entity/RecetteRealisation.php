@@ -82,6 +82,15 @@ class RecetteRealisation
     private Collection $recettes;
 
     /**
+     * Mémorise l'ordre de sélection des recettes du repas
+     *
+     * @var list<int>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups(['realisation:read', 'realisation:write'])]
+    private ?array $recettesOrder = null;
+
+    /**
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class)]
@@ -146,6 +155,27 @@ class RecetteRealisation
             $this->recettes->add($this->recette);
         }
 
+        if (!empty($this->recettesOrder) && $this->recettes->count() > 1) {
+            $ordered = [];
+            $byId = [];
+            foreach ($this->recettes as $r) {
+                if ($r && $r->getId()) {
+                    $byId[$r->getId()] = $r;
+                }
+            }
+            foreach ($this->recettesOrder as $id) {
+                if (isset($byId[$id])) {
+                    $ordered[] = $byId[$id];
+                    unset($byId[$id]);
+                }
+            }
+            foreach ($byId as $r) {
+                $ordered[] = $r;
+            }
+
+            return new ArrayCollection($ordered);
+        }
+
         return $this->recettes;
     }
 
@@ -156,6 +186,14 @@ class RecetteRealisation
             if ($this->recette === null) {
                 $this->recette = $recette;
             }
+            if ($recette->getId()) {
+                if ($this->recettesOrder === null) {
+                    $this->recettesOrder = [];
+                }
+                if (!in_array($recette->getId(), $this->recettesOrder, true)) {
+                    $this->recettesOrder[] = $recette->getId();
+                }
+            }
         }
 
         return $this;
@@ -164,8 +202,11 @@ class RecetteRealisation
     public function removeRecette(Recette $recette): static
     {
         if ($this->recettes->removeElement($recette)) {
+            if ($recette->getId() && !empty($this->recettesOrder)) {
+                $this->recettesOrder = array_values(array_diff($this->recettesOrder, [$recette->getId()]));
+            }
             if ($this->recette === $recette) {
-                $this->recette = $this->recettes->first() ?: null;
+                $this->recette = $this->getRecettes()->first() ?: null;
             }
         }
 
@@ -178,16 +219,41 @@ class RecetteRealisation
     public function setRecettes(iterable $recettes): static
     {
         $this->recettes->clear();
+        $order = [];
         foreach ($recettes as $r) {
             $this->addRecette($r);
+            if ($r && $r->getId()) {
+                $order[] = $r->getId();
+            }
+        }
+        if (!empty($order)) {
+            $this->recettesOrder = $order;
         }
         if (!$this->recettes->isEmpty()) {
             if ($this->recette === null || !$this->recettes->contains($this->recette)) {
-                $this->recette = $this->recettes->first();
+                $this->recette = $this->getRecettes()->first();
             }
         } else {
             $this->recette = null;
         }
+
+        return $this;
+    }
+
+    /**
+     * @return list<int>|null
+     */
+    public function getRecettesOrder(): ?array
+    {
+        return $this->recettesOrder;
+    }
+
+    /**
+     * @param list<int>|null $recettesOrder
+     */
+    public function setRecettesOrder(?array $recettesOrder): static
+    {
+        $this->recettesOrder = $recettesOrder !== null ? array_values(array_map('intval', $recettesOrder)) : null;
 
         return $this;
     }

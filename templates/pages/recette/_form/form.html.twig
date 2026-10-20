@@ -109,10 +109,10 @@
 
                 {% if not hasIngredients %}
                     <div class="alert alert-danger" style="margin-bottom: 1rem;">
-                        ⚠️ Aucun ingrédient n'est encore disponible dans la base.
-                        <a href="{{ path('app_ingredient_create') }}" target="_blank" style="font-weight: 700; text-decoration: underline;">
+                        Aucun ingrédient n'est encore disponible dans la base.
+                        <a href="{{ path('app_ingredient_create', {'return_to': app.request.requestUri}) }}" style="font-weight: 700; text-decoration: underline;">
                             Cliquez ici pour créer vos premiers ingrédients
-                        </a> puis rafraîchissez cette page.
+                        </a>.
                     </div>
                 {% endif %}
 
@@ -140,11 +140,17 @@
                     Aucun ingrédient associé pour le moment. Cliquez sur « + Ajouter un ingrédient » ci-dessous.
                 </p>
 
-                <div class="add-ingredient-action-wrapper" style="margin-top: 1rem;">
+                <div class="add-ingredient-action-wrapper" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                     {{ composant('_composants/button', {
                         'id': 'add-ingredient-btn',
                         'titre': '+ Ajouter un ingrédient',
                         'type': 'button',
+                        'class': 'btn-secondary btn-sm'
+                    }) }}
+                    {{ composant('_composants/button', {
+                        'id': 'create-ingredient-btn',
+                        'titre': 'Créer un ingrédient',
+                        'href': path('app_ingredient_create', {'return_to': app.request.requestUri}),
                         'class': 'btn-secondary btn-sm'
                     }) }}
                 </div>

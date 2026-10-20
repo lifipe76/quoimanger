@@ -25,6 +25,7 @@ class IngredientController extends AbstractController
         Request $request
     ): Response {
         $session = $request->hasSession() ? $request->getSession() : null;
+        $session?->set('app_mode', 'quoimanger');
         $hasSortInQuery = $request->query->has('sort');
         $hasOrderInQuery = $request->query->has('order');
 

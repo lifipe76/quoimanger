@@ -18,8 +18,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class BoissonController extends AbstractController
 {
     #[Route('/boissons', name: 'app_boissons_list', methods: ['GET'])]
-    public function index(BoissonRepository $boissonRepository): Response
+    public function index(BoissonRepository $boissonRepository, Request $request): Response
     {
+        if ($request->hasSession()) {
+            $request->getSession()->set('app_mode', 'quoimanger');
+        }
         $boissons = $boissonRepository->findAllOrdered();
 
         return $this->render('pages/pageComposant.html.twig', [

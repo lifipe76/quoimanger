@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actions - QuoiFaire{% endblock %}
+
+{% block body %}
+{% set timelineContent %}
+    <!-- 1er élément : Rectangle d'action rapide -->
+    <div class="timeline-item timeline-item-cta">
+        <div class="timeline-content">
+            <div class="card-empty-cta">
+                <div class="cta-top-row">
+                    <h3 class="empty-cta-title">Qu'avez-vous fait aujourd'hui ?</h3>
+                    <div class="cta-buttons">
+                        {{ composant('_composants/button', {
+                            'titre': 'Je rentre mon action',
+                            'type': 'button',
+                            'class': 'btn-primary btn-cta',
+                            'onclick': 'openActionModal()'
+                        }) }}
+                        {{ composant('_composants/button', {
+                            'titre': '+ Nouvelle action',
+                            'href': path('app_action_create', {'destination': 'quoifaire'}),
+                            'class': 'btn-secondary btn-cta'
+                        }) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des réalisations d'actions regroupées par jour -->
+    {% if timelineByDay|length > 0 %}
+        {% for dayKey, dayItems in timelineByDay %}
+            <div class="timeline-day-group">
+                <div class="timeline-day-header">
+                    <div class="timeline-day-badge">
+                        <time datetime="{{ dayKey }}">
+                            {% set dateObj = dayItems[0].realiseAt %}
+                            {% set isToday = dateObj|date('Y-m-d') == 'now'|date('Y-m-d') %}
+                            {% set isYesterday = dateObj|date('Y-m-d') == '-1 day'|date('Y-m-d') %}
+                            {% set jours = {
+                                '1': 'Lundi',
+                                '2': 'Mardi',
+                                '3': 'Mercredi',
+                                '4': 'Jeudi',
+                                '5': 'Vendredi',
+                                '6': 'Samedi',
+                                '7': 'Dimanche'
+                            } %}
+                            {% set jourNom = jours[dateObj|date('N')]|default('') %}
+                            {% if isToday %}
+                                <span class="day-badge-highlight">Aujourd'hui</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% elseif isYesterday %}
+                                <span class="day-badge-highlight">Hier</span> • {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% else %}
+                                {{ jourNom }} {{ dateObj|date('d/m/Y') }}
+                            {% endif %}
+                        </time>
+                    </div>
+                </div>
+
+                <div class="timeline-day-content">
+                    <div class="timeline-day-meals">
+                        {% for item in dayItems %}
+                            <div class="timeline-meal-wrapper" style="--card-index: {{ loop.index0 }};">
+                                {{ composant('cards/action', {
+                                    'action': item.action,
+                                    'realisation': item,
+                                    'index': loop.index0
+                                }) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state card" style="text-align: center; padding: 3rem 1.5rem; margin-top: 1.5rem;">
+            <h2>Aucune action enregistrée pour le moment</h2>
+            <p>Cliquez sur « Je rentre mon action » pour commencer à suivre vos réalisations.</p>
+            <div style="margin-top: 1.5rem;">
+                {{ composant('_composants/button', {
+                    'titre': 'Je rentre ma première action',
+                    'type': 'button',
+                    'class': 'btn-primary',
+                    'onclick': 'openActionModal()'
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+{% endset %}
+
+{% set homeContent %}
+    {{ composant('_composants/timeline', {
+        'content': timelineContent
+    }) }}
+{% endset %}
+
+{{ composant('_composants/container', {
+    'class': 'home-page-container timeline-page',
+    'content': homeContent
+}) }}
+
+{{ composant('popups/action/ajout', {
+    'actions': actions|default([]),
+    'familleMembres': familleMembres|default([]),
+    'defaultMoment': defaultMoment|default('matin')
+}) }}
+
+{{ composant('popups/action/modif', {
+    'familleMembres': familleMembres|default([])
+}) }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("open_action") === "1") {
+        if (typeof openActionModal === "function") {
+            openActionModal();
+        }
+    }
+
+    var selectedId = urlParams.get("selected_action");
+    if (selectedId) {
+        setTimeout(function () {
+            var targetForm = document.querySelector(".modal-action-form[data-id='" + selectedId + "']");
+            if (targetForm) {
+                targetForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetForm.classList.add('highlight-selected');
+                setTimeout(function () {
+                    targetForm.classList.remove('highlight-selected');
+                }, 2500);
+            }
+        }, 300);
+    }
+});
+</script>
+{% endblock %}

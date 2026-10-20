@@ -31,6 +31,7 @@ class RecetteController extends AbstractController
         $frigoRecetteIds = $frigoRepository->findRecetteIdsForUserOrFamille($currentUser, $famille);
 
         $session = $request->hasSession() ? $request->getSession() : null;
+        $session?->set('app_mode', 'quoimanger');
         $hasSortInQuery = $request->query->has('sort');
         $hasOrderInQuery = $request->query->has('order');
 

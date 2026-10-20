@@ -1,37 +1,77 @@
 {% set current_route = app.current_route|default(app.request.attributes.get('_route')) %}
+{% set is_action_page = (current_route starts with 'app_action') %}
+{% set is_quoifaire_home = (current_route == 'quoifaire_home') %}
+{% set is_recettes_page = (current_route starts with 'app_recette') %}
+{% set is_ingredients_page = (current_route starts with 'app_ingredient') %}
+{% set is_boissons_page = (current_route starts with 'app_boisson') %}
+{% set is_home_page = (current_route == 'home') %}
+{% set session_mode = app.request.hasSession() ? app.session.get('app_mode') : null %}
+{% set is_quoifaire = is_action_page or is_quoifaire_home or (session_mode == 'quoifaire' and not (is_recettes_page or is_ingredients_page or is_boissons_page or is_home_page)) %}
 
 {% if current_route not in ['web_login', 'app_register', 'app_register_alias'] %}
 <nav class="bottom-app-nav" aria-label="Navigation mobile">
     <div class="bottom-app-nav-container">
-        <!-- 1. Recettes -->
-        <a href="{{ path('app_recettes_list') }}"
-           class="bottom-nav-item{{ current_route starts with 'app_recette' ? ' active' : '' }}"
-           title="Mes Recettes">
-            <span class="bottom-nav-icon">
-                <i class="fa-solid fa-utensils"></i>
-            </span>
-            <span class="bottom-nav-label">Recettes</span>
-        </a>
+        {% if is_quoifaire %}
+            <!-- 1. Actions -->
+            <a href="{{ path('app_actions_list') }}"
+               class="bottom-nav-item{{ current_route starts with 'app_action' ? ' active' : '' }}"
+               title="Mes Actions">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-list-check"></i>
+                </span>
+                <span class="bottom-nav-label">Actions</span>
+            </a>
 
-        <!-- 2. Ingrédients -->
-        <a href="{{ path('app_ingredients_list') }}"
-           class="bottom-nav-item{{ current_route starts with 'app_ingredient' ? ' active' : '' }}"
-           title="Mes Ingrédients">
-            <span class="bottom-nav-icon">
-                <i class="fa-solid fa-carrot"></i>
-            </span>
-            <span class="bottom-nav-label">Ingrédients</span>
-        </a>
+            <!-- Espaceur équilibrant pour centrage parfait du bouton -->
+            <div class="bottom-nav-spacer" aria-hidden="true"></div>
+        {% else %}
+            <!-- 1. Recettes -->
+            <a href="{{ path('app_recettes_list') }}"
+               class="bottom-nav-item{{ current_route starts with 'app_recette' ? ' active' : '' }}"
+               title="Mes Recettes">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-utensils"></i>
+                </span>
+                <span class="bottom-nav-label">Recettes</span>
+            </a>
 
-        <!-- 3. Bouton central (Accueil / Fil repas) -->
-        <div class="bottom-nav-center-action">
-            <a href="{{ path('home') }}"
-               class="bottom-nav-center-btn{{ current_route == 'home' ? ' active' : '' }}"
-               title="Fil repas">
+            <!-- 2. Ingrédients -->
+            <a href="{{ path('app_ingredients_list') }}"
+               class="bottom-nav-item{{ current_route starts with 'app_ingredient' ? ' active' : '' }}"
+               title="Mes Ingrédients">
+                <span class="bottom-nav-icon">
+                    <i class="fa-solid fa-carrot"></i>
+                </span>
+                <span class="bottom-nav-label">Ingrédients</span>
+            </a>
+        {% endif %}
+
+        <!-- 3. Bouton central (Fil repas / Fil actions) avec popup vers le haut -->
+        <div class="bottom-nav-center-action" id="bottomNavCenterAction">
+            <a href="{{ is_quoifaire ? path('quoifaire_home') : path('home') }}"
+               class="bottom-nav-center-btn{{ is_quoifaire ? (is_quoifaire_home ? ' active' : '') : (is_home_page ? ' active' : '') }}"
+               title="{{ is_quoifaire ? 'Fil actions' : 'Fil repas' }}"
+               id="bottomNavCenterBtn">
                 <span class="center-btn-icon">
-                    <span class="center-btn-header-icon">🍽️</span>
+                    <span class="center-btn-header-icon">{{ is_quoifaire ? '🏠' : '🍽️' }}</span>
                 </span>
             </a>
+
+            <div class="bottom-brand-popup-up" id="bottomBrandPopup">
+                <!-- 1. Icône alternative au-dessus -->
+                <a href="{{ is_quoifaire ? path('home') : path('quoifaire_home') }}"
+                   class="bottom-brand-popup-item"
+                   title="{{ is_quoifaire ? 'QuoiManger (Fil repas)' : 'QuoiFaire (Fil actions)' }}">
+                    <span class="bottom-brand-popup-emoji">{{ is_quoifaire ? '🍽️' : '🏠' }}</span>
+                </a>
+
+                <!-- 2. Icône superposée en bas -->
+                <a href="{{ is_quoifaire ? path('quoifaire_home') : path('home') }}"
+                   class="bottom-brand-popup-item active"
+                   title="{{ is_quoifaire ? 'QuoiFaire (Fil actions)' : 'QuoiManger (Fil repas)' }}">
+                    <span class="bottom-brand-popup-emoji">{{ is_quoifaire ? '🏠' : '🍽️' }}</span>
+                </a>
+            </div>
         </div>
 
         <!-- 4. Messagerie -->

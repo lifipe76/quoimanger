@@ -1,0 +1,9 @@
+/* Form Action styles */
+.btn-delete-small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,133 @@
+{% set activeRealisation = realisation|default(null) %}
+{% set isRealisation = activeRealisation is not null %}
+{% set cardPhotoUrl = (activeRealisation and activeRealisation.photo) ? activeRealisation.photoUrl : (action.photo ? action.photoUrl : null) %}
+{% set cardPhotoUrls = (activeRealisation and activeRealisation.photos|length > 0) ? activeRealisation.photoUrls : action.photoUrls %}
+{% if cardPhotoUrls|length == 0 and cardPhotoUrl %}
+    {% set cardPhotoUrls = [cardPhotoUrl] %}
+{% endif %}
+{% set firstPhoto = cardPhotoUrls[0]|default(cardPhotoUrl) %}
+{% set defaultActionPhotoUrl = '/images/default_action.webp' %}
+{% set hasRealPhoto = firstPhoto is not null %}
+{% set showPlaceholderPhoto = (not isRealisation and not hasRealPhoto) %}
+{% set displayPhoto = hasRealPhoto ? firstPhoto : (showPlaceholderPhoto ? defaultActionPhotoUrl : null) %}
+
+<div class="card-action card-recette {{ displayPhoto ? 'has-photo-bg' : '' }}"
+     data-name="{{ action.designation|lower }}"
+     style="--card-index: {{ index|default(0) }};">
+    {% if displayPhoto %}
+        <div class="card-recette-photo-wrap {{ showPlaceholderPhoto ? 'card-photo-placeholder' : 'card-photo-slider' }}"
+             {% if hasRealPhoto %}
+                 data-current-index="0" data-photos="{{ cardPhotoUrls|json_encode|e('html_attr') }}"
+             {% endif %}>
+            <div class="card-recette-bg-photo {{ showPlaceholderPhoto ? 'card-photo-placeholder-bg' : '' }}" style="background-image: url('{{ displayPhoto }}');" aria-hidden="true"></div>
+            {% if hasRealPhoto and cardPhotoUrls|length > 1 %}
+                <button type="button" class="card-photo-arrow card-photo-arrow-prev" aria-label="Photo précédente" onclick="changeCardPhoto(event, this, -1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button type="button" class="card-photo-arrow card-photo-arrow-next" aria-label="Photo suivante" onclick="changeCardPhoto(event, this, 1)">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+                <div class="card-photo-nav-group">
+                    <span class="card-photo-count-badge" title="{{ cardPhotoUrls|length }} photos">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                        </svg>
+                        <span class="card-photo-current-idx">1</span>/{{ cardPhotoUrls|length }}
+                    </span>
+                    <div class="card-photo-dots" role="tablist" aria-label="Photos de l'action">
+                        {% for photoUrl in cardPhotoUrls %}
+                            <button type="button"
+                                    class="card-photo-dot {{ loop.first ? 'active' : '' }}"
+                                    data-index="{{ loop.index0 }}"
+                                    title="Photo {{ loop.index }} sur {{ cardPhotoUrls|length }}"
+                                    aria-label="Photo {{ loop.index }}"
+                                    onclick="selectCardPhoto(event, this, {{ loop.index0 }})"></button>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="card-recette-header">
+        <div class="card-recette-header-left">
+            {% if activeRealisation %}
+                {% if activeRealisation.moment %}
+                    <span class="card-recette-moment moment-{{ activeRealisation.moment }}">
+                        {{ activeRealisation.moment|capitalize }}
+                    </span>
+                {% endif %}
+                {% if activeRealisation.participants is defined and activeRealisation.participants|length > 0 %}
+                    <span class="card-recette-status card-recette-participants-bubble" title="Fait par : {% for p in activeRealisation.participants %}{{ p.displayName }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                        {% for p in activeRealisation.participants %}{{ p.firstname|default(p.displayName) }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    </span>
+                {% endif %}
+            {% else %}
+                {% set nbRealisations = action.realisations|length %}
+                {% set lastDate = action.lastRealiseAt %}
+                {% if nbRealisations > 0 %}
+                    <span class="card-recette-status realisee" title="Nombre de fois réalisée">
+                        Réalisée {{ nbRealisations }} fois
+                    </span>
+                    {% if lastDate %}
+                        <span class="card-recette-status status-days-ago" title="Dernière réalisation : {{ lastDate|date('d/m/Y') }}">
+                            Dernière : {{ lastDate|date('d/m/Y') }}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    <span class="card-recette-status a-faire">
+                        À réaliser
+                    </span>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="card-recette-header-right">
+            {% if activeRealisation %}
+                {% set participantIds = [] %}
+                {% for p in activeRealisation.participants %}
+                    {% set participantIds = participantIds|merge([p.id]) %}
+                {% endfor %}
+                <button type="button"
+                        class="card-btn-pencil card-btn-apn-trigger"
+                        title="Modifier l'action réalisée"
+                        onclick="openEditActionRealisationModal(
+                            '{{ path('app_action_realisation_update_date', {'id': activeRealisation.id}) }}',
+                            '{{ activeRealisation.realiseAt|date('Y-m-d') }}',
+                            '{{ activeRealisation.moment|default('matin') }}',
+                            '{{ action.designation|e('js') }}',
+                            '{{ csrf_token('update_action_realisation_date_' ~ activeRealisation.id) }}',
+                            '{{ path('app_action_realisation_delete', {'id': activeRealisation.id}) }}',
+                            '{{ csrf_token('delete_action_realisation_' ~ activeRealisation.id) }}',
+                            '{{ activeRealisation.complement|default('')|e('js') }}',
+                            {{ participantIds|json_encode }},
+                            {{ activeRealisation.photoUrls|json_encode }}
+                        )">
+                    ✏️
+                </button>
+            {% else %}
+                <a href="{{ path('app_action_edit', {'id': action.id}) }}"
+                   class="card-btn-pencil"
+                   title="Modifier l'action « {{ action.designation }} »">
+                    ✏️
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card-recette-title-row">
+        <h3 class="card-recette-title">
+            {% if isRealisation %}
+                <span class="action-title-text">{{ action.designation }}</span>
+            {% else %}
+                <a href="{{ path('app_action_edit', {'id': action.id}) }}" class="recipe-title-link">
+                    {{ action.designation }}
+                </a>
+            {% endif %}
+            {% if activeRealisation and activeRealisation.complement %}
+                <span class="recipe-title-complement">({{ activeRealisation.complement }})</span>
+            {% endif %}
+        </h3>
+    </div>
+</div>

@@ -1,0 +1,346 @@
+/* ==========================================================================
+   Card Action Component - Modern Card Style & Photo Slider
+   ========================================================================== */
+
+@keyframes cardActionEntrance {
+    0% {
+        opacity: 0;
+        transform: perspective(900px) rotateY(-16deg) rotateX(8deg)
+            translateY(35px) scale(0.93);
+    }
+    70% {
+        transform: perspective(900px) rotateY(2deg) rotateX(-1deg)
+            translateY(-4px) scale(1.01);
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(900px) rotateY(0deg) rotateX(0deg) translateY(0)
+            scale(1);
+    }
+}
+
+.card-action,
+.card-action.card-recette {
+    --card-pad-y: 0.75rem;
+    --card-pad-x: 0.85rem;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    padding: var(--card-pad-y) var(--card-pad-x);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.03),
+        0 1px 3px rgba(0, 0, 0, 0.05);
+    transition:
+        transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+        box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 0.35s ease;
+    animation: cardActionEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--card-index, 0) * 0.07s);
+    transform-origin: center bottom;
+}
+
+.card-action::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #c4a587, #d4bda6, #b59373);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card-action:hover {
+    transform: translateY(-6px) perspective(900px) rotateX(2deg);
+    box-shadow:
+        0 20px 30px -10px rgba(196, 165, 135, 0.15),
+        0 10px 20px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(196, 165, 135, 0.4);
+}
+
+.card-action:hover::before {
+    opacity: 1;
+}
+
+.card-action .card-recette-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+    position: relative;
+    z-index: 1;
+}
+
+.card-action .card-recette-header-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.card-action .card-recette-header-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.card-action .card-recette-moment {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.18rem 0.45rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.card-action .card-recette-status {
+    font-size: 0.725rem;
+    font-weight: 600;
+    padding: 0.18rem 0.5rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    gap: 0.35rem;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.card-action .card-recette-status.realisee,
+.card-action .card-recette-status.a-faire,
+.card-action .card-recette-status.status-days-ago,
+.card-action .card-recette-status.card-recette-participants-bubble {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    font-weight: 600;
+}
+
+.card-action .card-btn-pencil {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.18rem 0.35rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.card-action .card-btn-pencil:hover {
+    background: #fff7ed;
+    border-color: #fdba74;
+    transform: scale(1.1);
+}
+
+/* Photo slider */
+.card-action .card-recette-photo-wrap {
+    margin: calc(-1 * var(--card-pad-y)) calc(-1 * var(--card-pad-x)) 0.75rem calc(-1 * var(--card-pad-x));
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    flex-shrink: 0;
+    display: block;
+}
+
+.card-action .card-recette-bg-photo {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 1;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-action:hover .card-recette-bg-photo {
+    transform: scale(1.05);
+}
+
+.card-action .card-photo-placeholder {
+    background: #e2e8f0;
+}
+
+.card-action .card-photo-placeholder .card-recette-bg-photo,
+.card-action .card-photo-placeholder-bg {
+    filter: blur(5px);
+    transform: scale(1.1);
+    opacity: 0.82;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
+.card-action:hover .card-photo-placeholder .card-recette-bg-photo,
+.card-action:hover .card-photo-placeholder-bg {
+    transform: scale(1.15);
+    opacity: 0.92;
+}
+
+.card-action .card-photo-nav-group {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.card-action .card-photo-count-badge {
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-action .card-photo-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card-action .card-photo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.card-action .card-photo-dot:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: scale(1.25);
+}
+
+.card-action .card-photo-dot.active {
+    background: #ffffff;
+    width: 14px;
+    border-radius: 999px;
+}
+
+.card-action .card-photo-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    z-index: 3;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.card-action .card-photo-arrow:hover {
+    opacity: 1;
+    background: rgba(15, 23, 42, 0.85);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.card-action .card-photo-arrow-prev {
+    left: 8px;
+}
+
+.card-action .card-photo-arrow-next {
+    right: 8px;
+}
+
+.card-action .card-photo-arrow svg {
+    display: block;
+    pointer-events: none;
+}
+
+/* Ligne et titre de l'action */
+.card-action .card-recette-title-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.55rem;
+    position: relative;
+    z-index: 1;
+}
+
+.card-action .card-recette-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.35;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.card-action .action-title-text {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.card-action .recipe-title-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-action .recipe-title-link:hover {
+    color: var(--primary, #c4a587);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.card-action .recipe-title-complement {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+}

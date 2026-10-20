@@ -1,0 +1,28 @@
+{% set action_label = action_label|default('Valider →') %}
+
+<button type="submit" class="modal-recipe-item">
+    {% if action.photo %}
+        <img src="{{ action.photoUrl }}" alt="" class="modal-recipe-thumb" loading="lazy">
+    {% endif %}
+    <div class="recipe-item-main">
+        <span class="recipe-item-name">{{ action.designation }}</span>
+        <div class="recipe-item-badges">
+            <span class="badge-eaten-count">
+                {{ action.realisations|length > 0 ? ('Réalisée ' ~ action.realisations|length ~ ' fois') : 'Jamais réalisée' }}
+            </span>
+        </div>
+    </div>
+
+    <div class="recipe-item-meta">
+        {% if action.lastRealiseAt %}
+            <span class="badge-last-cooked" title="Dernière réalisation">
+                {{ action.lastRealiseAt|date('d/m/Y') }}
+            </span>
+        {% else %}
+            <span class="badge-never-cooked">
+                À réaliser
+            </span>
+        {% endif %}
+        <span class="recipe-item-action">{{ action_label }}</span>
+    </div>
+</button>

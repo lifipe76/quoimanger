@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actions - QuoiFaire{% endblock %}
+
+{% block body %}
+{% set indexContent %}
+    <div class="page-header recettes-header">
+        <div class="recettes-header-title-wrap">
+            <h1 class="page-title">Mes Actions</h1>
+            <p class="page-subtitle">{{ actions|length }} action{{ actions|length > 1 ? 's' : '' }} répertoriée{{ actions|length > 1 ? 's' : '' }}</p>
+        </div>
+        {{ composant('_composants/button', {
+            'titre': '+ Ajouter une action',
+            'href': path('app_action_create'),
+            'class': 'btn-primary'
+        }) }}
+    </div>
+
+    {{ composant('_composants/sortToolbar', {
+        'currentSort': currentSort|default('date'),
+        'currentOrder': currentOrder|default('desc'),
+        'route': 'app_actions_list',
+        'storageKey': 'quoiFaire_actions',
+        'defaultSort': 'date',
+        'defaultOrder': 'desc',
+        'searchTarget': '.card-action',
+        'searchId': 'actions-search-input',
+        'searchPlaceholder': 'Rechercher une action...',
+        'items': [
+            {'key': 'date', 'label': 'Dernière', 'defaultOrder': 'desc'},
+            {'key': 'count', 'label': 'Fréquence', 'defaultOrder': 'desc'},
+            {'key': 'alpha', 'label': 'Nom', 'defaultOrder': 'asc'}
+        ]
+    }) }}
+
+    {% if actions|length > 0 %}
+        <div class="cards-grid">
+            {% for action in actions %}
+                {{ composant('cards/action', { 'action': action, 'index': loop.index0 }) }}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <h2>Aucune action pour le moment</h2>
+            <p>Ajoutez votre première action pour pouvoir suivre sa réalisation.</p>
+            <div style="margin-top: 1.5rem;">
+                {{ composant('_composants/button', {
+                    'titre': '+ Créer ma première action',
+                    'href': path('app_action_create'),
+                    'class': 'btn-primary'
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+{% endset %}
+
+{{ composant('_composants/container', {
+    'content': indexContent
+}) }}
+{% endblock %}

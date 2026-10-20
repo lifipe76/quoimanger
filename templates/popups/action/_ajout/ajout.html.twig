@@ -1,0 +1,89 @@
+<!-- Modal Popup "Je rentre mon action" -->
+{% set popupContent %}
+    <div class="modal-proposition-header">
+        <h3 class="modal-proposition-title">Ajouter une action</h3>
+        <p class="modal-proposition-subtitle">Choisissez une action et un moment pour l'enregistrer dans votre fil QuoiFaire.</p>
+    </div>
+
+    <!-- Choix de la date et moment sur la même ligne (composant réutilisable) -->
+    {{ composant('popups/sections/date', {
+        'id_prefix': 'action',
+        'input_name': 'date',
+        'on_date_change': 'onActionDateInputChange(this.value)',
+        'on_quick_click': 'selectActionDate',
+        'on_moment_click': 'selectActionMoment'
+    }) }}
+
+    <!-- Barre de recherche (loupe extensible) et filtres de tri -->
+    <div class="modal-top-bar" id="action-modal-top-bar">
+        {{ composant('_composants/_popup/recherche', {
+            'id': 'action-filter-input',
+            'placeholder': 'Rechercher une action...',
+            'target': '.modal-action-form',
+            'oninput': 'filterActionsList(this.value)'
+        }) }}
+        <button type="button"
+                class="modal-sort-order-btn"
+                data-order="desc"
+                title="Tri décroissant (cliquer pour inverser)"
+                aria-label="Sens du tri"
+                onclick="toggleModalActionSortOrder(this, 'modal-actions-container')">
+            <i class="fa-solid fa-arrow-down sort-order-icon" aria-hidden="true"></i>
+        </button>
+        <div class="modal-sort-pills">
+            <button type="button" class="sort-pill active" data-sort="date" onclick="sortModalActions('date', this, 'modal-actions-container')">Dernière</button>
+            <button type="button" class="sort-pill" data-sort="count" onclick="sortModalActions('count', this, 'modal-actions-container')">Fréquence</button>
+            <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalActions('alpha', this, 'modal-actions-container')">Nom</button>
+        </div>
+    </div>
+
+    <!-- Contenu : Liste des actions -->
+    <div class="modal-recipes-list modal-tab-content active" id="modal-actions-container">
+        {% if actions|length > 0 %}
+            {% for a in actions %}
+                <form method="post" action="{{ path('app_action_realisation_add') }}"
+                      class="modal-recipe-form modal-action-form"
+                      data-name="{{ a.designation|lower }}"
+                      data-date="{{ a.lastRealiseAt ? a.lastRealiseAt|date('U') : 0 }}"
+                      data-count="{{ a.realisationsCount }}"
+                      data-id="{{ a.id }}">
+                    <input type="hidden" name="action_id" value="{{ a.id }}">
+                    <input type="hidden" name="moment" class="input-action-form-moment" value="{{ defaultMoment|default('matin') }}">
+                    <input type="hidden" name="date" class="input-action-form-date" value="{{ 'now'|date('Y-m-d') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('add_action_realisation') }}">
+                    {{ composant('cards/popup/action', {
+                        'action': a,
+                        'action_label': 'Valider →'
+                    }) }}
+                </form>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state" style="padding: 2rem 1rem; text-align: center;">
+                <p>Aucune action disponible pour le moment.</p>
+                <div style="margin-top: 0.75rem;">
+                    {{ composant('_composants/button', {
+                        'titre': '+ Créer ma première action',
+                        'href': path('app_action_create', {'destination': 'quoifaire'}),
+                        'class': 'btn-primary'
+                    }) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal-footer modal-footer-center">
+        {{ composant('_composants/button', {
+            'titre': '+ Créer une nouvelle action',
+            'href': path('app_action_create', {'destination': 'quoifaire'}),
+            'class': 'btn-primary',
+            'style': 'width: 100%;'
+        }) }}
+    </div>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'action-modal',
+    'content': popupContent,
+    'onClose': 'closeActionModal()',
+    'onBackdropClick': 'handleModalBackdropClick(event, "action-modal")'
+}) }}

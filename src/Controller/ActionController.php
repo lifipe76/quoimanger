@@ -36,7 +36,7 @@ class ActionController extends AbstractController
         }
 
         $defaultOrder = match ($sort) {
-            'alpha' => 'asc',
+            'alpha', 'echeance' => 'asc',
             default => 'desc', // 'date', 'count'
         };
 
@@ -71,6 +71,22 @@ class ActionController extends AbstractController
                 if ($dateA === null) return 1;
                 if ($dateB === null) return -1;
                 return $isAsc ? ($dateA <=> $dateB) : ($dateB <=> $dateA);
+            } elseif ($sort === 'echeance') {
+                $infoA = $a->getEcheanceInfo();
+                $infoB = $b->getEcheanceInfo();
+                if ($infoA === null && $infoB === null) {
+                    $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                    return $isAsc ? $cmp : -$cmp;
+                }
+                if ($infoA === null) return 1;
+                if ($infoB === null) return -1;
+                $diffA = $infoA['diffDays'];
+                $diffB = $infoB['diffDays'];
+                if ($diffA === $diffB) {
+                    $cmp = strcasecmp($a->getDesignation() ?? '', $b->getDesignation() ?? '');
+                    return $isAsc ? $cmp : -$cmp;
+                }
+                return $isAsc ? ($diffA <=> $diffB) : ($diffB <=> $diffA);
             } elseif ($sort === 'count') {
                 $countA = $a->getRealisationsCount();
                 $countB = $b->getRealisationsCount();

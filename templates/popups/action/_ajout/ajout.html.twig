@@ -32,6 +32,7 @@
         </button>
         <div class="modal-sort-pills">
             <button type="button" class="sort-pill active" data-sort="date" onclick="sortModalActions('date', this, 'modal-actions-container')">Dernière</button>
+            <button type="button" class="sort-pill" data-sort="echeance" onclick="sortModalActions('echeance', this, 'modal-actions-container')">Échéance</button>
             <button type="button" class="sort-pill" data-sort="count" onclick="sortModalActions('count', this, 'modal-actions-container')">Fréquence</button>
             <button type="button" class="sort-pill" data-sort="alpha" onclick="sortModalActions('alpha', this, 'modal-actions-container')">Nom</button>
         </div>
@@ -46,6 +47,7 @@
                       data-name="{{ a.designation|lower }}"
                       data-date="{{ a.lastRealiseAt ? a.lastRealiseAt|date('U') : 0 }}"
                       data-count="{{ a.realisationsCount }}"
+                      data-echeance="{{ a.echeanceInfo ? a.echeanceInfo.diffDays : 99999 }}"
                       data-id="{{ a.id }}">
                     <input type="hidden" name="action_id" value="{{ a.id }}">
                     <input type="hidden" name="moment" class="input-action-form-moment" value="{{ defaultMoment|default('matin') }}">

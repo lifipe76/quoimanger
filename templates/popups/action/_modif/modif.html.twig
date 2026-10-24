@@ -33,6 +33,8 @@
 
             {{ composant('popups/sections/personnes', {
                 'id_prefix': 'edit-action',
+                'title': "Qui a fait l'action ?",
+                'hint': "Laissez vide pour indiquer que toute la famille a fait l'action.",
                 'familleMembres': familleMembres|default([])
             }) }}
         </div>

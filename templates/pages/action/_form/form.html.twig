@@ -39,6 +39,44 @@
                 {{ form_errors(form.designation, {'attr': {'class': 'form-error'} }) }}
             </div>
 
+            <!-- Périodicité de l'action -->
+            <div class="form-group action-periodique-box" style="margin: 1.5rem 0; padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <div class="form-check" style="display: flex; align-items: center; gap: 0.65rem;">
+                    {{ form_widget(form.isPeriodique, {'attr': {'id': 'action-is-periodique-input', 'onchange': 'togglePeriodicFields(this.checked)'} }) }}
+                    {{ form_label(form.isPeriodique, null, {'label_attr': {'class': 'form-check-label', 'for': 'action-is-periodique-input', 'style': 'font-weight: 600; cursor: pointer; margin: 0;'} }) }}
+                </div>
+                {{ form_errors(form.isPeriodique) }}
+
+                <div id="periodic-fields-container" style="display: {{ form.isPeriodique.vars.checked ? 'block' : 'none' }}; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">
+                        Fréquence de répétition
+                    </label>
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <span style="color: #64748b; font-weight: 500;">Tous les</span>
+                        <div style="width: 100px;">
+                            {{ form_widget(form.frequenceValeur, {'attr': {'class': 'form-control', 'placeholder': '1, 2...'} }) }}
+                        </div>
+                        <div style="min-width: 160px; flex: 1;">
+                            {{ form_widget(form.frequenceUnite, {'attr': {'class': 'form-control form-select'} }) }}
+                        </div>
+                    </div>
+                    {{ form_errors(form.frequenceValeur) }}
+                    {{ form_errors(form.frequenceUnite) }}
+                    <small class="form-text" style="color: #64748b; display: block; margin-top: 0.5rem;">
+                        Exemple : tous les 15 jours, toutes les 2 semaines, tous les 3 mois, tous les ans...
+                    </small>
+                </div>
+            </div>
+
+            <script>
+            function togglePeriodicFields(isChecked) {
+                var container = document.getElementById('periodic-fields-container');
+                if (container) {
+                    container.style.display = isChecked ? 'block' : 'none';
+                }
+            }
+            </script>
+
             {{ composant('_composants/photoInput', {
                 'prefix': 'action',
                 'label': "Photos de l'action",

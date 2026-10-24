@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ActionRepository::class)]
 #[ORM\Table(name: 'actions')]
@@ -29,6 +30,17 @@ class Action
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isPeriodique = false;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    #[Assert\Positive(message: 'La fréquence doit être un nombre positif supérieur à zéro.')]
+    private ?int $frequenceValeur = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(choices: ['jour', 'semaine', 'mois', 'annee'], message: 'Veuillez choisir une unité valide.')]
+    private ?string $frequenceUnite = null;
 
     /**
      * @var list<string>
@@ -223,5 +235,214 @@ class Action
     public function getRealisationsCount(): int
     {
         return $this->realisations->count();
+    }
+
+    public function isPeriodique(): bool
+    {
+        return $this->isPeriodique;
+    }
+
+    public function setIsPeriodique(bool $isPeriodique): static
+    {
+        $this->isPeriodique = $isPeriodique;
+        if (!$isPeriodique) {
+            $this->frequenceValeur = null;
+            $this->frequenceUnite = null;
+        }
+
+        return $this;
+    }
+
+    public function getFrequenceValeur(): ?int
+    {
+        return $this->frequenceValeur;
+    }
+
+    public function setFrequenceValeur(?int $frequenceValeur): static
+    {
+        $this->frequenceValeur = $frequenceValeur;
+
+        return $this;
+    }
+
+    public function getFrequenceUnite(): ?string
+    {
+        return $this->frequenceUnite;
+    }
+
+    public function setFrequenceUnite(?string $frequenceUnite): static
+    {
+        $this->frequenceUnite = $frequenceUnite;
+
+        return $this;
+    }
+
+    public function getFrequenceTexte(): ?string
+    {
+        if (!$this->isPeriodique || !$this->frequenceValeur || !$this->frequenceUnite) {
+            return null;
+        }
+
+        $val = (int) $this->frequenceValeur;
+        return match ($this->frequenceUnite) {
+            'jour' => $val === 1 ? 'Tous les jours' : sprintf('Tous les %d jours', $val),
+            'semaine' => $val === 1 ? 'Toutes les semaines' : sprintf('Toutes les %d semaines', $val),
+            'mois' => $val === 1 ? 'Tous les mois' : sprintf('Tous les %d mois', $val),
+            'annee' => $val === 1 ? 'Tous les ans' : sprintf('Tous les %d ans', $val),
+            default => sprintf('Tous les %d %s', $val, $this->frequenceUnite),
+        };
+    }
+
+    public function getProchaineEcheance(): ?\DateTimeImmutable
+    {
+        if (!$this->isPeriodique || !$this->frequenceValeur || !$this->frequenceUnite) {
+            return null;
+        }
+
+        $baseDate = $this->getLastRealiseAt();
+        if ($baseDate === null) {
+            return null;
+        }
+
+        $val = (int) $this->frequenceValeur;
+        $intervalSpec = match ($this->frequenceUnite) {
+            'jour' => sprintf('+%d days', $val),
+            'semaine' => sprintf('+%d weeks', $val),
+            'mois' => sprintf('+%d months', $val),
+            'annee' => sprintf('+%d years', $val),
+            default => null,
+        };
+
+        if (!$intervalSpec) {
+            return null;
+        }
+
+        return $baseDate->modify($intervalSpec);
+    }
+
+    /**
+     * @return array{status: string, isOverdue: bool, label: string, date: ?\DateTimeImmutable, diffDays: int}|null
+     */
+    public function getEcheanceInfo(?\DateTimeInterface $now = null): ?array
+    {
+        if (!$this->isPeriodique || !$this->frequenceValeur || !$this->frequenceUnite) {
+            return null;
+        }
+
+        $today = ($now instanceof \DateTimeImmutable ? $now : new \DateTimeImmutable('today'))->setTime(0, 0, 0);
+        $lastRealise = $this->getLastRealiseAt();
+
+        if ($lastRealise === null) {
+            return [
+                'status' => 'a_faire',
+                'isOverdue' => true,
+                'label' => 'À faire',
+                'date' => null,
+                'diffDays' => 0,
+            ];
+        }
+
+        $prochaine = $this->getProchaineEcheance();
+        if ($prochaine === null) {
+            return null;
+        }
+
+        $prochaineDay = $prochaine->setTime(0, 0, 0);
+        // %r gives "-" if negative, "" if positive
+        $diffDays = (int) $today->diff($prochaineDay)->format('%r%a');
+
+        if ($diffDays === 0) {
+            return [
+                'status' => 'aujourdhui',
+                'isOverdue' => true,
+                'label' => 'À refaire aujourd\'hui',
+                'date' => $prochaine,
+                'diffDays' => 0,
+            ];
+        }
+
+        if ($diffDays < 0) {
+            $retard = abs($diffDays);
+            return [
+                'status' => 'en_retard',
+                'isOverdue' => true,
+                'label' => 'En retard de ' . self::formaterDureeJours($retard),
+                'date' => $prochaine,
+                'diffDays' => $diffDays,
+            ];
+        }
+
+        return [
+            'status' => 'a_venir',
+            'isOverdue' => false,
+            'label' => 'À refaire dans ' . self::formaterDureeJours($diffDays),
+            'date' => $prochaine,
+            'diffDays' => $diffDays,
+        ];
+    }
+
+    public function getTempsDepuisDerniereRealisation(?\DateTimeInterface $now = null): ?string
+    {
+        $lastRealise = $this->getLastRealiseAt();
+        if ($lastRealise === null) {
+            return null;
+        }
+
+        $today = ($now instanceof \DateTimeImmutable ? $now : new \DateTimeImmutable('today'))->setTime(0, 0, 0);
+        $realiseDay = $lastRealise->setTime(0, 0, 0);
+        $diffDays = (int) $realiseDay->diff($today)->format('%r%a');
+
+        if ($diffDays <= 0) {
+            return 'Fait aujourd\'hui';
+        }
+        if ($diffDays === 1) {
+            return 'Fait hier';
+        }
+
+        return 'Fait depuis ' . self::formaterDureeJours($diffDays);
+    }
+
+    #[Assert\Callback]
+    public function validatePeriodicite(ExecutionContextInterface $context): void
+    {
+        if ($this->isPeriodique) {
+            if (!$this->frequenceValeur || $this->frequenceValeur < 1) {
+                $context->buildViolation('Veuillez préciser la fréquence (ex: 1, 2, 3...).')
+                    ->atPath('frequenceValeur')
+                    ->addViolation();
+            }
+            if (!$this->frequenceUnite || !in_array($this->frequenceUnite, ['jour', 'semaine', 'mois', 'annee'], true)) {
+                $context->buildViolation('Veuillez choisir une unité de période (jours, semaines, mois ou années).')
+                    ->atPath('frequenceUnite')
+                    ->addViolation();
+            }
+        }
+    }
+
+    public static function formaterDureeJours(int $jours): string
+    {
+        if ($jours < 7) {
+            return $jours . ' jour' . ($jours > 1 ? 's' : '');
+        }
+        if ($jours < 30) {
+            $semaines = (int) round($jours / 7);
+            if ($semaines <= 1) {
+                return '1 semaine';
+            }
+            return $semaines . ' semaines';
+        }
+        if ($jours < 365) {
+            $mois = (int) round($jours / 30.4375);
+            if ($mois <= 1) {
+                return '1 mois';
+            }
+            return $mois . ' mois';
+        }
+
+        $annees = (int) round($jours / 365.25);
+        if ($annees <= 1) {
+            return '1 an';
+        }
+        return $annees . ' ans';
     }
 }

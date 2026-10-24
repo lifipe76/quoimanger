@@ -79,6 +79,33 @@
     white-space: nowrap;
 }
 
+.modal-recipe-item .badge-periodique {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    white-space: nowrap;
+}
+
+.modal-recipe-item .badge-periodique.is-overdue {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.modal-recipe-item .badge-periodique.is-upcoming {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
 .recipe-item-meta {
     text-align: right;
     display: flex;

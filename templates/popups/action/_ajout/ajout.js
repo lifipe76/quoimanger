@@ -148,6 +148,11 @@ function sortModalActions(sortKey, btnElement, containerId, forcedOrder) {
             if (dateB === 0 && dateA !== 0) return -1;
             if (dateA === dateB) return nameA.localeCompare(nameB, "fr");
             return isAsc ? (dateA - dateB) : (dateB - dateA);
+        } else if (sortKey === "echeance") {
+            var echA = parseInt(a.dataset.echeance || "99999", 10);
+            var echB = parseInt(b.dataset.echeance || "99999", 10);
+            if (echA === echB) return nameA.localeCompare(nameB, "fr");
+            return isAsc ? (echA - echB) : (echB - echA);
         } else if (sortKey === "count") {
             if (countA === countB) return nameA.localeCompare(nameB, "fr");
             return isAsc ? (countA - countB) : (countB - countA);

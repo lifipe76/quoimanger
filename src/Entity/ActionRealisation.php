@@ -251,4 +251,76 @@ class ActionRealisation
 
         return $this->participants->contains($user);
     }
+
+    public function getTempsDepuis(?\DateTimeInterface $now = null): ?string
+    {
+        if ($this->realiseAt === null) {
+            return null;
+        }
+
+        $today = ($now instanceof \DateTimeImmutable ? $now : new \DateTimeImmutable('today'))->setTime(0, 0, 0);
+        $realiseDay = $this->realiseAt->setTime(0, 0, 0);
+        $diffDays = (int) $realiseDay->diff($today)->format('%r%a');
+
+        if ($diffDays <= 0) {
+            return 'Fait aujourd\'hui';
+        }
+        if ($diffDays === 1) {
+            return 'Fait hier';
+        }
+
+        return 'Fait depuis ' . Action::formaterDureeJours($diffDays);
+    }
+
+    public function getProchaineEcheance(): ?\DateTimeImmutable
+    {
+        $action = $this->action;
+        if (!$action || !$action->isPeriodique() || !$action->getFrequenceValeur() || !$action->getFrequenceUnite()) {
+            return null;
+        }
+
+        if ($this->realiseAt === null) {
+            return null;
+        }
+
+        $val = (int) $action->getFrequenceValeur();
+        $intervalSpec = match ($action->getFrequenceUnite()) {
+            'jour' => sprintf('+%d days', $val),
+            'semaine' => sprintf('+%d weeks', $val),
+            'mois' => sprintf('+%d months', $val),
+            'annee' => sprintf('+%d years', $val),
+            default => null,
+        };
+
+        if (!$intervalSpec) {
+            return null;
+        }
+
+        return $this->realiseAt->modify($intervalSpec);
+    }
+
+    /**
+     * @return array{status: string, isOverdue: bool, label: string, date: ?\DateTimeImmutable, diffDays: int}|null
+     */
+    public function getEcheanceInfo(?\DateTimeInterface $now = null): ?array
+    {
+        $prochaine = $this->getProchaineEcheance();
+        if ($prochaine === null) {
+            return null;
+        }
+
+        $today = ($now instanceof \DateTimeImmutable ? $now : new \DateTimeImmutable('today'))->setTime(0, 0, 0);
+        $prochaineDay = $prochaine->setTime(0, 0, 0);
+        $diffDays = (int) $today->diff($prochaineDay)->format('%r%a');
+
+        $isOverdue = $diffDays < 0;
+
+        return [
+            'status' => $isOverdue ? 'en_retard' : ($diffDays === 0 ? 'aujourdhui' : 'a_venir'),
+            'isOverdue' => $isOverdue,
+            'label' => 'À refaire dans le ' . $prochaine->format('d/m/Y'),
+            'date' => $prochaine,
+            'diffDays' => $diffDays,
+        ];
+    }
 }

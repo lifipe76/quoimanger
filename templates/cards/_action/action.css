@@ -130,6 +130,39 @@
     font-weight: 600;
 }
 
+.card-action .card-recette-status.status-periodique {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    font-weight: 600;
+}
+
+.card-action .card-recette-status.status-periodique.is-overdue {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.card-action .card-recette-status.status-periodique.is-upcoming {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
+.card-action .action-freq-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #855b32;
+    background: #fdfaf6;
+    border: 1px solid rgba(196, 165, 135, 0.4);
+    border-radius: 8px;
+    padding: 0.2rem 0.5rem;
+    margin-left: auto;
+}
+
 .card-action .card-btn-pencil {
     background: #f8fafc;
     border: 1px solid #e2e8f0;

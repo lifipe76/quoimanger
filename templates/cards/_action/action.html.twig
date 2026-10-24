@@ -63,21 +63,46 @@
                         {% for p in activeRealisation.participants %}{{ p.firstname|default(p.displayName) }}{% if not loop.last %}, {% endif %}{% endfor %}
                     </span>
                 {% endif %}
+                {% set tempsDepuisRealisation = activeRealisation.tempsDepuis %}
+                {% if tempsDepuisRealisation %}
+                    <span class="card-recette-status status-days-ago" title="{{ activeRealisation.realiseAt ? ('Réalisée le : ' ~ activeRealisation.realiseAt|date('d/m/Y')) : '' }}">
+                        {{ tempsDepuisRealisation }}
+                    </span>
+                {% endif %}
+                {% if action.isPeriodique %}
+                    {% set echeanceRealisation = activeRealisation.echeanceInfo %}
+                    {% if echeanceRealisation %}
+                        <span class="card-recette-status status-periodique {{ echeanceRealisation.isOverdue ? 'is-overdue' : 'is-upcoming' }}" title="{{ action.frequenceTexte ? (action.frequenceTexte ~ (echeanceRealisation.date ? ' • Échéance : ' ~ echeanceRealisation.date|date('d/m/Y') : '')) : '' }}">
+                            <i class="fa-solid fa-arrows-rotate" aria-hidden="true" style="font-size: 0.65rem;"></i>
+                            {{ echeanceRealisation.label }}
+                        </span>
+                    {% endif %}
+                {% endif %}
             {% else %}
                 {% set nbRealisations = action.realisations|length %}
                 {% set lastDate = action.lastRealiseAt %}
+                {% set tempsDepuis = action.tempsDepuisDerniereRealisation %}
+                {% set echeance = action.echeanceInfo %}
+
                 {% if nbRealisations > 0 %}
                     <span class="card-recette-status realisee" title="Nombre de fois réalisée">
                         Réalisée {{ nbRealisations }} fois
                     </span>
-                    {% if lastDate %}
-                        <span class="card-recette-status status-days-ago" title="Dernière réalisation : {{ lastDate|date('d/m/Y') }}">
-                            Dernière : {{ lastDate|date('d/m/Y') }}
+                    {% if tempsDepuis %}
+                        <span class="card-recette-status status-days-ago" title="{{ lastDate ? ('Dernière réalisation : ' ~ lastDate|date('d/m/Y')) : '' }}">
+                            {{ tempsDepuis }}
                         </span>
                     {% endif %}
                 {% else %}
                     <span class="card-recette-status a-faire">
                         À réaliser
+                    </span>
+                {% endif %}
+
+                {% if action.isPeriodique and echeance %}
+                    <span class="card-recette-status status-periodique {{ echeance.isOverdue ? 'is-overdue' : 'is-upcoming' }}" title="{{ action.frequenceTexte ? (action.frequenceTexte ~ (echeance.date ? ' • Échéance : ' ~ echeance.date|date('d/m/Y') : '')) : '' }}">
+                        <i class="fa-solid fa-arrows-rotate" aria-hidden="true" style="font-size: 0.65rem;"></i>
+                        {{ echeance.label }}
                     </span>
                 {% endif %}
             {% endif %}
@@ -129,5 +154,11 @@
                 <span class="recipe-title-complement">({{ activeRealisation.complement }})</span>
             {% endif %}
         </h3>
+        {% if not isRealisation and action.isPeriodique and action.frequenceTexte %}
+            <span class="action-freq-badge" title="Périodicité de l'action : {{ action.frequenceTexte }}">
+                <i class="fa-solid fa-repeat" aria-hidden="true" style="font-size: 0.65rem;"></i>
+                {{ action.frequenceTexte }}
+            </span>
+        {% endif %}
     </div>
 </div>

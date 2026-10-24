@@ -96,6 +96,87 @@ class QuoiFaireTest extends WebTestCase
         }
     }
 
+    public function testPeriodicActionLifecycleAndLabels(): void
+    {
+        $crawler = $this->client->request('GET', '/action');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('#action_isPeriodique');
+
+        $actionName = 'Arroser les plantes ' . uniqid();
+        $form = $crawler->selectButton('Créer l\'action')->form([
+            'action[designation]' => $actionName,
+            'action[isPeriodique]' => '1',
+            'action[frequenceValeur]' => 7,
+            'action[frequenceUnite]' => 'jour',
+        ]);
+        $this->client->submit($form);
+        $this->assertResponseRedirects('/actions');
+        $crawlerActions = $this->client->followRedirect();
+
+        $action = $this->em->getRepository(Action::class)->findOneBy(['designation' => $actionName]);
+        $this->assertNotNull($action);
+        $this->assertTrue($action->isPeriodique());
+        $this->assertSame(7, $action->getFrequenceValeur());
+        $this->assertSame('jour', $action->getFrequenceUnite());
+        $this->assertSame('Tous les 7 jours', $action->getFrequenceTexte());
+
+        // L'action n'a pas encore de réalisation -> "À faire"
+        $this->assertSelectorTextContains('.cards-grid', 'À faire');
+        $this->assertSelectorTextContains('.cards-grid', 'Tous les 7 jours');
+
+        // Ajout d'une réalisation aujourd'hui
+        $crawlerHome = $this->client->request('GET', '/quoifaire');
+        $csrfToken = $crawlerHome->filter('form.modal-action-form input[name="_token"]')->first()->attr('value');
+        $this->client->request('POST', '/action-realisation/add', [
+            '_token' => $csrfToken,
+            'action_id' => $action->getId(),
+            'date' => (new \DateTimeImmutable())->format('Y-m-d'),
+            'moment' => 'matin',
+        ]);
+        $this->assertResponseRedirects('/quoifaire');
+        $this->client->followRedirect();
+
+        // Sur /actions, vérifier le temps écoulé et l'échéance future
+        $crawlerActions = $this->client->request('GET', '/actions');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('.cards-grid', 'Fait aujourd\'hui');
+        $this->assertSelectorTextContains('.cards-grid', 'À refaire dans 1 semaine');
+
+        // Vérification des libellés dans la popup de modification et sur la carte réalisation sur /quoifaire
+        $crawlerHome = $this->client->request('GET', '/quoifaire');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextContains('#edit-action-modal', 'Qui a fait l\'action ?');
+        $this->assertSelectorTextContains('#edit-action-modal', 'toute la famille a fait l\'action');
+        $this->assertSelectorTextContains('.timeline-meal-wrapper', 'Fait aujourd\'hui');
+        $prochaineDate = (new \DateTimeImmutable('today'))->modify('+7 days')->format('d/m/Y');
+        $this->assertSelectorTextContains('.timeline-meal-wrapper', 'À refaire dans le ' . $prochaineDate);
+
+        // Test avec une réalisation faite il y a 5 jours
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $realisationExistante = $em->getRepository(ActionRealisation::class)->findOneBy(['action' => $action]);
+        $realisationExistante->setRealiseAt(new \DateTimeImmutable('-5 days'));
+        $em->flush();
+        $em->clear();
+
+        $this->assertSame('Fait depuis 5 jours', $realisationExistante->getTempsDepuis());
+        $echeance5j = $realisationExistante->getEcheanceInfo();
+        $this->assertNotNull($echeance5j);
+        $expectedNext = (new \DateTimeImmutable('-5 days'))->modify('+7 days')->format('d/m/Y');
+        $this->assertSame('À refaire dans le ' . $expectedNext, $echeance5j['label']);
+
+        $crawlerHomePast = $this->client->request('GET', '/quoifaire');
+        $this->assertResponseIsSuccessful();
+        $this->assertStringContainsString('Fait depuis 5 jours', $crawlerHomePast->filter('.timeline-page')->text());
+        $this->assertStringContainsString('À refaire dans le ' . $expectedNext, $crawlerHomePast->filter('.timeline-page')->text());
+
+        // Nettoyage
+        $actionToRemove = $this->em->find(Action::class, $action->getId());
+        if ($actionToRemove) {
+            $this->em->remove($actionToRemove);
+            $this->em->flush();
+        }
+    }
+
     private function getCsrfToken(string $tokenId): string
     {
         $request = $this->client->getRequest();

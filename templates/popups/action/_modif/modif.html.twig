@@ -1,0 +1,73 @@
+<!-- Modal Popup "Modifier l'action" -->
+{% set popupContent %}
+    <form method="post" id="edit-action-realisation-form" action="" enctype="multipart/form-data">
+        <input type="hidden" name="_token" id="edit-action-token" value="">
+        <input type="hidden" name="moment" id="edit-action-moment-input" value="matin">
+
+        <div class="modal-proposition-header">
+            <h3 class="modal-proposition-title">Modifier l'action réalisée</h3>
+            <p class="modal-proposition-subtitle">Action : <strong id="edit-action-name" style="color: var(--primary, #c4a587);"></strong></p>
+        </div>
+
+        {{ composant('popups/sections/date', {
+            'id_prefix': 'edit-action',
+            'input_name': 'date',
+            'on_date_change': 'onEditActionDateInputChange(this.value)',
+            'on_quick_click': 'selectEditActionDate',
+            'on_moment_click': 'selectEditActionMoment'
+        }) }}
+
+        <div class="modal-body edit-meal-body-content">
+            <div class="form-group mb-3" style="padding: 0 1.25rem;">
+                <label for="edit-action-complement-input" class="modal-section-label">
+                    Détail / Note (texte libre)
+                </label>
+                <input type="text"
+                       name="complement"
+                       id="edit-action-complement-input"
+                       class="form-control"
+                       placeholder="Ex: 45 minutes, jardin devant, réparé..."
+                       maxlength="255"
+                       style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+            </div>
+
+            {{ composant('popups/sections/personnes', {
+                'id_prefix': 'edit-action',
+                'title': "Qui a fait l'action ?",
+                'hint': "Laissez vide pour indiquer que toute la famille a fait l'action.",
+                'familleMembres': familleMembres|default([])
+            }) }}
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem;">
+            <button type="button"
+                    class="btn btn-danger btn-delete-meal"
+                    id="btn-delete-action-realisation"
+                    title="Supprimer cette action du fil"
+                    onclick="deleteCurrentActionRealisation()">
+                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+            </button>
+
+            <div style="display: flex; gap: 0.75rem;">
+                {{ composant('_composants/button', {
+                    'titre': 'Annuler',
+                    'type': 'button',
+                    'class': 'btn-secondary',
+                    'onclick': 'closeEditActionRealisationModal()'
+                }) }}
+                {{ composant('_composants/button', {
+                    'titre': 'Enregistrer',
+                    'type': 'submit',
+                    'class': 'btn-primary'
+                }) }}
+            </div>
+        </div>
+    </form>
+{% endset %}
+
+{{ composant('_composants/popup', {
+    'id': 'edit-action-modal',
+    'content': popupContent,
+    'onClose': 'closeEditActionRealisationModal()',
+    'onBackdropClick': 'handleModalBackdropClick(event, "edit-action-modal")'
+}) }}

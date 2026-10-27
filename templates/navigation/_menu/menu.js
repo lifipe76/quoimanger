@@ -1,4 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Brand Switcher (QuoiManger 🍽️ <-> QuoiFaire 🏠)
+    const brandSwitcher = document.getElementById("brandSwitcher");
+    const brandPopup = document.getElementById("brandPopup");
+    if (brandSwitcher && brandPopup) {
+        brandSwitcher.addEventListener("touchstart", function (e) {
+            if (!brandPopup.classList.contains("is-open")) {
+                e.preventDefault();
+                brandPopup.classList.add("is-open");
+            }
+        }, { passive: false });
+
+        document.addEventListener("click", function (e) {
+            if (!brandSwitcher.contains(e.target)) {
+                brandPopup.classList.remove("is-open");
+            }
+        });
+    }
+
     const container = document.getElementById("userMenuContainer");
     const popup = document.getElementById("userPopupMenu");
     const avatarImg = document.getElementById("avatarMenuImg");

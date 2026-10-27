@@ -1,0 +1,137 @@
+/* ==========================================================================
+   Styles spécifiques pour le popup Modifier l'action réalisée
+   ========================================================================== */
+
+#edit-action-modal .modal-dialog {
+    width: 800px;
+    min-width: min(800px, calc(100vw - 2rem));
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#edit-action-realisation-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#edit-action-realisation-form .modal-proposition-header {
+    flex-shrink: 0;
+    padding: 1.25rem 1.5rem 0.75rem;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding-right: 3.5rem;
+}
+
+#edit-action-realisation-form .modal-proposition-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.25;
+}
+
+#edit-action-realisation-form .modal-proposition-subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+#edit-action-realisation-form .modal-date-row {
+    flex-shrink: 0;
+}
+
+#edit-action-realisation-form .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 1rem 0 !important;
+}
+
+#edit-action-realisation-form .modal-footer {
+    flex-shrink: 0;
+    padding: 1rem 1.75rem !important;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+}
+
+#edit-action-realisation-form .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+#edit-action-realisation-form .modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+#edit-action-realisation-form .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+#edit-action-realisation-form .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+#edit-action-modal .btn-delete-meal {
+    background: transparent;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#edit-action-modal .btn-delete-meal:hover {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fca5a5 !important;
+}
+
+@media (max-width: 640px) {
+    #edit-action-modal .modal-dialog {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 90vh !important;
+        margin: 0 !important;
+    }
+
+    #edit-action-realisation-form .modal-body {
+        padding: 0.85rem 0 !important;
+    }
+
+    #edit-action-realisation-form .modal-footer {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 0.65rem !important;
+        padding: 0.85rem 1.15rem !important;
+    }
+
+    #edit-action-modal .btn-delete-meal {
+        width: 100%;
+        text-align: center;
+        padding: 0.65rem;
+    }
+
+    #edit-action-realisation-form .modal-footer > div:last-child {
+        display: flex;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    #edit-action-realisation-form .modal-footer > div:last-child .button {
+        flex: 1;
+        justify-content: center;
+    }
+}

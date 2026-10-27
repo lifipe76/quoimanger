@@ -1,0 +1,135 @@
+/* ==========================================================================
+   Composant Card Popup Action (utilisé dans la modale d'enregistrement)
+   ========================================================================== */
+
+.modal-recipe-item {
+    width: 100%;
+    text-align: left;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.85rem 1.15rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.modal-recipe-item:hover {
+    background: #fbf7f4;
+    border-color: #c4a587;
+    box-shadow: 0 4px 12px rgba(196, 165, 135, 0.15);
+}
+
+.modal-recipe-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #cbd5e1;
+    background: #e2e8f0;
+}
+
+.recipe-item-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.recipe-item-name {
+    display: block;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal-recipe-item:hover .recipe-item-name {
+    color: #c4a587;
+}
+
+.recipe-item-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.modal-recipe-item .badge-eaten-count,
+.modal-recipe-item .badge-last-cooked,
+.modal-recipe-item .badge-never-cooked {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.modal-recipe-item .badge-periodique {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    white-space: nowrap;
+}
+
+.modal-recipe-item .badge-periodique.is-overdue {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.modal-recipe-item .badge-periodique.is-upcoming {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+}
+
+.recipe-item-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.recipe-item-action {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary, #c4a587);
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    background: #fdfaf6;
+    border: 1px solid rgba(196, 165, 135, 0.35);
+    transition: all 0.2s ease;
+}
+
+.modal-recipe-item:hover .recipe-item-action {
+    background: var(--primary, #c4a587);
+    color: #ffffff;
+    border-color: var(--primary, #c4a587);
+}

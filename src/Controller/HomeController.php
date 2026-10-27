@@ -29,8 +29,12 @@ class HomeController extends AbstractController
         RecetteRepository $recetteRepository,
         BoissonRepository $boissonRepository,
         \App\Repository\FrigoRepository $frigoRepository,
-        \App\Service\RecipeSuggestionService $suggestionService
+        \App\Service\RecipeSuggestionService $suggestionService,
+        Request $request
     ): Response {
+        if ($request->hasSession()) {
+            $request->getSession()->set('app_mode', 'quoimanger');
+        }
         $timeline = $realisationRepository->findTimeline();
         $recettes = $recetteRepository->findAllOrderedByLastRealisation();
         $ranks = $this->calculateRecipeRanks($recettes);

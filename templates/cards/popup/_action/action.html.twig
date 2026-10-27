@@ -1,0 +1,36 @@
+{% set action_label = action_label|default('Valider →') %}
+{% set tempsDepuis = action.tempsDepuisDerniereRealisation %}
+{% set echeance = action.echeanceInfo %}
+
+<button type="submit" class="modal-recipe-item">
+    {% if action.photo %}
+        <img src="{{ action.photoUrl }}" alt="" class="modal-recipe-thumb" loading="lazy">
+    {% endif %}
+    <div class="recipe-item-main">
+        <span class="recipe-item-name">{{ action.designation }}</span>
+        <div class="recipe-item-badges">
+            <span class="badge-eaten-count">
+                {{ action.realisations|length > 0 ? ('Réalisée ' ~ action.realisations|length ~ ' fois') : 'Jamais réalisée' }}
+            </span>
+            {% if action.isPeriodique and echeance %}
+                <span class="badge-periodique {{ echeance.isOverdue ? 'is-overdue' : 'is-upcoming' }}" title="{{ action.frequenceTexte ? (action.frequenceTexte ~ (echeance.date ? ' • Échéance : ' ~ echeance.date|date('d/m/Y') : '')) : '' }}">
+                    <i class="fa-solid fa-arrows-rotate" aria-hidden="true" style="font-size: 0.65rem;"></i>
+                    {{ echeance.label }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="recipe-item-meta">
+        {% if tempsDepuis %}
+            <span class="badge-last-cooked" title="{{ action.lastRealiseAt ? ('Dernière réalisation : ' ~ action.lastRealiseAt|date('d/m/Y')) : '' }}">
+                {{ tempsDepuis }}
+            </span>
+        {% else %}
+            <span class="badge-never-cooked">
+                À réaliser
+            </span>
+        {% endif %}
+        <span class="recipe-item-action">{{ action_label }}</span>
+    </div>
+</button>
